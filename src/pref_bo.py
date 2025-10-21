@@ -1,36 +1,22 @@
+import argparse
+import random
 import time
 
-import botorch
 import gurobipy as gp
-
-# Plotting
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
 # BoTorch imports
 from botorch import fit_gpytorch_mll
-from botorch.acquisition.multi_objective.logei import (
-    qLogExpectedHypervolumeImprovement,
-    qLogNoisyExpectedHypervolumeImprovement,
-)
-from botorch.acquisition.multi_objective.monte_carlo import (
-    qExpectedHypervolumeImprovement,
-    qNoisyExpectedHypervolumeImprovement,
-)
 from botorch.models import ModelListGP, SingleTaskGP
 from botorch.models.transforms.outcome import Standardize
-from botorch.optim.optimize import optimize_acqf, optimize_acqf_list
-from botorch.sampling.normal import SobolQMCNormalSampler
 from botorch.utils.multi_objective.box_decompositions.non_dominated import (
     FastNondominatedPartitioning,
 )
-from botorch.utils.multi_objective.hypervolume import Hypervolume
 from botorch.utils.multi_objective.pareto import is_non_dominated
-from botorch.utils.sampling import sample_simplex
 from gpytorch.mlls.sum_marginal_log_likelihood import SumMarginalLogLikelihood
 from gurobipy import GRB
-from mpl_toolkits.mplot3d import Axes3D
+from sampling_strategies import StrategyConfig, available_strategies, build_strategy
 
 # Use float64 for better precision
 torch.set_default_dtype(torch.float64)
@@ -245,45 +231,42 @@ def initialize_model(train_x, train_obj):
     return mll, model
 
 
-def optimize_qehvi_and_get_observation(model, train_x, sampler):
-    """Optimizes the qEHVI acquisition function, and returns a new candidate and observation."""
-    # partition non-dominated space into disjoint rectangles
-    with torch.no_grad():
-        pred = model.posterior(train_x).mean
-    partitioning = FastNondominatedPartitioning(
-        ref_point=REF_POINT,
-        Y=pred,
-    )
-    acq_func = qLogExpectedHypervolumeImprovement(
-        model=model,
-        ref_point=REF_POINT,
-        partitioning=partitioning,
-        sampler=sampler,
-    )
+def set_global_seed(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def build_sampling_strategy(name: str, seed: int):
     bounds = torch.stack([torch.zeros(N_OBJS), torch.ones(N_OBJS)])
-    # (indices, coefficients, rhs)
     equality_constraints = [(torch.arange(N_OBJS), torch.ones(N_OBJS), 1.0)]
-    # optimize
-    candidates, _ = optimize_acqf(
-        acq_function=acq_func,
+    config = StrategyConfig(
+        ref_point=REF_POINT,
         bounds=bounds,
-        q=BATCH_SIZE_Q,
+        batch_size=BATCH_SIZE_Q,
         num_restarts=NUM_RESTARTS,
-        raw_samples=RAW_SAMPLES,  # used for intialization heuristic
-        options={"maxiter": 200},
+        raw_samples=RAW_SAMPLES,
         sequential=SEQUENTIAL,
         equality_constraints=equality_constraints,
+        mc_samples=MC_SAMPLES,
+        seed=seed,
     )
+    return build_strategy(name, config)
 
-    return candidates
 
-
-def main():
-    mokp_problem = MOKPInstance(n_items=N_ITEMS, n_objs=N_OBJS, seed=123)
+def run_bo(sampling_name: str, seed: int):
+    set_global_seed(seed)
+    mokp_problem = MOKPInstance(n_items=N_ITEMS, n_objs=N_OBJS, seed=seed)
     train_lambda, train_obj = generate_random_samples(
         mokp_problem, n=N_INITIAL_SAMPLES, maximize=SHOULD_MAXIMIZE
     )
 
+    sampling_strategy = build_sampling_strategy(sampling_name, seed)
+    print(
+        f"Using sampling strategy: {sampling_strategy.__class__.__name__} | Seed: {seed}"
+    )
     print(f"Starting BO loop for {N_ITERATIONS} iterations...")
     start_time = time.time()
     for i in range(N_ITERATIONS):
@@ -291,9 +274,9 @@ def main():
         mll, model = initialize_model(train_lambda, train_obj)
         fit_gpytorch_mll(mll)
 
-        # Sampler for qEHVI
-        sampler = SobolQMCNormalSampler(sample_shape=torch.Size([MC_SAMPLES]))
-        new_lambda = optimize_qehvi_and_get_observation(model, train_lambda, sampler)
+        new_lambda = sampling_strategy.generate_candidates(
+            model, train_lambda, train_obj
+        )
 
         # --- d. Evaluate the Black Box ---
         new_obj = mokp_problem(new_lambda, maximize=SHOULD_MAXIMIZE)
@@ -315,6 +298,24 @@ def main():
     print(f"\nBO loop finished in {end_time - start_time:.2f} seconds.")
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Preference-based Bayesian optimization runner."
+    )
+    parser.add_argument(
+        "--sampling",
+        default="qlogehvi",
+        help=f"Sampling strategy to use ({', '.join(available_strategies())})",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=123,
+        help="Random seed for reproducible runs.",
+    )
+    return parser.parse_args()
+
+
 # Problem & BO Parameters
 N_ITEMS = 50
 N_OBJS = 3
@@ -328,7 +329,8 @@ REF_POINT = torch.zeros(N_OBJS)  # Reference point for hypervolume
 SHOULD_MAXIMIZE = True  # Whether to maximize the objectives
 SEQUENTIAL = True
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    run_bo(args.sampling, args.seed)
 
     # from botorch.test_functions.multi_objective import BraninCurrin
     # problem = BraninCurrin(negate=True)
