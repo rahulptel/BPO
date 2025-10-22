@@ -1,6 +1,8 @@
 import argparse
 import random
 import time
+from dataclasses import dataclass
+from typing import Optional
 
 import gurobipy as gp
 import numpy as np
@@ -16,13 +18,56 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 from botorch.utils.multi_objective.pareto import is_non_dominated
 from gpytorch.mlls.sum_marginal_log_likelihood import SumMarginalLogLikelihood
 from gurobipy import GRB
+
 from sampling_strategies import StrategyConfig, available_strategies, build_strategy
 
 # Use float64 for better precision
 torch.set_default_dtype(torch.float64)
 
 
-class MOKPInstance:
+def str2bool(value: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    value_lower = value.lower()
+    if value_lower in {"yes", "true", "t", "1"}:
+        return True
+    if value_lower in {"no", "false", "f", "0"}:
+        return False
+    raise argparse.ArgumentTypeError(f"Boolean value expected, got '{value}'.")
+
+
+@dataclass
+class Config:
+    sampling: str = "qlogehvi"
+    seed: int = 123
+    n_items: int = 50
+    n_objs: int = 3
+    n_initial_samples: int = 10
+    n_iterations: int = 20
+    mc_samples: int = 128
+    batch_size_q: int = 2
+    num_restarts: int = 10
+    raw_samples: int = 512
+    should_maximize: bool = True
+    sequential: bool = True
+    density: float = 0.5
+    rho: float = 1e-4
+    ref_point: Optional[torch.Tensor] = None
+
+    def __post_init__(self):
+        if self.ref_point is None:
+            self.ref_point = torch.zeros(
+                self.n_objs, dtype=torch.get_default_dtype()
+            )
+        else:
+            if self.ref_point.numel() != self.n_objs:
+                raise ValueError(
+                    f"Ref point dimension {self.ref_point.numel()} does not match n_objs={self.n_objs}"
+                )
+            self.ref_point = self.ref_point.to(dtype=torch.get_default_dtype())
+
+
+class MOKP:
     """
     A class to define and solve the Multi-Objective Knapsack Problem (MOKP).
 
@@ -239,37 +284,51 @@ def set_global_seed(seed: int):
         torch.cuda.manual_seed_all(seed)
 
 
-def build_sampling_strategy(name: str, seed: int):
-    bounds = torch.stack([torch.zeros(N_OBJS), torch.ones(N_OBJS)])
-    equality_constraints = [(torch.arange(N_OBJS), torch.ones(N_OBJS), 1.0)]
-    config = StrategyConfig(
-        ref_point=REF_POINT,
+def build_sampling_strategy(config: Config):
+    bounds = torch.stack(
+        [torch.zeros(config.n_objs), torch.ones(config.n_objs)]
+    )
+    equality_constraints = [
+        (
+            torch.arange(config.n_objs),
+            torch.ones(config.n_objs),
+            1.0,
+        )
+    ]
+    strategy_config = StrategyConfig(
+        ref_point=config.ref_point,
         bounds=bounds,
-        batch_size=BATCH_SIZE_Q,
-        num_restarts=NUM_RESTARTS,
-        raw_samples=RAW_SAMPLES,
-        sequential=SEQUENTIAL,
+        batch_size=config.batch_size_q,
+        num_restarts=config.num_restarts,
+        raw_samples=config.raw_samples,
+        sequential=config.sequential,
         equality_constraints=equality_constraints,
-        mc_samples=MC_SAMPLES,
-        seed=seed,
+        mc_samples=config.mc_samples,
+        seed=config.seed,
     )
-    return build_strategy(name, config)
+    return build_strategy(config.sampling, strategy_config)
 
 
-def run_bo(sampling_name: str, seed: int):
-    set_global_seed(seed)
-    mokp_problem = MOKPInstance(n_items=N_ITEMS, n_objs=N_OBJS, seed=seed)
+def run_bo(config: Config):
+    set_global_seed(config.seed)
+    mokp = MOKP(
+        n_items=config.n_items,
+        n_objs=config.n_objs,
+        density=config.density,
+        seed=config.seed,
+        rho=config.rho,
+    )
     train_lambda, train_obj = generate_random_samples(
-        mokp_problem, n=N_INITIAL_SAMPLES, maximize=SHOULD_MAXIMIZE
+        mokp, n=config.n_initial_samples, maximize=config.should_maximize
     )
 
-    sampling_strategy = build_sampling_strategy(sampling_name, seed)
+    sampling_strategy = build_sampling_strategy(config)
     print(
-        f"Using sampling strategy: {sampling_strategy.__class__.__name__} | Seed: {seed}"
+        f"Using sampling strategy: {sampling_strategy.__class__.__name__} | Seed: {config.seed}"
     )
-    print(f"Starting BO loop for {N_ITERATIONS} iterations...")
+    print(f"Starting BO loop for {config.n_iterations} iterations...")
     start_time = time.time()
-    for i in range(N_ITERATIONS):
+    for i in range(config.n_iterations):
         # --- a. Fit the GP Surrogate Models ---
         mll, model = initialize_model(train_lambda, train_obj)
         fit_gpytorch_mll(mll)
@@ -279,32 +338,33 @@ def run_bo(sampling_name: str, seed: int):
         )
 
         # --- d. Evaluate the Black Box ---
-        new_obj = mokp_problem(new_lambda, maximize=SHOULD_MAXIMIZE)
+        new_obj = mokp(new_lambda, maximize=config.should_maximize)
 
         # --- e. Update the Dataset ---
         train_lambda = torch.cat([train_lambda, new_lambda])
         train_obj = torch.cat([train_obj, new_obj])
 
         pareto_mask = is_non_dominated(train_obj)
-        bd = FastNondominatedPartitioning(ref_point=REF_POINT, Y=train_obj)
+        bd = FastNondominatedPartitioning(ref_point=config.ref_point, Y=train_obj)
         volume = bd.compute_hypervolume().item() / torch.abs(
-            torch.tensor(mokp_problem.ideal_point.prod())
+            torch.tensor(mokp.ideal_point.prod())
         )
         print(
-            f"Iter {i+1}/{N_ITERATIONS} | ND: {pareto_mask.sum()} | Hypervolume: {volume:.4f}"
+            f"Iter {i+1}/{config.n_iterations} | ND: {pareto_mask.sum()} | Hypervolume: {volume:.4f}"
         )
 
     end_time = time.time()
     print(f"\nBO loop finished in {end_time - start_time:.2f} seconds.")
 
 
-def parse_args():
+def parse_args() -> Config:
     parser = argparse.ArgumentParser(
         description="Preference-based Bayesian optimization runner."
     )
     parser.add_argument(
         "--sampling",
         default="qlogehvi",
+        choices=available_strategies(),
         help=f"Sampling strategy to use ({', '.join(available_strategies())})",
     )
     parser.add_argument(
@@ -313,25 +373,111 @@ def parse_args():
         default=123,
         help="Random seed for reproducible runs.",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--n-items",
+        type=int,
+        default=50,
+        help="Number of items in the knapsack instance.",
+    )
+    parser.add_argument(
+        "--n-objs",
+        type=int,
+        default=3,
+        help="Number of objectives for the knapsack problem.",
+    )
+    parser.add_argument(
+        "--n-initial-samples",
+        type=int,
+        default=10,
+        help="Number of initial design points sampled from the simplex.",
+    )
+    parser.add_argument(
+        "--n-iterations",
+        type=int,
+        default=20,
+        help="Number of Bayesian optimization iterations to run.",
+    )
+    parser.add_argument(
+        "--mc-samples",
+        type=int,
+        default=128,
+        help="Number of Monte Carlo samples used by the acquisition function.",
+    )
+    parser.add_argument(
+        "--batch-size-q",
+        type=int,
+        default=2,
+        help="Batch size (q) for candidate generation.",
+    )
+    parser.add_argument(
+        "--num-restarts",
+        type=int,
+        default=10,
+        help="Number of multistart restarts for acquisition optimization.",
+    )
+    parser.add_argument(
+        "--raw-samples",
+        type=int,
+        default=512,
+        help="Number of raw samples for acquisition optimization.",
+    )
+    parser.add_argument(
+        "--should-maximize",
+        type=str2bool,
+        default=True,
+        help="Whether to maximize the underlying objectives (true/false).",
+    )
+    parser.add_argument(
+        "--sequential",
+        type=str2bool,
+        default=True,
+        help="Whether to sample candidates sequentially (true/false).",
+    )
+    parser.add_argument(
+        "--density",
+        type=float,
+        default=0.5,
+        help="Capacity density fraction for the knapsack constraint.",
+    )
+    parser.add_argument(
+        "--rho",
+        type=float,
+        default=1e-4,
+        help="Augmentation parameter for the scalarized MOKP.",
+    )
+    parser.add_argument(
+        "--ref-point",
+        type=float,
+        nargs="+",
+        default=None,
+        help="Reference point for hypervolume (provide one value per objective).",
+    )
+    args = parser.parse_args()
+
+    ref_point_tensor = (
+        torch.tensor(args.ref_point, dtype=torch.get_default_dtype())
+        if args.ref_point is not None
+        else None
+    )
+    return Config(
+        sampling=args.sampling,
+        seed=args.seed,
+        n_items=args.n_items,
+        n_objs=args.n_objs,
+        n_initial_samples=args.n_initial_samples,
+        n_iterations=args.n_iterations,
+        mc_samples=args.mc_samples,
+        batch_size_q=args.batch_size_q,
+        num_restarts=args.num_restarts,
+        raw_samples=args.raw_samples,
+        should_maximize=args.should_maximize,
+        sequential=args.sequential,
+        density=args.density,
+        rho=args.rho,
+        ref_point=ref_point_tensor,
+    )
 
 
-# Problem & BO Parameters
-N_ITEMS = 50
-N_OBJS = 3
-N_INITIAL_SAMPLES = 10  # Warm-up points
-N_ITERATIONS = 20  # BO loop iterations
-MC_SAMPLES = 128  # Samples for qEHVI
-BATCH_SIZE_Q = 2  # q=1 for sequential optimization
-NUM_RESTARTS = 10
-RAW_SAMPLES = 512
-REF_POINT = torch.zeros(N_OBJS)  # Reference point for hypervolume
-SHOULD_MAXIMIZE = True  # Whether to maximize the objectives
-SEQUENTIAL = True
 if __name__ == "__main__":
-    args = parse_args()
-    run_bo(args.sampling, args.seed)
-
-    # from botorch.test_functions.multi_objective import BraninCurrin
-    # problem = BraninCurrin(negate=True)
-    # print(problem.ref_point)
+    config = parse_args()
+    run_bo(config)
