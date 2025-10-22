@@ -59,9 +59,7 @@ class Config:
 
     def __post_init__(self):
         if self.ref_point is None:
-            self.ref_point = torch.zeros(
-                self.n_objs, dtype=torch.get_default_dtype()
-            )
+            self.ref_point = torch.zeros(self.n_objs, dtype=torch.get_default_dtype())
         else:
             if self.ref_point.numel() != self.n_objs:
                 raise ValueError(
@@ -288,9 +286,7 @@ def set_global_seed(seed: int):
 
 
 def build_sampling_strategy(config: Config):
-    bounds = torch.stack(
-        [torch.zeros(config.n_objs), torch.ones(config.n_objs)]
-    )
+    bounds = torch.stack([torch.zeros(config.n_objs), torch.ones(config.n_objs)])
     equality_constraints = [
         (
             torch.arange(config.n_objs),
@@ -310,6 +306,60 @@ def build_sampling_strategy(config: Config):
         seed=config.seed,
     )
     return build_strategy(config.sampling, strategy_config)
+
+
+def save_result(config: Config, iteration_records, train_obj: torch.Tensor) -> Path:
+    """
+    Persist BO run metadata and nondominated solutions to disk.
+    """
+    final_pareto_mask = is_non_dominated(train_obj)
+    final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
+    results = {
+        "num_objectives": config.n_objs,
+        "num_variables": config.n_items,
+        "seed": config.seed,
+        "sampling_strategy": config.sampling,
+        "n_initial_samples": config.n_initial_samples,
+        "n_iterations": config.n_iterations,
+        "mc_samples": config.mc_samples,
+        "batch_size_q": config.batch_size_q,
+        "raw_samples": config.raw_samples,
+        "iterations": iteration_records,
+        "nondominated_solutions": final_nd_points,
+    }
+    base_dir = (
+        Path("outputs")
+        / f"items-{config.n_items}_objs-{config.n_objs}_seed-{config.seed}"
+    )
+    strategy_key = config.sampling.lower()
+    strategy_dir = base_dir / strategy_key
+    if strategy_key == "random":
+        dir_chain = [
+            ("n_initial_samples", config.n_initial_samples),
+            ("n_iterations", config.n_iterations),
+            ("batch_size_q", config.batch_size_q),
+        ]
+    elif strategy_key == "qlogehvi":
+        dir_chain = [
+            ("n_initial_samples", config.n_initial_samples),
+            ("n_iterations", config.n_iterations),
+            ("batch_size_q", config.batch_size_q),
+            ("mc_samples", config.mc_samples),
+            ("raw_samples", config.raw_samples),
+        ]
+    else:
+        dir_chain = [("batch_size_q", config.batch_size_q)]
+
+    output_dir = strategy_dir
+    for name, value in dir_chain:
+        output_dir /= f"{name}-{value}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    output_path = output_dir / f"run_bo_{timestamp}.json"
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+    print(f"Saved BO results to {output_path}")
+    return output_path
 
 
 def run_bo(config: Config):
@@ -368,24 +418,7 @@ def run_bo(config: Config):
 
     end_time = time.time()
     print(f"\nBO loop finished in {end_time - start_time:.2f} seconds.")
-    final_pareto_mask = is_non_dominated(train_obj)
-    final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
-    results = {
-        "num_objectives": config.n_objs,
-        "num_variables": config.n_items,
-        "seed": config.seed,
-        "iterations": iteration_records,
-        "nondominated_solutions": final_nd_points,
-    }
-    output_dir = Path("outputs")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    output_path = output_dir / (
-        f"run_bo_seed-{config.seed}_objs-{config.n_objs}_vars-{config.n_items}_{timestamp}.json"
-    )
-    with output_path.open("w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
-    print(f"Saved BO results to {output_path}")
+    save_result(config, iteration_records, train_obj)
 
 
 def parse_args() -> Config:
