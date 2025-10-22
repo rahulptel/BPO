@@ -1,7 +1,10 @@
 import argparse
+import json
 import random
 import time
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import gurobipy as gp
@@ -328,6 +331,7 @@ def run_bo(config: Config):
     )
     print(f"Starting BO loop for {config.n_iterations} iterations...")
     start_time = time.time()
+    iteration_records = []
     for i in range(config.n_iterations):
         # --- a. Fit the GP Surrogate Models ---
         mll, model = initialize_model(train_lambda, train_obj)
@@ -349,12 +353,39 @@ def run_bo(config: Config):
         volume = bd.compute_hypervolume().item() / torch.abs(
             torch.tensor(mokp.ideal_point.prod())
         )
+        volume_value = float(volume)
+        num_nondominated = int(pareto_mask.sum().item())
         print(
-            f"Iter {i+1}/{config.n_iterations} | ND: {pareto_mask.sum()} | Hypervolume: {volume:.4f}"
+            f"Iter {i+1}/{config.n_iterations} | ND: {num_nondominated} | Hypervolume: {volume_value:.4f}"
+        )
+        iteration_records.append(
+            {
+                "iteration": i + 1,
+                "num_nondominated": num_nondominated,
+                "hypervolume": volume_value,
+            }
         )
 
     end_time = time.time()
     print(f"\nBO loop finished in {end_time - start_time:.2f} seconds.")
+    final_pareto_mask = is_non_dominated(train_obj)
+    final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
+    results = {
+        "num_objectives": config.n_objs,
+        "num_variables": config.n_items,
+        "seed": config.seed,
+        "iterations": iteration_records,
+        "nondominated_solutions": final_nd_points,
+    }
+    output_dir = Path("outputs")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    output_path = output_dir / (
+        f"run_bo_seed-{config.seed}_objs-{config.n_objs}_vars-{config.n_items}_{timestamp}.json"
+    )
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+    print(f"Saved BO results to {output_path}")
 
 
 def parse_args() -> Config:
