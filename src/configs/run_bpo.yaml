@@ -1,5 +1,6 @@
 defaults:
   - problem: mokp
+  - override hydra/job_logging: disabled
   - _self_
 
 acquisition:
@@ -20,9 +21,3 @@ hydra:
   run:
     dir: .
   output_subdir: null
-  job_logging:
-    root:
-      level: ERROR
-  hydra_logging:
-    root:
-      level: ERROR
