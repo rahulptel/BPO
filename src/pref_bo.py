@@ -20,7 +20,7 @@ from botorch.utils.multi_objective.pareto import is_non_dominated
 from gpytorch.mlls.sum_marginal_log_likelihood import SumMarginalLogLikelihood
 from gurobipy import GRB
 
-from sampling_strategies import StrategyConfig, available_strategies, build_strategy
+from acquisition import AcquisitionConfig, available_acquisitions, build_acquisition
 
 # Use float64 for better precision
 torch.set_default_dtype(torch.float64)
@@ -40,7 +40,7 @@ def str2bool(value):
 class Config:
     def __init__(
         self,
-        sampling="qlogehvi",
+        acquisition="qlogehvi",
         seed=123,
         n_items=50,
         n_objs=3,
@@ -56,7 +56,7 @@ class Config:
         rho=1e-4,
         ref_point=None,
     ):
-        self.sampling = sampling
+        self.acquisition = acquisition
         self.seed = seed
         self.n_items = n_items
         self.n_objs = n_objs
@@ -301,7 +301,7 @@ def set_global_seed(seed):
         torch.cuda.manual_seed_all(seed)
 
 
-def build_sampling_strategy(config):
+def build_acquisition_function(config):
     bounds = torch.stack([torch.zeros(config.n_objs), torch.ones(config.n_objs)])
     equality_constraints = [
         (
@@ -310,7 +310,7 @@ def build_sampling_strategy(config):
             1.0,
         )
     ]
-    strategy_config = StrategyConfig(
+    acquisition_config = AcquisitionConfig(
         ref_point=config.ref_point,
         bounds=bounds,
         batch_size=config.batch_size_q,
@@ -321,7 +321,7 @@ def build_sampling_strategy(config):
         mc_samples=config.mc_samples,
         seed=config.seed,
     )
-    return build_strategy(config.sampling, strategy_config)
+    return build_acquisition(config.acquisition, acquisition_config)
 
 
 def save_result(config, iteration_records, train_obj):
@@ -334,7 +334,7 @@ def save_result(config, iteration_records, train_obj):
         "num_objectives": config.n_objs,
         "num_variables": config.n_items,
         "seed": config.seed,
-        "sampling_strategy": config.sampling,
+        "acquisition_function": config.acquisition,
         "n_initial_samples": config.n_initial_samples,
         "n_iterations": config.n_iterations,
         "mc_samples": config.mc_samples,
@@ -347,15 +347,15 @@ def save_result(config, iteration_records, train_obj):
         Path("outputs")
         / f"items-{config.n_items}_objs-{config.n_objs}_seed-{config.seed}"
     )
-    strategy_key = config.sampling.lower()
-    strategy_dir = base_dir / strategy_key
-    if strategy_key == "random":
+    acquisition_key = config.acquisition.lower()
+    acquisition_dir = base_dir / acquisition_key
+    if acquisition_key == "random":
         dir_chain = [
             ("n_initial_samples", config.n_initial_samples),
             ("n_iterations", config.n_iterations),
             ("batch_size_q", config.batch_size_q),
         ]
-    elif strategy_key == "qlogehvi":
+    elif acquisition_key == "qlogehvi":
         dir_chain = [
             ("n_initial_samples", config.n_initial_samples),
             ("n_iterations", config.n_iterations),
@@ -366,7 +366,7 @@ def save_result(config, iteration_records, train_obj):
     else:
         dir_chain = [("batch_size_q", config.batch_size_q)]
 
-    output_dir = strategy_dir
+    output_dir = acquisition_dir
     for name, value in dir_chain:
         output_dir /= f"{name}-{value}"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -391,9 +391,9 @@ def run_bo(config):
         mokp, n=config.n_initial_samples, maximize=config.should_maximize
     )
 
-    sampling_strategy = build_sampling_strategy(config)
+    acquisition_function = build_acquisition_function(config)
     print(
-        f"Using sampling strategy: {sampling_strategy.__class__.__name__} | Seed: {config.seed}"
+        f"Using acquisition function: {acquisition_function.__class__.__name__} | Seed: {config.seed}"
     )
     print(f"Starting BO loop for {config.n_iterations} iterations...")
     start_time = time.time()
@@ -403,7 +403,7 @@ def run_bo(config):
         mll, model = initialize_model(train_lambda, train_obj)
         fit_gpytorch_mll(mll)
 
-        new_lambda = sampling_strategy.generate_candidates(
+        new_lambda = acquisition_function.generate_candidates(
             model, train_lambda, train_obj
         )
 
@@ -442,10 +442,10 @@ def parse_args():
         description="Preference-based Bayesian optimization runner."
     )
     parser.add_argument(
-        "--sampling",
+        "--acquisition",
         default="qlogehvi",
-        choices=available_strategies(),
-        help=f"Sampling strategy to use ({', '.join(available_strategies())})",
+        choices=available_acquisitions(),
+        help=f"Acquisition function to use ({', '.join(available_acquisitions())})",
     )
     parser.add_argument(
         "--seed",
@@ -540,7 +540,7 @@ def parse_args():
         else None
     )
     return Config(
-        sampling=args.sampling,
+        acquisition=args.acquisition,
         seed=args.seed,
         n_items=args.n_items,
         n_objs=args.n_objs,

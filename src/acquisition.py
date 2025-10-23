@@ -11,7 +11,7 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 )
 
 
-class StrategyConfig:
+class AcquisitionConfig:
     def __init__(
         self,
         ref_point,
@@ -37,7 +37,7 @@ class StrategyConfig:
         self.seed = seed
 
 
-class SamplingStrategy(ABC):
+class AcquisitionFunction(ABC):
     def __init__(self, config):
         self.config = config
 
@@ -46,7 +46,7 @@ class SamplingStrategy(ABC):
         ...
 
 
-class QLogEHVIStrategy(SamplingStrategy):
+class QLogEHVIAcquisition(AcquisitionFunction):
     def __init__(self, config):
         super().__init__(config)
         self.sampler = SobolQMCNormalSampler(
@@ -81,7 +81,7 @@ class QLogEHVIStrategy(SamplingStrategy):
         return candidates
 
 
-class RandomDirichletStrategy(SamplingStrategy):
+class RandomDirichletAcquisition(AcquisitionFunction):
     def __init__(self, config):
         super().__init__(config)
         self.simplex_dim = self.config.bounds.shape[-1]
@@ -93,18 +93,18 @@ class RandomDirichletStrategy(SamplingStrategy):
         return samples
 
 
-STRATEGY_REGISTRY = {
-    "qlogehvi": QLogEHVIStrategy,
-    "random": RandomDirichletStrategy,
+ACQUISITION_REGISTRY = {
+    "qlogehvi": QLogEHVIAcquisition,
+    "random": RandomDirichletAcquisition,
 }
 
 
-def build_strategy(name, config):
+def build_acquisition(name, config):
     key = name.lower()
-    if key not in STRATEGY_REGISTRY:
-        raise ValueError(f"Unknown sampling strategy '{name}'")
-    return STRATEGY_REGISTRY[key](config)
+    if key not in ACQUISITION_REGISTRY:
+        raise ValueError(f"Unknown acquisition function '{name}'")
+    return ACQUISITION_REGISTRY[key](config)
 
 
-def available_strategies():
-    return tuple(STRATEGY_REGISTRY.keys())
+def available_acquisitions():
+    return tuple(ACQUISITION_REGISTRY.keys())
