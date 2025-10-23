@@ -15,7 +15,6 @@ bo:
   num_restarts: 10
   raw_samples: 512
   rseed: 123
-  should_maximize: true
 
 hydra:
   run:
