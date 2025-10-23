@@ -2,10 +2,8 @@ import argparse
 import json
 import random
 import time
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import gurobipy as gp
 import numpy as np
@@ -28,7 +26,7 @@ from sampling_strategies import StrategyConfig, available_strategies, build_stra
 torch.set_default_dtype(torch.float64)
 
 
-def str2bool(value: str) -> bool:
+def str2bool(value):
     if isinstance(value, bool):
         return value
     value_lower = value.lower()
@@ -39,23 +37,41 @@ def str2bool(value: str) -> bool:
     raise argparse.ArgumentTypeError(f"Boolean value expected, got '{value}'.")
 
 
-@dataclass
 class Config:
-    sampling: str = "qlogehvi"
-    seed: int = 123
-    n_items: int = 50
-    n_objs: int = 3
-    n_initial_samples: int = 10
-    n_iterations: int = 20
-    mc_samples: int = 128
-    batch_size_q: int = 2
-    num_restarts: int = 10
-    raw_samples: int = 512
-    should_maximize: bool = True
-    sequential: bool = True
-    density: float = 0.5
-    rho: float = 1e-4
-    ref_point: Optional[torch.Tensor] = None
+    def __init__(
+        self,
+        sampling="qlogehvi",
+        seed=123,
+        n_items=50,
+        n_objs=3,
+        n_initial_samples=10,
+        n_iterations=20,
+        mc_samples=128,
+        batch_size_q=2,
+        num_restarts=10,
+        raw_samples=512,
+        should_maximize=True,
+        sequential=True,
+        density=0.5,
+        rho=1e-4,
+        ref_point=None,
+    ):
+        self.sampling = sampling
+        self.seed = seed
+        self.n_items = n_items
+        self.n_objs = n_objs
+        self.n_initial_samples = n_initial_samples
+        self.n_iterations = n_iterations
+        self.mc_samples = mc_samples
+        self.batch_size_q = batch_size_q
+        self.num_restarts = num_restarts
+        self.raw_samples = raw_samples
+        self.should_maximize = should_maximize
+        self.sequential = sequential
+        self.density = density
+        self.rho = rho
+        self.ref_point = ref_point
+        self.__post_init__()
 
     def __post_init__(self):
         if self.ref_point is None:
@@ -277,7 +293,7 @@ def initialize_model(train_x, train_obj):
     return mll, model
 
 
-def set_global_seed(seed: int):
+def set_global_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -285,7 +301,7 @@ def set_global_seed(seed: int):
         torch.cuda.manual_seed_all(seed)
 
 
-def build_sampling_strategy(config: Config):
+def build_sampling_strategy(config):
     bounds = torch.stack([torch.zeros(config.n_objs), torch.ones(config.n_objs)])
     equality_constraints = [
         (
@@ -308,7 +324,7 @@ def build_sampling_strategy(config: Config):
     return build_strategy(config.sampling, strategy_config)
 
 
-def save_result(config: Config, iteration_records, train_obj: torch.Tensor) -> Path:
+def save_result(config, iteration_records, train_obj):
     """
     Persist BO run metadata and nondominated solutions to disk.
     """
@@ -362,7 +378,7 @@ def save_result(config: Config, iteration_records, train_obj: torch.Tensor) -> P
     return output_path
 
 
-def run_bo(config: Config):
+def run_bo(config):
     set_global_seed(config.seed)
     mokp = MOKP(
         n_items=config.n_items,
@@ -421,7 +437,7 @@ def run_bo(config: Config):
     save_result(config, iteration_records, train_obj)
 
 
-def parse_args() -> Config:
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Preference-based Bayesian optimization runner."
     )

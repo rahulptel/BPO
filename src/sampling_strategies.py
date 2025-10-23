@@ -1,8 +1,4 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Dict, Optional, Sequence
 
 import torch
 from botorch.acquisition.multi_objective.logei import (
@@ -15,42 +11,50 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 )
 
 
-@dataclass
 class StrategyConfig:
-    ref_point: torch.Tensor
-    bounds: torch.Tensor
-    batch_size: int
-    num_restarts: int
-    raw_samples: int
-    sequential: bool
-    equality_constraints: Optional[Sequence] = None
-    acq_options: Dict[str, int] = field(default_factory=dict)
-    mc_samples: int = 128
-    seed: Optional[int] = None
+    def __init__(
+        self,
+        ref_point,
+        bounds,
+        batch_size,
+        num_restarts,
+        raw_samples,
+        sequential,
+        equality_constraints=None,
+        acq_options=None,
+        mc_samples=128,
+        seed=None,
+    ):
+        self.ref_point = ref_point
+        self.bounds = bounds
+        self.batch_size = batch_size
+        self.num_restarts = num_restarts
+        self.raw_samples = raw_samples
+        self.sequential = sequential
+        self.equality_constraints = equality_constraints
+        self.acq_options = acq_options if acq_options is not None else {}
+        self.mc_samples = mc_samples
+        self.seed = seed
 
 
 class SamplingStrategy(ABC):
-    def __init__(self, config: StrategyConfig):
+    def __init__(self, config):
         self.config = config
 
     @abstractmethod
-    def generate_candidates(
-        self, model, train_x: torch.Tensor, train_obj: torch.Tensor
-    ) -> torch.Tensor:
+    def generate_candidates(self, model, train_x, train_obj):
         ...
 
 
 class QLogEHVIStrategy(SamplingStrategy):
-    def __init__(self, config: StrategyConfig):
+    def __init__(self, config):
         super().__init__(config)
         self.sampler = SobolQMCNormalSampler(
             sample_shape=torch.Size([self.config.mc_samples]),
             seed=self.config.seed,
         )
 
-    def generate_candidates(
-        self, model, train_x: torch.Tensor, train_obj: torch.Tensor
-    ) -> torch.Tensor:
+    def generate_candidates(self, model, train_x, train_obj):
         with torch.no_grad():
             posterior_mean = model.posterior(train_x).mean
         partitioning = FastNondominatedPartitioning(
@@ -78,13 +82,11 @@ class QLogEHVIStrategy(SamplingStrategy):
 
 
 class RandomDirichletStrategy(SamplingStrategy):
-    def __init__(self, config: StrategyConfig):
+    def __init__(self, config):
         super().__init__(config)
         self.simplex_dim = self.config.bounds.shape[-1]
 
-    def generate_candidates(
-        self, model, train_x: torch.Tensor, train_obj: torch.Tensor
-    ) -> torch.Tensor:
+    def generate_candidates(self, model, train_x, train_obj):
         base = torch.ones(self.simplex_dim, dtype=train_x.dtype, device=train_x.device)
         distribution = torch.distributions.dirichlet.Dirichlet(base)
         samples = distribution.sample((self.config.batch_size,))
@@ -97,12 +99,12 @@ STRATEGY_REGISTRY = {
 }
 
 
-def build_strategy(name: str, config: StrategyConfig) -> SamplingStrategy:
+def build_strategy(name, config):
     key = name.lower()
     if key not in STRATEGY_REGISTRY:
         raise ValueError(f"Unknown sampling strategy '{name}'")
     return STRATEGY_REGISTRY[key](config)
 
 
-def available_strategies() -> Sequence[str]:
+def available_strategies():
     return tuple(STRATEGY_REGISTRY.keys())
