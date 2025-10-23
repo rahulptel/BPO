@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 
 from acquisition import available_acquisitions
 from bpo.core.run import run_bo
-from bpo.problems import available_problems, build_problem
+from bpo.problems import available_problems
 
 torch.set_default_dtype(torch.float64)
 
@@ -14,21 +14,27 @@ torch.set_default_dtype(torch.float64)
 @dataclass
 class ProblemConfig:
     __annotations__ = {
+        "iseed": object,
+        "rho": object,
+        "ref_point": object,
+    }
+    iseed = 123
+    rho = 1e-4
+    ref_point = None
+
+
+@dataclass
+class KnapsackProblemConfig(ProblemConfig):
+    __annotations__ = {
         "name": object,
         "n_items": object,
         "n_objs": object,
         "density": object,
-        "iseed": object,
-        "rho": object,
-        "ref_point": object,
     }
     name = "mokp"
     n_items = 50
     n_objs = 3
     density = 0.5
-    iseed = 123
-    rho = 1e-4
-    ref_point = None
 
 
 @dataclass
@@ -70,9 +76,14 @@ class Config:
         "acquisition": object,
         "bo": object,
     }
-    problem = field(default_factory=ProblemConfig)
+    problem = field(default_factory=KnapsackProblemConfig)
     acquisition = field(default_factory=AcquisitionConfig)
     bo = field(default_factory=BOConfig)
+
+
+_PROBLEM_CONFIG_BUILDERS = {
+    "mokp": KnapsackProblemConfig,
+}
 
 
 def _validate_problem_config(config):
@@ -88,15 +99,32 @@ def _validate_problem_config(config):
         )
 
 
-def _build_problem(cfg):
-    return build_problem(
-        cfg.problem.name,
-        n_items=cfg.problem.n_items,
-        n_objs=cfg.problem.n_objs,
-        density=cfg.problem.density,
-        iseed=cfg.problem.iseed,
-        rho=cfg.problem.rho,
+def _build_mokp_problem(cfg):
+    problem_cfg = cfg.problem
+    from bpo.problems.mokp import MOKP
+
+    return MOKP(
+        n_items=problem_cfg.n_items,
+        n_objs=problem_cfg.n_objs,
+        density=problem_cfg.density,
+        iseed=problem_cfg.iseed,
+        rho=problem_cfg.rho,
     )
+
+
+def _build_problem(cfg):
+    builders = {
+        "mokp": _build_mokp_problem,
+    }
+
+    problem_name = cfg.problem.name.lower()
+    if problem_name not in builders:
+        available = ", ".join(sorted(builders))
+        raise ValueError(
+            f"Unsupported problem '{cfg.problem.name}'. Supported problems: {available}"
+        )
+
+    return builders[problem_name](cfg)
 
 
 def _load_config(cfg):
@@ -110,7 +138,17 @@ def _load_config(cfg):
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
     config = Config()
     if isinstance(cfg_dict, dict):
-        _apply(config.problem, cfg_dict.get("problem", {}))
+        problem_cfg = cfg_dict.get("problem", {})
+        if isinstance(problem_cfg, dict):
+            problem_name = problem_cfg.get("name", config.problem.name)
+            problem_key = str(problem_name).lower()
+            if problem_key not in _PROBLEM_CONFIG_BUILDERS:
+                available = ", ".join(sorted(_PROBLEM_CONFIG_BUILDERS))
+                raise ValueError(
+                    f"Unsupported problem config '{problem_name}'. Supported problems: {available}"
+                )
+            config.problem = _PROBLEM_CONFIG_BUILDERS[problem_key]()
+            _apply(config.problem, problem_cfg)
         _apply(config.acquisition, cfg_dict.get("acquisition", {}))
         _apply(config.bo, cfg_dict.get("bo", {}))
     return config
