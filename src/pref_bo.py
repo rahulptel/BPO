@@ -41,7 +41,8 @@ class Config:
     def __init__(
         self,
         acquisition="qlogehvi",
-        seed=123,
+        rseed=123,
+        iseed=None,
         n_items=50,
         n_objs=3,
         n_initial_samples=10,
@@ -57,7 +58,8 @@ class Config:
         ref_point=None,
     ):
         self.acquisition = acquisition
-        self.seed = seed
+        self.rseed = rseed
+        self.iseed = iseed
         self.n_items = n_items
         self.n_objs = n_objs
         self.n_initial_samples = n_initial_samples
@@ -82,6 +84,8 @@ class Config:
                     f"Ref point dimension {self.ref_point.numel()} does not match n_objs={self.n_objs}"
                 )
             self.ref_point = self.ref_point.to(dtype=torch.get_default_dtype())
+        if self.iseed is None:
+            self.iseed = self.rseed
 
 
 class MOKP:
@@ -95,13 +99,13 @@ class MOKP:
     It takes a preference vector λ and returns the true objective vector f(x*).
     """
 
-    def __init__(self, n_items=50, n_objs=3, density=0.5, seed=123, rho=1e-4):
+    def __init__(self, n_items=50, n_objs=3, density=0.5, iseed=123, rho=1e-4):
         self.n_items = n_items
         self.n_objs = n_objs
         self.rho = rho  # Augmentation parameter
 
         # Use a fixed seed for reproducibility
-        rng = np.random.default_rng(seed)
+        rng = np.random.default_rng(iseed)
 
         # Values: (n_items x n_objs) matrix
         self.values = rng.integers(1, 1001, size=(n_items, n_objs))
@@ -112,7 +116,7 @@ class MOKP:
         # Capacity: ~40% of total weight
         self.capacity = int(np.sum(self.weights) * density)
 
-        print(f"MOKP Instance (Seed: {seed}):")
+        print(f"MOKP Instance (iseed: {iseed}):")
         print(f"  Items: {n_items}, Objectives: {n_objs}")
         print(f"  Knapsack Capacity: {self.capacity}")
         print(f"  Scalarization: Augmented Tchebycheff (rho={self.rho})\n")
@@ -319,7 +323,7 @@ def build_acquisition_function(config):
         sequential=config.sequential,
         equality_constraints=equality_constraints,
         mc_samples=config.mc_samples,
-        seed=config.seed,
+        rseed=config.rseed,
     )
     return build_acquisition(config.acquisition, acquisition_config)
 
@@ -333,7 +337,8 @@ def save_result(config, iteration_records, train_obj):
     results = {
         "num_objectives": config.n_objs,
         "num_variables": config.n_items,
-        "seed": config.seed,
+        "rseed": config.rseed,
+        "iseed": config.iseed,
         "acquisition_function": config.acquisition,
         "n_initial_samples": config.n_initial_samples,
         "n_iterations": config.n_iterations,
@@ -345,7 +350,7 @@ def save_result(config, iteration_records, train_obj):
     }
     base_dir = (
         Path("outputs")
-        / f"items-{config.n_items}_objs-{config.n_objs}_seed-{config.seed}"
+        / f"items-{config.n_items}_objs-{config.n_objs}_iseed-{config.iseed}_rseed-{config.rseed}"
     )
     acquisition_key = config.acquisition.lower()
     acquisition_dir = base_dir / acquisition_key
@@ -379,12 +384,12 @@ def save_result(config, iteration_records, train_obj):
 
 
 def run_bo(config):
-    set_global_seed(config.seed)
+    set_global_seed(config.rseed)
     mokp = MOKP(
         n_items=config.n_items,
         n_objs=config.n_objs,
         density=config.density,
-        seed=config.seed,
+        iseed=config.iseed,
         rho=config.rho,
     )
     train_lambda, train_obj = generate_random_samples(
@@ -393,7 +398,7 @@ def run_bo(config):
 
     acquisition_function = build_acquisition_function(config)
     print(
-        f"Using acquisition function: {acquisition_function.__class__.__name__} | Seed: {config.seed}"
+        f"Using acquisition function: {acquisition_function.__class__.__name__} | rseed: {config.rseed}"
     )
     print(f"Starting BO loop for {config.n_iterations} iterations...")
     start_time = time.time()
@@ -448,10 +453,16 @@ def parse_args():
         help=f"Acquisition function to use ({', '.join(available_acquisitions())})",
     )
     parser.add_argument(
-        "--seed",
+        "--rseed",
         type=int,
         default=123,
-        help="Random seed for reproducible runs.",
+        help="Random seed for the BO run (controls samplers, Torch, etc.).",
+    )
+    parser.add_argument(
+        "--iseed",
+        type=int,
+        default=123,
+        help="Seed for generating the knapsack instance. Defaults to --rseed when omitted.",
     )
     parser.add_argument(
         "--n-items",
@@ -541,7 +552,8 @@ def parse_args():
     )
     return Config(
         acquisition=args.acquisition,
-        seed=args.seed,
+        rseed=args.rseed,
+        iseed=args.iseed,
         n_items=args.n_items,
         n_objs=args.n_objs,
         n_initial_samples=args.n_initial_samples,

@@ -23,7 +23,7 @@ class AcquisitionConfig:
         equality_constraints=None,
         acq_options=None,
         mc_samples=128,
-        seed=None,
+        rseed=None,
     ):
         self.ref_point = ref_point
         self.bounds = bounds
@@ -34,7 +34,7 @@ class AcquisitionConfig:
         self.equality_constraints = equality_constraints
         self.acq_options = acq_options if acq_options is not None else {}
         self.mc_samples = mc_samples
-        self.seed = seed
+        self.rseed = rseed
 
 
 class AcquisitionFunction(ABC):
@@ -51,7 +51,7 @@ class QLogEHVIAcquisition(AcquisitionFunction):
         super().__init__(config)
         self.sampler = SobolQMCNormalSampler(
             sample_shape=torch.Size([self.config.mc_samples]),
-            seed=self.config.seed,
+            seed=self.config.rseed,
         )
 
     def generate_candidates(self, model, train_x, train_obj):
