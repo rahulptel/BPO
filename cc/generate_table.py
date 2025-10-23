@@ -1,63 +1,61 @@
-from __future__ import annotations
-
 import argparse
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Sequence
-
 
 COMMAND_TEMPLATE = (
     "python src/run_bpo.py "
     "problem.iseed={iseed} "
     "bo.rseed={rseed} "
-    "acquisition.name={acquisition} "
+    "problem.n_objs={n_objs} "
+    "acquisition.name=random "
     "acquisition.batch_size_q=1 "
     "bo.n_iterations=50"
 )
 
 
-@dataclass(frozen=True)
 class CaseSpec:
     """Encapsulates the parameters needed for a single run command."""
 
-    case_id: int
-    iseed: int
-    rseed: int
-    acquisition: str
+    __slots__ = ("case_id", "iseed", "rseed", "n_objs")
 
-    def render(self) -> str:
+    def __init__(self, case_id, iseed, rseed, n_objs):
+        self.case_id = case_id
+        self.iseed = iseed
+        self.rseed = rseed
+        self.n_objs = n_objs
+
+    def render(self):
         """Return the formatted line for table.dat."""
         command = COMMAND_TEMPLATE.format(
             iseed=self.iseed,
             rseed=self.rseed,
-            acquisition=self.acquisition,
+            n_objs=self.n_objs,
         )
         return f"{self.case_id} {command}"
 
 
 def generate_case_specs(
-    iseed_range: Sequence[int],
-    rseed_range: Sequence[int],
-    acquisitions: Sequence[str],
-) -> List[CaseSpec]:
+    iseed_range,
+    rseed_range,
+    n_objs_range,
+):
     """Return every CaseSpec for the provided parameter grid."""
-    specs: List[CaseSpec] = []
+    specs = []
     case_id = 1
     for iseed in iseed_range:
         for rseed in rseed_range:
-            for acquisition in acquisitions:
-                specs.append(CaseSpec(case_id, iseed, rseed, acquisition))
+            for n_obj in n_objs_range:
+                specs.append(CaseSpec(case_id, iseed, rseed, n_obj))
                 case_id += 1
     return specs
 
 
-def write_table(lines: Iterable[str], output_path: Path) -> None:
+def write_table(lines, output_path):
     """Write every line to the requested table.dat file."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines) + "\n")
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate the table.dat file with configured BO runs."
     )
@@ -70,13 +68,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
+def main():
     args = parse_args()
     iseed_values = range(1, 101)
     rseed_values = range(1, 6)
-    acquisitions = ("random", "qlogehvi")
+    n_objs_values = range(2, 6)
 
-    specs = generate_case_specs(iseed_values, rseed_values, acquisitions)
+    specs = generate_case_specs(iseed_values, rseed_values, n_objs_values)
     lines = [spec.render() for spec in specs]
     write_table(lines, args.output)
 
