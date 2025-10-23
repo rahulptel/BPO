@@ -31,4 +31,4 @@ class Problem:
         return {}
 
     def io_base_dir(self, config):
-        return Path("outputs") / self.name
+        return Path("../outputs") / self.name
