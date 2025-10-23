@@ -33,7 +33,15 @@ def _ref_point_to_list(ref_point):
     return list(ref_point)
 
 
-def save_result(problem, config, iteration_records, train_obj, ref_point):
+def save_result(
+    problem,
+    config,
+    iteration_records,
+    train_obj,
+    ref_point,
+    time_data_collection,
+    time_iterations,
+):
     final_pareto_mask = is_non_dominated(train_obj)
     final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
 
@@ -56,6 +64,8 @@ def save_result(problem, config, iteration_records, train_obj, ref_point):
         "ref_point": _ref_point_to_list(ref_point),
         "iterations": iteration_records,
         "nondominated_solutions": final_nd_points,
+        "time_data_collection": float(time_data_collection),
+        "time_iterations": float(time_iterations),
     }
 
     base_dir = problem.io_base_dir(config.bo)

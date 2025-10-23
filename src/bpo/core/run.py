@@ -10,8 +10,9 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 from botorch.utils.multi_objective.pareto import is_non_dominated
 
 from acquisition import AcquisitionConfig, build_acquisition
-from .model import initialize_model
+
 from .io import save_result
+from .model import initialize_model
 
 
 def set_global_seed(seed):
@@ -52,14 +53,15 @@ def _normalize_hypervolume(problem, value):
 
 
 def run_bo(problem, config):
-    acq_cfg = config.acquisition
     bo_cfg = config.bo
 
     set_global_seed(bo_cfg.rseed)
 
     print(f"Generating {bo_cfg.n_initial_samples} initial data points...")
+    t0 = time.time()
     train_lambda = problem.initial_design(bo_cfg.n_initial_samples)
-    train_obj = problem.evaluate(train_lambda, maximize=bo_cfg.should_maximize)
+    train_obj = problem.evaluate(train_lambda)
+    time_data_collection = time.time() - t0
     print("Initial data generation complete.")
 
     if config.problem.ref_point is None:
@@ -80,7 +82,7 @@ def run_bo(problem, config):
     )
     print(f"Starting BO loop for {bo_cfg.n_iterations} iterations...")
 
-    start_time = time.time()
+    t0 = time.time()
     iteration_records = []
 
     for iteration in range(bo_cfg.n_iterations):
@@ -90,7 +92,7 @@ def run_bo(problem, config):
         new_lambda = acquisition_function.generate_candidates(
             model, train_lambda, train_obj
         )
-        new_obj = problem.evaluate(new_lambda, maximize=bo_cfg.should_maximize)
+        new_obj = problem.evaluate(new_lambda)
 
         train_lambda = torch.cat([train_lambda, new_lambda])
         train_obj = torch.cat([train_obj, new_obj])
@@ -113,6 +115,14 @@ def run_bo(problem, config):
             }
         )
 
-    end_time = time.time()
-    print(f"\nBO loop finished in {end_time - start_time:.2f} seconds.")
-    save_result(problem, config, iteration_records, train_obj, ref_point)
+    time_iterations = time.time() - t0
+    print(f"\nBO loop finished in {time_iterations:.2f} seconds.")
+    save_result(
+        problem,
+        config,
+        iteration_records,
+        train_obj,
+        ref_point,
+        time_data_collection,
+        time_iterations,
+    )

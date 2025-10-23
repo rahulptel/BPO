@@ -60,7 +60,7 @@ class MOKP(Problem):
         distribution = torch.distributions.dirichlet.Dirichlet(base)
         return distribution.sample((n,)).reshape(n, self.n_objs)
 
-    def evaluate(self, lambda_batch, maximize=True):
+    def evaluate(self, lambda_batch):
         lambda_batch = lambda_batch.cpu()
         b, d = lambda_batch.shape
         assert d == self.n_objs
@@ -69,7 +69,7 @@ class MOKP(Problem):
         for i in range(b):
             lambda_vec = lambda_batch[i]
             lambda_vec_norm = lambda_vec / torch.sum(lambda_vec)
-            obj_vec = self.solve_scalarized(lambda_vec_norm, maximize=maximize)
+            obj_vec = self.solve_scalarized(lambda_vec_norm, maximize=True)
             results.append(obj_vec)
 
         results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
@@ -108,7 +108,7 @@ class MOKP(Problem):
                     raise RuntimeError(f"Could not solve for ideal point obj {j}")
         return ideal_point
 
-    def solve_scalarized(self, lambda_vec, maximize=False):
+    def solve_scalarized(self, lambda_vec, maximize=True):
         if not isinstance(lambda_vec, np.ndarray):
             lambda_vec = lambda_vec.detach().cpu().numpy()
 
