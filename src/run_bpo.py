@@ -1,174 +1,127 @@
-import argparse
+from dataclasses import dataclass, field
 
 import torch
+from hydra import main as hydra_main
+from omegaconf import OmegaConf
 
 from acquisition import available_acquisitions
-from bpo.core.config import BOConfig
 from bpo.core.run import run_bo
 from bpo.problems import available_problems, build_problem
 
 torch.set_default_dtype(torch.float64)
 
 
-def str2bool(value):
-    if isinstance(value, bool):
-        return value
-    value_lower = value.lower()
-    if value_lower in {"yes", "true", "t", "1"}:
-        return True
-    if value_lower in {"no", "false", "f", "0"}:
-        return False
-    raise argparse.ArgumentTypeError(f"Boolean value expected, got '{value}'.")
+@dataclass
+class ProblemConfig:
+    __annotations__ = {
+        "name": object,
+        "n_items": object,
+        "n_objs": object,
+        "density": object,
+        "iseed": object,
+        "rho": object,
+        "ref_point": object,
+    }
+    name = "mokp"
+    n_items = 50
+    n_objs = 3
+    density = 0.5
+    iseed = 123
+    rho = 1e-4
+    ref_point = None
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Preference-based Bayesian optimization runner."
-    )
-    parser.add_argument(
-        "--problem",
-        default="mokp",
-        choices=available_problems(),
-        help=f"Problem to optimize ({', '.join(available_problems())}).",
-    )
-    parser.add_argument(
-        "--acquisition",
-        default="qlogehvi",
-        choices=available_acquisitions(),
-        help=f"Acquisition function to use ({', '.join(available_acquisitions())}).",
-    )
-    parser.add_argument(
-        "--rseed",
-        type=int,
-        default=123,
-        help="Random seed for the BO run (controls samplers, Torch, etc.).",
-    )
-    parser.add_argument(
-        "--iseed",
-        type=int,
-        default=123,
-        help="Problem-specific seed (e.g., instance seed for MOKP).",
-    )
-    parser.add_argument(
-        "--n-items",
-        type=int,
-        default=50,
-        help="Number of items for the MOKP instance.",
-    )
-    parser.add_argument(
-        "--n-objs",
-        type=int,
-        default=3,
-        help="Number of objectives for the problem.",
-    )
-    parser.add_argument(
-        "--n-initial-samples",
-        type=int,
-        default=10,
-        help="Number of initial design points sampled from the simplex.",
-    )
-    parser.add_argument(
-        "--n-iterations",
-        type=int,
-        default=20,
-        help="Number of Bayesian optimization iterations to run.",
-    )
-    parser.add_argument(
-        "--mc-samples",
-        type=int,
-        default=128,
-        help="Number of Monte Carlo samples used by the acquisition function.",
-    )
-    parser.add_argument(
-        "--batch-size-q",
-        type=int,
-        default=2,
-        help="Batch size (q) for candidate generation.",
-    )
-    parser.add_argument(
-        "--num-restarts",
-        type=int,
-        default=10,
-        help="Number of multistart restarts for acquisition optimization.",
-    )
-    parser.add_argument(
-        "--raw-samples",
-        type=int,
-        default=512,
-        help="Number of raw samples for acquisition optimization.",
-    )
-    parser.add_argument(
-        "--should-maximize",
-        type=str2bool,
-        default=True,
-        help="Whether to maximize the underlying objectives (true/false).",
-    )
-    parser.add_argument(
-        "--sequential",
-        type=str2bool,
-        default=True,
-        help="Whether to sample candidates sequentially (true/false).",
-    )
-    parser.add_argument(
-        "--density",
-        type=float,
-        default=0.5,
-        help="Capacity density fraction for the MOKP knapsack constraint.",
-    )
-    parser.add_argument(
-        "--rho",
-        type=float,
-        default=1e-4,
-        help="Augmentation parameter for the scalarized MOKP.",
-    )
-    parser.add_argument(
-        "--ref-point",
-        type=float,
-        nargs="+",
-        default=None,
-        help="Reference point for hypervolume (provide one value per objective).",
-    )
-    args = parser.parse_args()
-    return args
+@dataclass
+class AcquisitionConfig:
+    __annotations__ = {
+        "name": object,
+        "mc_samples": object,
+        "batch_size_q": object,
+        "sequential": object,
+    }
+    name = "qlogehvi"
+    mc_samples = 128
+    batch_size_q = 2
+    sequential = True
 
 
-def main():
-    args = parse_args()
+@dataclass
+class BOConfig:
+    __annotations__ = {
+        "n_initial_samples": object,
+        "n_iterations": object,
+        "num_restarts": object,
+        "raw_samples": object,
+        "rseed": object,
+        "should_maximize": object,
+    }
+    n_initial_samples = 10
+    n_iterations = 20
+    num_restarts = 10
+    raw_samples = 512
+    rseed = 123
+    should_maximize = True
 
-    ref_point_tensor = (
-        torch.tensor(args.ref_point, dtype=torch.get_default_dtype())
-        if args.ref_point is not None
-        else None
-    )
 
-    problem = build_problem(
-        args.problem,
-        n_items=args.n_items,
-        n_objs=args.n_objs,
-        density=args.density,
-        iseed=args.iseed,
-        rho=args.rho,
-    )
+@dataclass
+class Config:
+    __annotations__ = {
+        "problem": object,
+        "acquisition": object,
+        "bo": object,
+    }
+    problem = field(default_factory=ProblemConfig)
+    acquisition = field(default_factory=AcquisitionConfig)
+    bo = field(default_factory=BOConfig)
 
-    if ref_point_tensor is not None and ref_point_tensor.numel() != problem.n_objectives():
+
+def _validate_problem_config(config):
+    if config.problem.name not in available_problems():
         raise ValueError(
-            f"Ref point dimension {ref_point_tensor.numel()} does not match n_objs={problem.n_objectives()}."
+            f"Unknown problem '{config.problem.name}'. "
+            f"Available problems: {', '.join(available_problems())}"
+        )
+    if config.acquisition.name not in available_acquisitions():
+        raise ValueError(
+            f"Unknown acquisition '{config.acquisition.name}'. "
+            f"Available acquisitions: {', '.join(available_acquisitions())}"
         )
 
-    config = BOConfig(
-        acquisition=args.acquisition,
-        rseed=args.rseed,
-        n_initial_samples=args.n_initial_samples,
-        n_iterations=args.n_iterations,
-        mc_samples=args.mc_samples,
-        batch_size_q=args.batch_size_q,
-        num_restarts=args.num_restarts,
-        raw_samples=args.raw_samples,
-        should_maximize=args.should_maximize,
-        sequential=args.sequential,
-        ref_point=ref_point_tensor,
+
+def _build_problem(cfg):
+    return build_problem(
+        cfg.problem.name,
+        n_items=cfg.problem.n_items,
+        n_objs=cfg.problem.n_objs,
+        density=cfg.problem.density,
+        iseed=cfg.problem.iseed,
+        rho=cfg.problem.rho,
     )
 
+
+def _load_config(cfg):
+    def _apply(target, data):
+        if not isinstance(data, dict):
+            return
+        for key, value in data.items():
+            if hasattr(target, key):
+                setattr(target, key, value)
+
+    cfg_dict = OmegaConf.to_container(cfg, resolve=True)
+    config = Config()
+    if isinstance(cfg_dict, dict):
+        _apply(config.problem, cfg_dict.get("problem", {}))
+        _apply(config.acquisition, cfg_dict.get("acquisition", {}))
+        _apply(config.bo, cfg_dict.get("bo", {}))
+    return config
+
+
+@hydra_main(config_path="configs", config_name="run_bpo", version_base=None)
+def main(cfg):
+    config = _load_config(cfg)
+    _validate_problem_config(config)
+
+    problem = _build_problem(config)
     run_bo(problem, config)
 
 

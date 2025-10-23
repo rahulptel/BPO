@@ -1,0 +1,7 @@
+name: mokp
+n_items: 50
+n_objs: 3
+density: 0.5
+iseed: 123
+rho: 0.0001
+ref_point: null

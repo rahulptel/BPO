@@ -23,20 +23,22 @@ def set_global_seed(seed):
 
 
 def _build_acquisition_function(problem, config, ref_point):
+    acq_cfg = config.acquisition
+    bo_cfg = config.bo
     bounds = problem.lambda_bounds()
     equality_constraints = problem.lambda_equality_constraints()
     acquisition_config = AcquisitionConfig(
         ref_point=ref_point,
         bounds=bounds,
-        batch_size=config.batch_size_q,
-        num_restarts=config.num_restarts,
-        raw_samples=config.raw_samples,
-        sequential=config.sequential,
+        batch_size=acq_cfg.batch_size_q,
+        num_restarts=bo_cfg.num_restarts,
+        raw_samples=bo_cfg.raw_samples,
+        sequential=acq_cfg.sequential,
         equality_constraints=equality_constraints,
-        mc_samples=config.mc_samples,
-        rseed=config.rseed,
+        mc_samples=acq_cfg.mc_samples,
+        rseed=bo_cfg.rseed,
     )
-    return build_acquisition(config.acquisition, acquisition_config)
+    return build_acquisition(acq_cfg.name, acquisition_config)
 
 
 def _normalize_hypervolume(problem, value):
@@ -50,36 +52,45 @@ def _normalize_hypervolume(problem, value):
 
 
 def run_bo(problem, config):
-    set_global_seed(config.rseed)
+    acq_cfg = config.acquisition
+    bo_cfg = config.bo
 
-    print(f"Generating {config.n_initial_samples} initial data points...")
-    train_lambda = problem.initial_design(config.n_initial_samples)
-    train_obj = problem.evaluate(train_lambda, maximize=config.should_maximize)
+    set_global_seed(bo_cfg.rseed)
+
+    print(f"Generating {bo_cfg.n_initial_samples} initial data points...")
+    train_lambda = problem.initial_design(bo_cfg.n_initial_samples)
+    train_obj = problem.evaluate(train_lambda, maximize=bo_cfg.should_maximize)
     print("Initial data generation complete.")
 
-    if config.ref_point is None:
+    if config.problem.ref_point is None:
         ref_point = problem.default_ref_point()
     else:
-        ref_point = config.ref_point.to(dtype=torch.get_default_dtype())
-    config.ref_point = ref_point
+        ref_point = torch.tensor(
+            config.problem.ref_point, dtype=torch.get_default_dtype()
+        )
+        if ref_point.numel() != problem.n_objectives():
+            raise ValueError(
+                f"Ref point dimension {ref_point.numel()} does not match "
+                f"n_objs={problem.n_objectives()}."
+            )
 
     acquisition_function = _build_acquisition_function(problem, config, ref_point)
     print(
-        f"Using acquisition function: {acquisition_function.__class__.__name__} | rseed: {config.rseed}"
+        f"Using acquisition function: {acquisition_function.__class__.__name__} | rseed: {bo_cfg.rseed}"
     )
-    print(f"Starting BO loop for {config.n_iterations} iterations...")
+    print(f"Starting BO loop for {bo_cfg.n_iterations} iterations...")
 
     start_time = time.time()
     iteration_records = []
 
-    for iteration in range(config.n_iterations):
+    for iteration in range(bo_cfg.n_iterations):
         mll, model = initialize_model(train_lambda, train_obj)
         fit_gpytorch_mll(mll)
 
         new_lambda = acquisition_function.generate_candidates(
             model, train_lambda, train_obj
         )
-        new_obj = problem.evaluate(new_lambda, maximize=config.should_maximize)
+        new_obj = problem.evaluate(new_lambda, maximize=bo_cfg.should_maximize)
 
         train_lambda = torch.cat([train_lambda, new_lambda])
         train_obj = torch.cat([train_obj, new_obj])
@@ -91,7 +102,7 @@ def run_bo(problem, config):
         num_nondominated = int(pareto_mask.sum().item())
 
         print(
-            f"Iter {iteration + 1}/{config.n_iterations} | ND: {num_nondominated} | Hypervolume: {hypervolume:.4f}"
+            f"Iter {iteration + 1}/{bo_cfg.n_iterations} | ND: {num_nondominated} | Hypervolume: {hypervolume:.4f}"
         )
 
         iteration_records.append(
@@ -104,4 +115,4 @@ def run_bo(problem, config):
 
     end_time = time.time()
     print(f"\nBO loop finished in {end_time - start_time:.2f} seconds.")
-    save_result(problem, config, iteration_records, train_obj)
+    save_result(problem, config, iteration_records, train_obj, ref_point)

@@ -1,0 +1,28 @@
+defaults:
+  - problem: mokp
+  - _self_
+
+acquisition:
+  name: qlogehvi
+  mc_samples: 128
+  batch_size_q: 2
+  sequential: true
+
+bo:
+  n_initial_samples: 10
+  n_iterations: 20
+  num_restarts: 10
+  raw_samples: 512
+  rseed: 123
+  should_maximize: true
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job_logging:
+    root:
+      level: ERROR
+  hydra_logging:
+    root:
+      level: ERROR

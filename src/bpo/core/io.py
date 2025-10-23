@@ -7,22 +7,22 @@ from botorch.utils.multi_objective.pareto import is_non_dominated
 
 
 def _acquisition_directory_chain(config):
-    key = config.acquisition.lower()
+    key = config.acquisition.name.lower()
     if key == "random":
         return key, [
-            ("n_initial_samples", config.n_initial_samples),
-            ("n_iterations", config.n_iterations),
-            ("batch_size_q", config.batch_size_q),
+            ("n_initial_samples", config.bo.n_initial_samples),
+            ("n_iterations", config.bo.n_iterations),
+            ("batch_size_q", config.acquisition.batch_size_q),
         ]
     if key == "qlogehvi":
         return key, [
-            ("n_initial_samples", config.n_initial_samples),
-            ("n_iterations", config.n_iterations),
-            ("batch_size_q", config.batch_size_q),
-            ("mc_samples", config.mc_samples),
-            ("raw_samples", config.raw_samples),
+            ("n_initial_samples", config.bo.n_initial_samples),
+            ("n_iterations", config.bo.n_iterations),
+            ("batch_size_q", config.acquisition.batch_size_q),
+            ("mc_samples", config.acquisition.mc_samples),
+            ("raw_samples", config.bo.raw_samples),
         ]
-    return key, [("batch_size_q", config.batch_size_q)]
+    return key, [("batch_size_q", config.acquisition.batch_size_q)]
 
 
 def _ref_point_to_list(ref_point):
@@ -33,7 +33,7 @@ def _ref_point_to_list(ref_point):
     return list(ref_point)
 
 
-def save_result(problem, config, iteration_records, train_obj):
+def save_result(problem, config, iteration_records, train_obj, ref_point):
     final_pareto_mask = is_non_dominated(train_obj)
     final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
 
@@ -42,23 +42,23 @@ def save_result(problem, config, iteration_records, train_obj):
     results = {
         "problem": problem.name,
         "problem_metadata": problem.metadata(),
-        "rseed": config.rseed,
-        "acquisition_function": config.acquisition,
+        "rseed": config.bo.rseed,
+        "acquisition_function": config.acquisition.name,
         "acquisition_config": {
-            "mc_samples": config.mc_samples,
-            "batch_size_q": config.batch_size_q,
-            "num_restarts": config.num_restarts,
-            "raw_samples": config.raw_samples,
-            "sequential": config.sequential,
+            "mc_samples": config.acquisition.mc_samples,
+            "batch_size_q": config.acquisition.batch_size_q,
+            "num_restarts": config.bo.num_restarts,
+            "raw_samples": config.bo.raw_samples,
+            "sequential": config.acquisition.sequential,
         },
-        "n_initial_samples": config.n_initial_samples,
-        "n_iterations": config.n_iterations,
-        "ref_point": _ref_point_to_list(config.ref_point),
+        "n_initial_samples": config.bo.n_initial_samples,
+        "n_iterations": config.bo.n_iterations,
+        "ref_point": _ref_point_to_list(ref_point),
         "iterations": iteration_records,
         "nondominated_solutions": final_nd_points,
     }
 
-    base_dir = problem.io_base_dir(config)
+    base_dir = problem.io_base_dir(config.bo)
     acquisition_dir = base_dir / acquisition_key
     output_dir = acquisition_dir
     for name, value in dir_chain:
