@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
 import torch
-from botorch.acquisition.multi_objective.logei import (
-    qLogExpectedHypervolumeImprovement,
-)
+from botorch.acquisition.multi_objective.logei import qLogExpectedHypervolumeImprovement
 from botorch.optim.optimize import optimize_acqf
 from botorch.sampling.normal import SobolQMCNormalSampler
 from botorch.utils.multi_objective.box_decompositions.non_dominated import (
@@ -23,7 +21,7 @@ class AcquisitionConfig:
         equality_constraints=None,
         acq_options=None,
         mc_samples=128,
-        rseed=None,
+        rseed=123,
     ):
         self.ref_point = ref_point
         self.bounds = bounds
@@ -42,8 +40,7 @@ class AcquisitionFunction(ABC):
         self.config = config
 
     @abstractmethod
-    def generate_candidates(self, model, train_x, train_obj):
-        ...
+    def generate_candidates(self, model, train_x, train_obj): ...
 
 
 class QLogEHVIAcquisition(AcquisitionFunction):
