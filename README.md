@@ -1,81 +1,116 @@
-# BO-AUGMECON
+# BPO: Bayesian Preference Optimization for Multiobjective Discrete Optimization
 
-This project demonstrates how to use Bayesian Optimization (BO) to solve multi-objective optimization problems using the Augmented Epsilon-Constraint (AUGMECON) method. The example problem used is the Multi-Objective Knapsack Problem (MOKP).
+This repository implements Bayesian Preference Optimization (BPO) for multiobjective discrete optimization, with a concrete instantiation on the Multi-Objective Knapsack Problem (MOKP). BPO learns where to evaluate scalarization preferences on the probability simplex and selects the next preference weights by maximizing a multiobjective acquisition function.
 
-The core idea is to use BO to intelligently select the epsilon values for the AUGMECON method, to efficiently explore the Pareto front.
+At each BO iteration, we:
+- Sample or optimize preference weights `lambda` on the simplex (sum to 1, nonnegative).
+- Solve the discrete subproblem via an augmented Tchebycheff scalarization using Gurobi to obtain an objective vector.
+- Fit/update a GP surrogate mapping `lambda -> objective vector`.
+- Select new `lambda` with a hypervolume-based acquisition (qLogEHVI) or a baseline random Dirichlet sampler.
 
-## Project Components
+The result is an efficient, model-based exploration of the Pareto frontier for discrete problems.
 
--   `src/instance_generator.py`: A simple script to generate random instances of the MOKP. It creates profits and weights for a given number of items and objectives.
+## Key Features
 
--   `src/solver.py`: This module contains the core optimization logic. It uses Gurobi to solve the knapsack problems.
-    -   `get_knapsack_model`: Creates the Gurobi model for the MOKP.
-    -   `solve_augmecon_subproblem`: Solves a subproblem of the AUGMECON method for a given set of epsilon values.
-    -   `solve_single_objective_knapsack`: Solves the MOKP for a single objective, which can be used to find the bounds of the Pareto front.
+- Preference-space BO over the simplex with equality constraints (sum of weights = 1).
+- Multiobjective acquisition: qLogExpectedHypervolumeImprovement (qLogEHVI) from BoTorch.
+- Exact discrete solves for each `lambda` using Gurobi on an augmented Tchebycheff scalarization.
+- Modular problem interface to plug in new multiobjective discrete problems.
+- Reproducible runs with clear output artifacts (JSON) including nondominated sets and iteration logs.
 
--   `src/run.py`: This is the main script that ties everything together. It performs the following steps:
-    1.  Generates a MOKP instance.
-    2.  Defines a grid of epsilon values.
-    3.  Selects an initial random subset of epsilon values to evaluate, creating an initial dataset.
-    4.  Fits a Gaussian Process (GP) model on the initial data, mapping epsilon values to objective values.
-    5.  Uses the Expected Hypervolume Improvement (EHVI) acquisition function to select the next best epsilon value to evaluate from the grid.
+## Repository Structure
 
-## Mathematical Formulations
+- `src/run_bpo.py`: CLI entry point to run preference-based BO end-to-end.
+- `src/acquisition.py`: Acquisition registry and implementations (qLogEHVI and random Dirichlet).
+- `src/bpo/core/`
+  - `config.py`: BO configuration container (seeds, budgets, acquisition settings).
+  - `run.py`: Main BO loop, model fitting, candidate generation, HV tracking, and result saving.
+  - `model.py`: Multi-output GP surrogate (ModelListGP over standardized single-task GPs).
+  - `io.py`: Output structure and JSON writer for runs.
+- `src/bpo/problems/`
+  - `base.py`: Abstract `Problem` interface (bounds, constraints, evaluation, IO metadata).
+  - `mokp.py`: MOKP implementation with augmented Tchebycheff scalarization solved by Gurobi.
+  - `__init__.py`: Problem registry and builder.
 
-The following formulations are implemented in `src/solver.py`.
+## MOKP + Augmented Tchebycheff
 
-### Multi-Objective Knapsack Problem (MOKP)
+Given preference weights `lambda` on the simplex, we solve a single mixed-integer problem using an augmented Tchebycheff objective that balances the max-deviation from the ideal point with a small augmentation term (`rho`) to avoid weakly Pareto-optimal solutions. The solver returns the true multiobjective vector (maximization convention configurable), which serves as supervised data for the surrogate.
 
-Given a set of $n$ items, each with a weight $w_i$ and $k$ different profit values $p_{ij}$ for each objective $j$, the goal is to select a subset of items that maximizes the total profit for each objective, without exceeding the knapsack's capacity $C$.
+Notes:
+- Initial design points are drawn from a Dirichlet over the simplex.
+- Equality constraint `sum(lambda) = 1` is enforced during acquisition optimization.
+- Hypervolume is optionally normalized by the product of the absolute ideal point components when available.
 
-Let $x_i$ be a binary variable, where $x_i=1$ if item $i$ is selected, and $x_i=0$ otherwise.
+## Installation
 
-$$ 
-\begin{align*}
-\text{maximize} \quad & f_j(\mathbf{x}) = \sum_{i=1}^n p_{ij} x_i, \quad \forall j \in \{1, ..., k \} \\
-\text{subject to} \quad & \sum_{i=1}^n w_i x_i \le C \\
-& x_i \in \{0, 1\}, \quad \forall i \in \{1, ..., n \}
-\end{align*} 
-$$
+Prerequisites:
+- Python 3.9+
+- A working Gurobi installation and license (for `gurobipy`).
+- PyTorch compatible with your platform/GPU.
 
-### Augmented Epsilon-Constraint (AUGMECON) Method
+Steps:
+- Install PyTorch following the official instructions for your platform.
+- Install the remaining dependencies:
+  - `pip install -r requirements.txt`
 
-The AUGMECON method transforms a multi-objective problem into a single-objective one by keeping one objective and converting the others into constraints. The formulation in `solve_augmecon_subproblem` is as follows:
+The BoTorch/GPyTorch dependencies are pulled in via `botorch`, but PyTorch must typically be installed first.
 
-$$ 
-\begin{align*}
-\text{maximize} \quad & f_1(\mathbf{x}) + \rho \sum_{j=2}^k \frac{s_j}{r_j} \\
-\text{subject to} \quad & \sum_{i=1}^n w_i x_i \le C \\
-& f_j(\mathbf{x}) - s_j = \epsilon_j, \quad \forall j \in \{2, ..., k \} \\
-& x_i \in \{0, 1\}, \quad \forall i \in \{1, ..., n \} \\
-& s_j \ge 0, \quad \forall j \in \{2, ..., k \}
-\end{align*} 
-$$
+## Quick Start
 
-Where:
--   $\epsilon_j$ is the desired minimum value for objective $j$.
--   $s_j$ are surplus variables, representing the amount by which objective $j$ exceeds $\epsilon_j$.
--   $\rho$ is a large penalty parameter to maximize the surplus.
--   $r_j$ is the range of objective $j$, used for normalization.
+Basic run on MOKP (3 objectives, 50 items):
 
-### Single-Objective Knapsack Problem
-
-This is the standard knapsack problem, solved for a single objective $j$.
-
-$$ 
-\begin{align*}
-\text{maximize} \quad & f_j(\mathbf{x}) = \sum_{i=1}^n p_{ij} x_i \\
-\text{subject to} \quad & \sum_{i=1}^n w_i x_i \le C \\
-& x_i \in \{0, 1\}, \quad \forall i \in \{1, ..., n \}
-\end{align*} 
-$$
-
-## How to Run
-
-To run the example, you need to have Python with Gurobi, NumPy, and BoTorch installed.
-
-```bash
-python src/run.py
+```
+python src/run_bpo.py \
+  --problem mokp \
+  --acquisition qlogehvi \
+  --n-items 50 --n-objs 3 --density 0.5 \
+  --n-initial-samples 10 --n-iterations 20 \
+  --batch-size-q 2 --mc-samples 128 --raw-samples 512 \
+  --rseed 123 --iseed 123 --rho 1e-4 \
+  --should-maximize true --sequential true
 ```
 
-This will execute the Bayesian Optimization loop for one iteration and print the next suggested epsilon grid point to evaluate.
+Switch to a random baseline acquisition:
+
+```
+python src/run_bpo.py --acquisition random
+```
+
+Reference point for HV (optional, one value per objective):
+
+```
+python src/run_bpo.py --ref-point 0 0 0
+```
+
+## Outputs
+
+Run artifacts are stored under `outputs/…` with a problem- and acquisition-specific directory chain. Each run writes a timestamped JSON file containing:
+- Problem metadata and config
+- Acquisition settings
+- Per-iteration metrics (hypervolume, nondominated count)
+- Final nondominated set of objective vectors
+
+Example directory pattern for MOKP:
+- `outputs/mokp-items-<items>_objs-<objs>_iseed-<iseed>_rseed-<rseed>/<acq>/n_initial_samples-<n>/…`
+
+## Extending
+
+To add a new problem:
+- Subclass `bpo.problems.base.Problem` and implement:
+  - `n_objectives()`, `lambda_bounds()`, and optionally `lambda_equality_constraints()`
+  - `initial_design(n)` and `evaluate(lambda_batch, maximize=True)`
+  - `metadata()` and `io_base_dir(config)`
+- Register it in `bpo/problems/__init__.py` so it appears in `--problem` choices.
+
+To add a new acquisition:
+- Implement a subclass of `AcquisitionFunction` in `src/acquisition.py`.
+- Register it in `ACQUISITION_REGISTRY` so it appears in `--acquisition` choices.
+
+## Reproducibility
+
+- `--rseed` controls Torch, BoTorch sampler seeds, and NumPy/Python RNG used in the loop.
+- `--iseed` controls the problem instance (e.g., MOKP profits/weights and capacity).
+
+## License
+
+This project is licensed under the terms of the MIT License. See `LICENSE`.
