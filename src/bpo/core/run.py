@@ -112,6 +112,7 @@ def run_bo(problem, config):
                 "iteration": iteration + 1,
                 "num_nondominated": num_nondominated,
                 "hypervolume": float(hypervolume),
+                "lambda": new_lambda.cpu().tolist(),
             }
         )
 
