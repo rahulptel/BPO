@@ -1,3 +1,4 @@
 botorch
 gurobipy
 matplotlib
+hydra-core
