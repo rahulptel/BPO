@@ -39,38 +39,6 @@ class KnapsackProblemConfig(ProblemConfig):
 
 
 @dataclass
-class AcquisitionConfig:
-    __annotations__ = {
-        "name": object,
-        "mc_samples": object,
-        "batch_size_q": object,
-        "sequential": object,
-    }
-    name = "qlogehvi"
-    mc_samples = 128
-    batch_size_q = 2
-    sequential = True
-
-
-@dataclass
-class BOConfig:
-    __annotations__ = {
-        "n_initial_samples": object,
-        "n_iterations": object,
-        "num_restarts": object,
-        "raw_samples": object,
-        "rseed": object,
-        "should_maximize": object,
-    }
-    n_initial_samples = 10
-    n_iterations = 20
-    num_restarts = 10
-    raw_samples = 512
-    rseed = 123
-    should_maximize = True
-
-
-@dataclass
 class SurrogateConfig:
     __annotations__ = {
         "name": object,
@@ -103,6 +71,38 @@ class NoneSurrogateConfig(SurrogateConfig):
 
 
 @dataclass
+class AcquisitionConfig:
+    __annotations__ = {
+        "name": object,
+        "mc_samples": object,
+        "batch_size_q": object,
+        "sequential": object,
+    }
+    name = "qlogehvi"
+    mc_samples = 128
+    batch_size_q = 2
+    sequential = True
+
+
+@dataclass
+class BOConfig:
+    __annotations__ = {
+        "n_initial_samples": object,
+        "n_iterations": object,
+        "num_restarts": object,
+        "raw_samples": object,
+        "rseed": object,
+        "should_maximize": object,
+    }
+    n_initial_samples = 10
+    n_iterations = 20
+    num_restarts = 10
+    raw_samples = 512
+    rseed = 123
+    should_maximize = True
+
+
+@dataclass
 class Config:
     __annotations__ = {
         "problem": object,
@@ -111,9 +111,9 @@ class Config:
         "surrogate": object,
     }
     problem = field(default_factory=KnapsackProblemConfig)
+    surrogate = field(default_factory=GPSurrogateConfig)
     acquisition = field(default_factory=AcquisitionConfig)
     bo = field(default_factory=BOConfig)
-    surrogate = field(default_factory=GPSurrogateConfig)
 
 
 _PROBLEM_CONFIG_BUILDERS = {

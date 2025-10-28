@@ -13,8 +13,24 @@ class Surrogate:
 
 
 class GPSurrogate(Surrogate):
+    @staticmethod
+    def _build_gp_components(train_x, train_obj):
+        train_x_flat = train_x.reshape(-1, train_x.shape[-1])
+        train_obj_flat = train_obj.reshape(-1, train_obj.shape[-1])
+
+        models = []
+        for i in range(train_obj_flat.shape[-1]):
+            train_y = train_obj_flat[:, i].unsqueeze(-1)
+            models.append(
+                SingleTaskGP(train_x_flat, train_y, outcome_transform=Standardize(m=1))
+            )
+
+        model = ModelListGP(*models)
+        mll = SumMarginalLogLikelihood(model.likelihood, model)
+        return model, mll
+
     def fit(self, train_x, train_obj):
-        model, mll = _build_gp_components(train_x, train_obj)
+        model, mll = self._build_gp_components(train_x, train_obj)
         fit_gpytorch_mll(mll)
         return model
 
@@ -46,24 +62,3 @@ def build_surrogate(name, config=None):
 
 def available_surrogates():
     return tuple(SURROGATE_REGISTRY.keys())
-
-
-def initialize_model(train_x, train_obj):
-    model, mll = _build_gp_components(train_x, train_obj)
-    return mll, model
-
-
-def _build_gp_components(train_x, train_obj):
-    train_x_flat = train_x.reshape(-1, train_x.shape[-1])
-    train_obj_flat = train_obj.reshape(-1, train_obj.shape[-1])
-
-    models = []
-    for i in range(train_obj_flat.shape[-1]):
-        train_y = train_obj_flat[:, i].unsqueeze(-1)
-        models.append(
-            SingleTaskGP(train_x_flat, train_y, outcome_transform=Standardize(m=1))
-        )
-
-    model = ModelListGP(*models)
-    mll = SumMarginalLogLikelihood(model.likelihood, model)
-    return model, mll
