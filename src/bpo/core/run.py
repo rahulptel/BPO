@@ -65,14 +65,14 @@ def _normalize_hypervolume(problem, value):
 
 def run_bo(problem, config):
     bo_cfg = config.bo
-
+    time_dict = {}
     set_global_seed(bo_cfg.rseed)
 
     print(f"Generating {bo_cfg.n_initial_samples} initial data points...")
     t0 = time.time()
     train_lambda = problem.initial_design(bo_cfg.n_initial_samples)
     train_obj = problem.evaluate(train_lambda)
-    time_data_collection = time.time() - t0
+    time_dict["data_collection"] = time.time() - t0
     print("Initial data generation complete.")
 
     if config.problem.ref_point is None:
@@ -95,16 +95,19 @@ def run_bo(problem, config):
     )
     print(f"Starting BO loop for {bo_cfg.n_iterations} iterations...")
 
-    t0 = time.time()
+    time_dict["iterations"] = 0.0
     iteration_records = []
 
     for iteration in range(bo_cfg.n_iterations):
-        model = surrogate.fit(train_lambda, train_obj)
+        t0 = time.time()
 
+        model = surrogate.fit(train_lambda, train_obj, time_dict)
         new_lambda = acquisition_function.generate_candidates(
-            model, train_lambda, train_obj
+            model, train_lambda, train_obj, time_dict
         )
         new_obj = problem.evaluate(new_lambda)
+
+        time_dict["iterations"] += time.time() - t0
 
         train_lambda = torch.cat([train_lambda, new_lambda])
         train_obj = torch.cat([train_obj, new_obj])
@@ -118,7 +121,6 @@ def run_bo(problem, config):
         print(
             f"Iter {iteration + 1}/{bo_cfg.n_iterations} | ND: {num_nondominated} | Hypervolume: {hypervolume:.4f}"
         )
-
         iteration_records.append(
             {
                 "iteration": iteration + 1,
@@ -128,14 +130,23 @@ def run_bo(problem, config):
             }
         )
 
-    time_iterations = time.time() - t0
-    print(f"\nBO loop finished in {time_iterations:.2f} seconds.")
+    print(f"\nBO loop timing: ")
+    print(f"\tData collection: {time_dict['data_collection']:.2f} seconds.")
+    print(f"\tIterations: {time_dict['iterations']:.2f} seconds.")
+    if "surrogate_training" in time_dict:
+        print(f"\tSurrogate training: {time_dict['surrogate_training']:.2f} seconds.")
+    if "acquisition_optimization" in time_dict:
+        print(
+            f"\tAcquisition optimization: {time_dict['acquisition_optimization']:.2f} seconds."
+        )
+    if "partitioning" in time_dict:
+        print(f"\t\tPartitioning: {time_dict['partitioning']:.2f} seconds.")
+
     save_result(
         problem,
         config,
         iteration_records,
         train_obj,
         ref_point,
-        time_data_collection,
-        time_iterations,
+        time_dict,
     )

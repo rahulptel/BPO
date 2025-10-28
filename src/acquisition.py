@@ -1,3 +1,4 @@
+import time
 from abc import ABC, abstractmethod
 
 import torch
@@ -51,15 +52,21 @@ class QLogEHVIAcquisition(AcquisitionFunction):
             seed=self.config.rseed,
         )
 
-    def generate_candidates(self, model, train_x, train_obj):
+    def generate_candidates(self, model, train_x, train_obj, time_dict):
         if model is None:
             raise ValueError("qLogEHVI acquisition requires a surrogate model.")
+        t0 = time.time()
         with torch.no_grad():
             posterior_mean = model.posterior(train_x).mean
         partitioning = FastNondominatedPartitioning(
             ref_point=self.config.ref_point,
             Y=posterior_mean,
         )
+        if "partitioning" not in time_dict:
+            time_dict["partitioning"] = time.time() - t0
+        else:
+            time_dict["partitioning"] += time.time() - t0
+
         acq_func = qLogExpectedHypervolumeImprovement(
             model=model,
             ref_point=self.config.ref_point,
@@ -77,6 +84,11 @@ class QLogEHVIAcquisition(AcquisitionFunction):
             sequential=self.config.sequential,
             equality_constraints=self.config.equality_constraints,
         )
+        if "acquisition_optimization" not in time_dict:
+            time_dict["acquisition_optimization"] = time.time() - t0
+        else:
+            time_dict["acquisition_optimization"] += time.time() - t0
+
         return candidates
 
 
@@ -85,10 +97,16 @@ class RandomDirichletAcquisition(AcquisitionFunction):
         super().__init__(config)
         self.simplex_dim = self.config.bounds.shape[-1]
 
-    def generate_candidates(self, model, train_x, train_obj):
+    def generate_candidates(self, model, train_x, train_obj, time_dict):
+        t0 = time.time()
         base = torch.ones(self.simplex_dim, dtype=train_x.dtype, device=train_x.device)
         distribution = torch.distributions.dirichlet.Dirichlet(base)
         samples = distribution.sample((self.config.batch_size,))
+
+        if "acquisition_optimization" not in time_dict:
+            time_dict["acquisition_optimization"] = time.time() - t0
+        else:
+            time_dict["acquisition_optimization"] += time.time() - t0
         return samples
 
 

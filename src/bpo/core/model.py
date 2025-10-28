@@ -1,3 +1,5 @@
+import time
+
 from botorch import fit_gpytorch_mll
 from botorch.models import ModelListGP, SingleTaskGP
 from botorch.models.transforms.outcome import Standardize
@@ -29,19 +31,27 @@ class GPSurrogate(Surrogate):
         mll = SumMarginalLogLikelihood(model.likelihood, model)
         return model, mll
 
-    def fit(self, train_x, train_obj):
+    def fit(self, train_x, train_obj, time_dict):
+        t0 = time.time()
+
         model, mll = self._build_gp_components(train_x, train_obj)
         fit_gpytorch_mll(mll)
+
+        if "surrogate_training" not in time_dict:
+            time_dict["surrogate_training"] = time.time() - t0
+        else:
+            time_dict["surrogate_training"] += time.time() - t0
+
         return model
 
 
 class IBNNSurrogate(Surrogate):
-    def fit(self, train_x, train_obj):
+    def fit(self, train_x, train_obj, time_dict):
         raise NotImplementedError("IBNN surrogate is not implemented yet.")
 
 
 class NoneSurrogate(Surrogate):
-    def fit(self, train_x, train_obj):
+    def fit(self, train_x, train_obj, time_dict):
         return None
 
 
