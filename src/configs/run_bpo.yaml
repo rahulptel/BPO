@@ -5,7 +5,7 @@ defaults:
   - _self_
 
 acquisition:
-  name: qlogehvi
+  name:
   mc_samples: 128
   batch_size_q: 2
   sequential: true

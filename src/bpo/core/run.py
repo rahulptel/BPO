@@ -27,6 +27,18 @@ def _build_acquisition_function(problem, config, ref_point):
     bo_cfg = config.bo
     bounds = problem.lambda_bounds()
     equality_constraints = problem.lambda_equality_constraints()
+    acquisition_name = acq_cfg.name
+    if acquisition_name is None:
+        surrogate_name = str(config.surrogate.name).lower()
+        if surrogate_name in ("gp", "ibnn"):
+            acquisition_name = "qlogehvi"
+        elif surrogate_name == "none":
+            acquisition_name = "random"
+        else:
+            raise ValueError(
+                f"Cannot infer acquisition for surrogate '{config.surrogate.name}'."
+            )
+        acq_cfg.name = acquisition_name
     acquisition_config = AcquisitionConfig(
         ref_point=ref_point,
         bounds=bounds,
@@ -38,7 +50,7 @@ def _build_acquisition_function(problem, config, ref_point):
         mc_samples=acq_cfg.mc_samples,
         rseed=bo_cfg.rseed,
     )
-    return build_acquisition(acq_cfg.name, acquisition_config)
+    return build_acquisition(acquisition_name, acquisition_config)
 
 
 def _normalize_hypervolume(problem, value):
@@ -75,12 +87,12 @@ def run_bo(problem, config):
                 f"n_objs={problem.n_objectives()}."
             )
 
+    surrogate = build_surrogate(config.surrogate.name, config.surrogate)
+    print(f"Using surrogate: {config.surrogate.name}")
     acquisition_function = _build_acquisition_function(problem, config, ref_point)
     print(
         f"Using acquisition function: {acquisition_function.__class__.__name__} | rseed: {bo_cfg.rseed}"
     )
-    surrogate = build_surrogate(config.surrogate.name, config.surrogate)
-    print(f"Using surrogate: {config.surrogate.name}")
     print(f"Starting BO loop for {bo_cfg.n_iterations} iterations...")
 
     t0 = time.time()

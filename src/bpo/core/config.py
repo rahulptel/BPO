@@ -4,7 +4,7 @@ import torch
 class BOConfig:
     def __init__(
         self,
-        acquisition="qlogehvi",
+        acquisition=None,
         rseed=123,
         n_initial_samples=10,
         n_iterations=20,

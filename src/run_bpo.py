@@ -78,7 +78,7 @@ class AcquisitionConfig:
         "batch_size_q": object,
         "sequential": object,
     }
-    name = "qlogehvi"
+    name = None
     mc_samples = 128
     batch_size_q = 2
     sequential = True
@@ -128,13 +128,33 @@ _SURROGATE_CONFIG_BUILDERS = {
 }
 
 
+def _resolve_acquisition_name(config):
+    name = config.acquisition.name
+    if name is not None:
+        return name
+    surrogate = str(config.surrogate.name).lower()
+    if surrogate in ("gp", "ibnn"):
+        resolved = "qlogehvi"
+    elif surrogate == "none":
+        resolved = "random"
+    else:
+        available = ", ".join(sorted(_SURROGATE_CONFIG_BUILDERS))
+        raise ValueError(
+            f"Cannot infer acquisition for surrogate '{config.surrogate.name}'. "
+            f"Supported surrogates: {available}"
+        )
+    config.acquisition.name = resolved
+    return resolved
+
+
 def _validate_problem_config(config):
     if config.problem.name not in available_problems():
         raise ValueError(
             f"Unknown problem '{config.problem.name}'. "
             f"Available problems: {', '.join(available_problems())}"
         )
-    if config.acquisition.name not in available_acquisitions():
+    resolved_acquisition = _resolve_acquisition_name(config)
+    if resolved_acquisition not in available_acquisitions():
         raise ValueError(
             f"Unknown acquisition '{config.acquisition.name}'. "
             f"Available acquisitions: {', '.join(available_acquisitions())}"
