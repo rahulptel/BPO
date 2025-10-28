@@ -5,6 +5,7 @@ from hydra import main as hydra_main
 from omegaconf import OmegaConf
 
 from acquisition import available_acquisitions
+from bpo.core.model import available_surrogates
 from bpo.core.run import run_bo
 from bpo.problems import available_problems
 
@@ -70,19 +71,60 @@ class BOConfig:
 
 
 @dataclass
+class SurrogateConfig:
+    __annotations__ = {
+        "name": object,
+    }
+    name = "gp"
+
+
+@dataclass
+class GPSurrogateConfig(SurrogateConfig):
+    __annotations__ = {
+        "name": object,
+    }
+    name = "gp"
+
+
+@dataclass
+class IBNNSurrogateConfig(SurrogateConfig):
+    __annotations__ = {
+        "name": object,
+    }
+    name = "ibnn"
+
+
+@dataclass
+class NoneSurrogateConfig(SurrogateConfig):
+    __annotations__ = {
+        "name": object,
+    }
+    name = "none"
+
+
+@dataclass
 class Config:
     __annotations__ = {
         "problem": object,
         "acquisition": object,
         "bo": object,
+        "surrogate": object,
     }
     problem = field(default_factory=KnapsackProblemConfig)
     acquisition = field(default_factory=AcquisitionConfig)
     bo = field(default_factory=BOConfig)
+    surrogate = field(default_factory=GPSurrogateConfig)
 
 
 _PROBLEM_CONFIG_BUILDERS = {
     "mokp": KnapsackProblemConfig,
+}
+
+
+_SURROGATE_CONFIG_BUILDERS = {
+    "gp": GPSurrogateConfig,
+    "ibnn": IBNNSurrogateConfig,
+    "none": NoneSurrogateConfig,
 }
 
 
@@ -96,6 +138,11 @@ def _validate_problem_config(config):
         raise ValueError(
             f"Unknown acquisition '{config.acquisition.name}'. "
             f"Available acquisitions: {', '.join(available_acquisitions())}"
+        )
+    if config.surrogate.name not in available_surrogates():
+        raise ValueError(
+            f"Unknown surrogate '{config.surrogate.name}'. "
+            f"Available surrogates: {', '.join(available_surrogates())}"
         )
 
 
@@ -151,6 +198,17 @@ def _load_config(cfg):
             _apply(config.problem, problem_cfg)
         _apply(config.acquisition, cfg_dict.get("acquisition", {}))
         _apply(config.bo, cfg_dict.get("bo", {}))
+        surrogate_cfg = cfg_dict.get("surrogate", {})
+        if isinstance(surrogate_cfg, dict):
+            surrogate_name = surrogate_cfg.get("name", config.surrogate.name)
+            surrogate_key = str(surrogate_name).lower()
+            if surrogate_key not in _SURROGATE_CONFIG_BUILDERS:
+                available = ", ".join(sorted(_SURROGATE_CONFIG_BUILDERS))
+                raise ValueError(
+                    f"Unsupported surrogate config '{surrogate_name}'. Supported surrogates: {available}"
+                )
+            config.surrogate = _SURROGATE_CONFIG_BUILDERS[surrogate_key]()
+            _apply(config.surrogate, surrogate_cfg)
     return config
 
 

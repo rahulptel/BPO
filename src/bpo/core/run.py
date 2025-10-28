@@ -3,7 +3,6 @@ import time
 
 import numpy as np
 import torch
-from botorch import fit_gpytorch_mll
 from botorch.utils.multi_objective.box_decompositions.non_dominated import (
     FastNondominatedPartitioning,
 )
@@ -12,7 +11,7 @@ from botorch.utils.multi_objective.pareto import is_non_dominated
 from acquisition import AcquisitionConfig, build_acquisition
 
 from .io import save_result
-from .model import initialize_model
+from .model import build_surrogate
 
 
 def set_global_seed(seed):
@@ -80,14 +79,15 @@ def run_bo(problem, config):
     print(
         f"Using acquisition function: {acquisition_function.__class__.__name__} | rseed: {bo_cfg.rseed}"
     )
+    surrogate = build_surrogate(config.surrogate.name, config.surrogate)
+    print(f"Using surrogate: {config.surrogate.name}")
     print(f"Starting BO loop for {bo_cfg.n_iterations} iterations...")
 
     t0 = time.time()
     iteration_records = []
 
     for iteration in range(bo_cfg.n_iterations):
-        mll, model = initialize_model(train_lambda, train_obj)
-        fit_gpytorch_mll(mll)
+        model = surrogate.fit(train_lambda, train_obj)
 
         new_lambda = acquisition_function.generate_candidates(
             model, train_lambda, train_obj

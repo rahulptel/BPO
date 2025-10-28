@@ -52,6 +52,8 @@ class QLogEHVIAcquisition(AcquisitionFunction):
         )
 
     def generate_candidates(self, model, train_x, train_obj):
+        if model is None:
+            raise ValueError("qLogEHVI acquisition requires a surrogate model.")
         with torch.no_grad():
             posterior_mean = model.posterior(train_x).mean
         partitioning = FastNondominatedPartitioning(

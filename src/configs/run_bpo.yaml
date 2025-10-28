@@ -1,4 +1,5 @@
 defaults:
+  - surrogate: gp
   - problem: mokp
   - override hydra/job_logging: disabled
   - _self_

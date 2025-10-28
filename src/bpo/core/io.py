@@ -46,6 +46,15 @@ def save_result(
     final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
 
     acquisition_key, dir_chain = _acquisition_directory_chain(config)
+    dir_chain.append(("surrogate", config.surrogate.name))
+
+    surrogate_config = {}
+    if hasattr(config.surrogate, "__dict__"):
+        surrogate_config = {
+            key: value
+            for key, value in vars(config.surrogate).items()
+            if key != "name" and not key.startswith("_")
+        }
 
     results = {
         "problem": problem.name,
@@ -58,6 +67,10 @@ def save_result(
             "num_restarts": config.bo.num_restarts,
             "raw_samples": config.bo.raw_samples,
             "sequential": config.acquisition.sequential,
+        },
+        "surrogate": {
+            "name": config.surrogate.name,
+            "config": surrogate_config,
         },
         "n_initial_samples": config.bo.n_initial_samples,
         "n_iterations": config.bo.n_iterations,
