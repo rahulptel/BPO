@@ -4,7 +4,7 @@ import torch
 from hydra import main as hydra_main
 from omegaconf import OmegaConf
 
-from acquisition import available_acquisitions
+from bpo.acquisition import available_acquisitions
 from bpo.core.model import available_surrogates
 from bpo.core.run import run_bo
 from bpo.problems import available_problems
