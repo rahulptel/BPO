@@ -134,13 +134,13 @@ def run_bo(problem, config):
     print(f"\tData collection: {time_dict['data_collection']:.2f} seconds.")
     print(f"\tIterations: {time_dict['iterations']:.2f} seconds.")
     if "surrogate_training" in time_dict:
-        print(f"\tSurrogate training: {time_dict['surrogate_training']:.2f} seconds.")
+        print(f"\t\tSurrogate training: {time_dict['surrogate_training']:.2f} seconds.")
     if "acquisition_optimization" in time_dict:
         print(
-            f"\tAcquisition optimization: {time_dict['acquisition_optimization']:.2f} seconds."
+            f"\t\tAcquisition optimization: {time_dict['acquisition_optimization']:.2f} seconds."
         )
     if "partitioning" in time_dict:
-        print(f"\t\tPartitioning: {time_dict['partitioning']:.2f} seconds.")
+        print(f"\t\t\tPartitioning: {time_dict['partitioning']:.2f} seconds.")
 
     save_result(
         problem,
