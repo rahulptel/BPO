@@ -147,7 +147,7 @@ def _resolve_acquisition_name(config):
     return resolved
 
 
-def _validate_problem_config(config):
+def validate_problem_config(config):
     if config.problem.name not in available_problems():
         raise ValueError(
             f"Unknown problem '{config.problem.name}'. "
@@ -179,7 +179,7 @@ def _build_mokp_problem(cfg):
     )
 
 
-def _build_problem(cfg):
+def build_problem(cfg):
     builders = {
         "mokp": _build_mokp_problem,
     }
@@ -194,7 +194,7 @@ def _build_problem(cfg):
     return builders[problem_name](cfg)
 
 
-def _load_config(cfg):
+def load_config(cfg):
     def _apply(target, data):
         if not isinstance(data, dict):
             return
@@ -234,10 +234,10 @@ def _load_config(cfg):
 
 @hydra_main(config_path="configs", config_name="run_bpo", version_base=None)
 def main(cfg):
-    config = _load_config(cfg)
-    _validate_problem_config(config)
+    config = load_config(cfg)
+    validate_problem_config(config)
 
-    problem = _build_problem(config)
+    problem = build_problem(config)
     run_bo(problem, config)
 
 
