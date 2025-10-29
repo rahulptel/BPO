@@ -33,6 +33,7 @@ def save_result(
     n_nd,
     ref_point,
     time_dict,
+    generation_records=None,
 ):
     algorithm_config = {}
     if hasattr(config.algorithm, "__dict__"):
@@ -49,6 +50,7 @@ def save_result(
         "n_nd": n_nd,
         "ref_point": _ref_point_to_list(ref_point),
         "time_dict": time_dict,
+        "generations": generation_records or [],
     }
 
     base_dir = problem.io_base_dir(config.algorithm)

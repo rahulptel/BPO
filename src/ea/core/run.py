@@ -7,6 +7,7 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
     FastNondominatedPartitioning,
 )
 from botorch.utils.multi_objective.pareto import is_non_dominated
+from pymoo.core.callback import Callback
 from pymoo.operators.crossover.pntx import SinglePointCrossover
 from pymoo.operators.mutation.bitflip import BitflipMutation
 from pymoo.operators.sampling.rnd import BinaryRandomSampling
@@ -24,6 +25,54 @@ def set_global_seed(seed):
 def _normalize_hypervolume(hv, ideal_point):
     denom = np.abs(ideal_point).prod()
     return hv if denom == 0 else hv / denom
+
+
+def _get_hypervolume(F, ref_point, ideal_point):
+    Y_np = -np.asarray(F)
+    Y_t = torch.tensor(Y_np, dtype=torch.get_default_dtype())
+    mask = is_non_dominated(Y_t)
+    n_nd = int(mask.sum().item())
+
+    hv = 0.0
+    if n_nd > 0:
+        bd = FastNondominatedPartitioning(
+            ref_point=ref_point,
+            Y=Y_t[mask],
+        )
+        hv_val = bd.compute_hypervolume().item()
+        hv = _normalize_hypervolume(hv_val, ideal_point)
+
+    return (
+        mask.cpu().numpy().astype(bool),
+        n_nd,
+        hv,
+    )
+
+
+class GenerationTrackingCallback(Callback):
+    def __init__(self, start_time):
+        super().__init__()
+        self.generation = 0
+        self.start_time = start_time
+        self.data["records"] = []
+
+    def notify(self, algorithm):
+        self.generation += 1
+
+        pop = getattr(algorithm, "pop", None)
+        if pop is not None:
+            F_val = pop.get("F")
+            X_val = pop.get("X")
+        elapsed = time.time() - self.start_time
+
+        self.data["records"].append(
+            {
+                "generation": int(self.generation),
+                "time": float(elapsed),
+                "F": F_val,
+                "X": X_val,
+            }
+        )
 
 
 def get_algorithm(alg_cfg, n_objs):
@@ -101,6 +150,8 @@ def run_ea(problem, config):
                 f"Ref point dimension {ref_point.size} does not match "
                 f"n_objs={problem.n_objs}."
             )
+    ref_point_t = torch.tensor(ref_point, dtype=torch.get_default_dtype())
+    ideal_point = problem.ideal_point()
 
     algorithm = get_algorithm(alg_cfg, problem.n_objs)
     termination = get_termination("time", alg_cfg.time)
@@ -110,6 +161,7 @@ def run_ea(problem, config):
         f"seed: {alg_cfg.seed}"
     )
     t0 = time.time()
+    callback = GenerationTrackingCallback(t0)
     result = minimize(
         problem,
         algorithm,
@@ -117,39 +169,75 @@ def run_ea(problem, config):
         seed=alg_cfg.seed,
         save_history=False,
         verbose=False,
+        callback=callback,
     )
     total_time = time.time() - t0
-
-    # Extract results (minimization space in pymoo)
-    F = result.F if result.F is not None else np.empty((0, problem.n_objs))
-    X = result.X if result.X is not None else np.empty((0, problem.n_items))
-
-    # Convert to maximization space (profits) for BoTorch utilities
-    Y_np = -F if F.size else F
-    Y_t = torch.tensor(Y_np, dtype=torch.get_default_dtype())
-    ref_point_t = torch.tensor(ref_point, dtype=torch.get_default_dtype())
-
-    # Non-dominated mask using BoTorch (expects maximizing)
-    if Y_t.numel() > 0:
-        mask = is_non_dominated(Y_t)
-        Y_t_nd = Y_t[mask]
-
-        bd = FastNondominatedPartitioning(ref_point=ref_point_t, Y=Y_t_nd)
-        hv = bd.compute_hypervolume().item()
-        hv = _normalize_hypervolume(hv, problem.ideal_point())
-        n_nd = mask.sum().item()
-
-        mask = mask.cpu().numpy().astype(bool)
-        Y_nd = Y_t_nd.cpu().numpy().tolist()
-        X_nd = X[mask].tolist()
-    else:
-        X_nd, Y_nd = [], []
-        hv, n_nd = 0.0, 0
-
     time_dict = {"optimization": total_time}
 
-    print("Hypervolume (normalized): {:.6f}".format(hv))
-    print("Number of non-dominated solutions: {}".format(n_nd))
+    generation_records = callback.data.get("records", [])
+    final_mask = None
+    final_F = None
+    final_X = None
+    final_hv = 0.0
+    final_n_nd = 0
+
+    for gen, record in enumerate(generation_records):
+        F = record.get("F")
+        X_pop = record.get("X")
+        mask = None
+        n_nd = 0
+        hv = 0.0
+        if F is not None:
+            mask, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
+
+        record["n_nd"] = n_nd
+        record["hypervolume"] = hv
+
+        print(
+            f"Generation {gen + 1:3d} | "
+            f"Time Elapsed: {record['time']:.2f}s | "
+            f"Non-dominated Solutions: {n_nd:4d} | "
+            f"Hypervolume (normalized): {hv:.6f}"
+        )
+
+        if gen == len(generation_records) - 1:
+            final_mask = mask
+            final_F = F
+            final_X = X_pop
+            final_hv = hv
+            final_n_nd = n_nd
+        else:
+            record.pop("F", None)
+            record.pop("X", None)
+
+    Y_nd = []
+    X_nd = []
+    if final_F is not None and final_mask is not None:
+        F_arr = np.asarray(final_F)
+        Y_nd = (-F_arr[final_mask]).tolist()
+
+        X_arr = np.asarray(final_X)
+        if X_arr.shape[0] == final_mask.shape[0]:
+            X_nd = X_arr[final_mask].tolist()
+
+    if generation_records:
+        generation_records[-1]["n_nd"] = final_n_nd
+        generation_records[-1]["hypervolume"] = final_hv
+        generation_records[-1].pop("F", None)
+        generation_records[-1].pop("X", None)
+
+    print("Hypervolume (normalized): {:.6f}".format(final_hv))
+    print("Number of non-dominated solutions: {}".format(final_n_nd))
 
     # Save ND sets (profits) and solutions
-    save_result(problem, config, Y_nd, X_nd, hv, n_nd, ref_point, time_dict)
+    save_result(
+        problem,
+        config,
+        Y_nd,
+        X_nd,
+        final_hv,
+        final_n_nd,
+        ref_point,
+        time_dict,
+        generation_records,
+    )
