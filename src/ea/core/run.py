@@ -79,9 +79,12 @@ class GenerationTrackingCallback(Callback):
         self.generation += 1
 
         pop = getattr(algorithm, "pop", None)
+        F_val = None
+        X_val = None
         if pop is not None:
             F_val = pop.get("F")
             X_val = pop.get("X")
+
         elapsed = time.time() - self.start_time
 
         self.data["records"].append(
@@ -175,34 +178,45 @@ def run_ea(problem, config):
     algorithm = get_algorithm(alg_cfg, problem.n_objs)
     termination = get_termination("time", alg_cfg.time)
 
+    track_generations = bool(getattr(config, "track_generations", False))
+
     print(
         f"Running {alg_cfg.name} | pop_size: {alg_cfg.pop_size} | time: {alg_cfg.time} | \n"
-        f"seed: {alg_cfg.seed} | Track generations: {config.track_generations}"
+        f"seed: {alg_cfg.seed} | Track generations: {track_generations}"
     )
     t0 = time.time()
-    callback = GenerationTrackingCallback(t0) if config.track_generations else None
+    callback = GenerationTrackingCallback(t0) if track_generations else None
+    minimize_kwargs = {
+        "save_history": False,
+        "verbose": False,
+        "seed": alg_cfg.seed,
+    }
+    if callback is not None:
+        minimize_kwargs["callback"] = callback
+
     result = minimize(
         problem,
         algorithm,
         termination,
-        seed=alg_cfg.seed,
-        save_history=False,
-        verbose=False,
-        callback=callback,
+        **minimize_kwargs,
     )
     total_time = time.time() - t0
     time_dict = {"optimization": total_time}
     print("Optimization finished in {:.2f} seconds.".format(total_time))
 
-    generation_records, F, X = [], None, None
+    generation_records = []
+    final_F = None
+    final_X = None
+
     if callback is not None:
         generation_records = callback.data.get("records", [])
         for gen, record in enumerate(generation_records):
-            F, X = record.get("F"), record.get("X")
+            F = record.get("F")
+            X = record.get("X")
             n_nd = 0
             hv = 0.0
             if F is not None:
-                mask, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
+                _, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
 
             record["n_nd"] = int(n_nd)
             record["hypervolume"] = float(hv)
@@ -214,15 +228,40 @@ def run_ea(problem, config):
                 f"Hypervolume (normalized): {hv:.6f}"
             )
 
+            if gen == len(generation_records) - 1:
+                final_F = F
+                final_X = X
+
             record.pop("F", None)
             record.pop("X", None)
-    else:
-        F, X = result.F, result.X
-        mask, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
+    candidates = []
+    if final_F is not None or final_X is not None:
+        candidates.append((final_F, final_X))
 
-    Y_nd, X_nd = F[mask], X[mask] if F is not None else None, None
-    print("Hypervolume (normalized): {:.6f}".format(hv))
-    print("Number of non-dominated solutions: {}".format(n_nd))
+    opt_pop = getattr(result, "opt", None)
+    if opt_pop is not None and opt_pop.get("F") is not None:
+        candidates.append((opt_pop.get("F"), opt_pop.get("X")))
+
+    candidates.append((result.F, result.X))
+
+    Y_nd = []
+    X_nd = []
+    final_hv = 0.0
+    final_n_nd = 0
+
+    for idx, (F_candidate, X_candidate) in enumerate(candidates):
+        Y_nd, X_nd, final_hv, final_n_nd = _extract_nd_sets(
+            F_candidate, X_candidate, ref_point_t, ideal_point
+        )
+        if final_n_nd > 0 or idx == len(candidates) - 1:
+            break
+
+    if generation_records:
+        generation_records[-1]["n_nd"] = final_n_nd
+        generation_records[-1]["hypervolume"] = final_hv
+
+    print("Hypervolume (normalized): {:.6f}".format(final_hv))
+    print("Number of non-dominated solutions: {}".format(final_n_nd))
 
     # Save ND sets (profits) and solutions
     save_result(
@@ -230,9 +269,9 @@ def run_ea(problem, config):
         config,
         Y_nd,
         X_nd,
-        hv,
-        n_nd,
+        final_hv,
+        final_n_nd,
         ref_point,
         time_dict,
-        generation_records,
+        generation_records if track_generations else [],
     )

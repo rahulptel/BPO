@@ -78,9 +78,11 @@ class Config:
     __annotations__ = {
         "problem": object,
         "algorithm": object,
+        "track_generations": object,
     }
     problem = field(default_factory=KnapsackProblemConfig)
     algorithm = field(default_factory=AlgorithmConfig)
+    track_generations = False
 
 
 _PROBLEM_CONFIG_BUILDERS = {
@@ -146,6 +148,9 @@ def load_config(cfg):
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
     config = Config()
     if isinstance(cfg_dict, dict):
+        track_generations = cfg_dict.get("track_generations")
+        if track_generations is not None:
+            config.track_generations = bool(track_generations)
         problem_cfg = cfg_dict.get("problem", {})
         if isinstance(problem_cfg, dict):
             problem_name = problem_cfg.get("name") or config.problem.name

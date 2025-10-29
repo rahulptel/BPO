@@ -4,6 +4,7 @@ defaults:
   - override hydra/job_logging: disabled
   - _self_
 
+track_generations: false
 
 hydra:
   run:
