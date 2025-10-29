@@ -1,0 +1,11 @@
+defaults:
+  - algorithm: nsga2
+  - problem: mokp
+  - override hydra/job_logging: disabled
+  - _self_
+
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null

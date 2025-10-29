@@ -1,0 +1,5 @@
+name: smsemoa
+pop_size: 200
+time: 00:05:00
+seed: 123
+eliminate_duplicates: true
