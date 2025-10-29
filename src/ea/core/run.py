@@ -49,6 +49,25 @@ def _get_hypervolume(F, ref_point, ideal_point):
     )
 
 
+def _extract_nd_sets(F, X, ref_point, ideal_point):
+    if F is None:
+        return [], [], 0.0, 0
+    F_arr = np.asarray(F)
+    if F_arr.size == 0:
+        return [], [], 0.0, 0
+    mask, n_nd, hv = _get_hypervolume(F_arr, ref_point, ideal_point)
+    if n_nd == 0:
+        return [], [], 0.0, 0
+
+    Y_nd = (-F_arr[mask]).tolist()
+    X_nd = []
+    if X is not None:
+        X_arr = np.asarray(X)
+        if X_arr.shape[0] == mask.shape[0]:
+            X_nd = X_arr[mask].tolist()
+    return Y_nd, X_nd, float(hv), int(n_nd)
+
+
 class GenerationTrackingCallback(Callback):
     def __init__(self, start_time):
         super().__init__()
@@ -157,11 +176,11 @@ def run_ea(problem, config):
     termination = get_termination("time", alg_cfg.time)
 
     print(
-        f"Running {alg_cfg.name} | pop_size: {alg_cfg.pop_size} | time: {alg_cfg.time} | "
-        f"seed: {alg_cfg.seed}"
+        f"Running {alg_cfg.name} | pop_size: {alg_cfg.pop_size} | time: {alg_cfg.time} | \n"
+        f"seed: {alg_cfg.seed} | Track generations: {config.track_generations}"
     )
     t0 = time.time()
-    callback = GenerationTrackingCallback(t0)
+    callback = GenerationTrackingCallback(t0) if config.track_generations else None
     result = minimize(
         problem,
         algorithm,
@@ -173,61 +192,37 @@ def run_ea(problem, config):
     )
     total_time = time.time() - t0
     time_dict = {"optimization": total_time}
+    print("Optimization finished in {:.2f} seconds.".format(total_time))
 
-    generation_records = callback.data.get("records", [])
-    final_mask = None
-    final_F = None
-    final_X = None
-    final_hv = 0.0
-    final_n_nd = 0
+    generation_records, F, X = [], None, None
+    if callback is not None:
+        generation_records = callback.data.get("records", [])
+        for gen, record in enumerate(generation_records):
+            F, X = record.get("F"), record.get("X")
+            n_nd = 0
+            hv = 0.0
+            if F is not None:
+                mask, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
 
-    for gen, record in enumerate(generation_records):
-        F = record.get("F")
-        X_pop = record.get("X")
-        mask = None
-        n_nd = 0
-        hv = 0.0
-        if F is not None:
-            mask, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
+            record["n_nd"] = int(n_nd)
+            record["hypervolume"] = float(hv)
 
-        record["n_nd"] = n_nd
-        record["hypervolume"] = hv
+            print(
+                f"Generation {gen + 1:3d} | "
+                f"Time Elapsed: {record['time']:.2f}s | "
+                f"Non-dominated Solutions: {n_nd:4d} | "
+                f"Hypervolume (normalized): {hv:.6f}"
+            )
 
-        print(
-            f"Generation {gen + 1:3d} | "
-            f"Time Elapsed: {record['time']:.2f}s | "
-            f"Non-dominated Solutions: {n_nd:4d} | "
-            f"Hypervolume (normalized): {hv:.6f}"
-        )
-
-        if gen == len(generation_records) - 1:
-            final_mask = mask
-            final_F = F
-            final_X = X_pop
-            final_hv = hv
-            final_n_nd = n_nd
-        else:
             record.pop("F", None)
             record.pop("X", None)
+    else:
+        F, X = result.F, result.X
+        mask, n_nd, hv = _get_hypervolume(F, ref_point_t, ideal_point)
 
-    Y_nd = []
-    X_nd = []
-    if final_F is not None and final_mask is not None:
-        F_arr = np.asarray(final_F)
-        Y_nd = (-F_arr[final_mask]).tolist()
-
-        X_arr = np.asarray(final_X)
-        if X_arr.shape[0] == final_mask.shape[0]:
-            X_nd = X_arr[final_mask].tolist()
-
-    if generation_records:
-        generation_records[-1]["n_nd"] = final_n_nd
-        generation_records[-1]["hypervolume"] = final_hv
-        generation_records[-1].pop("F", None)
-        generation_records[-1].pop("X", None)
-
-    print("Hypervolume (normalized): {:.6f}".format(final_hv))
-    print("Number of non-dominated solutions: {}".format(final_n_nd))
+    Y_nd, X_nd = F[mask], X[mask] if F is not None else None, None
+    print("Hypervolume (normalized): {:.6f}".format(hv))
+    print("Number of non-dominated solutions: {}".format(n_nd))
 
     # Save ND sets (profits) and solutions
     save_result(
@@ -235,8 +230,8 @@ def run_ea(problem, config):
         config,
         Y_nd,
         X_nd,
-        final_hv,
-        final_n_nd,
+        hv,
+        n_nd,
         ref_point,
         time_dict,
         generation_records,
