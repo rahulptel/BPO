@@ -30,12 +30,12 @@ The result is an efficient, model-based exploration of the Pareto frontier for d
   - `base.py`: Abstract `Problem` interface (bounds, constraints, evaluation, IO metadata).
   - `mokp.py`: MOKP implementation with augmented Tchebycheff scalarization solved by Gurobi.
   - `__init__.py`: Problem registry and builder.
-- `src/run_ga.py`: Hydra entry point for GA baselines powered by `pymoo`.
-- `src/ga/`
-  - `core/run.py`: GA drivers (NSGA-II/NSGA-III/SMSEMOA/CTAEA), HV tracking, and JSON serialization.
+- `src/run_ea.py`: Hydra entry point for EA baselines powered by `pymoo`.
+- `src/ea/`
+  - `core/run.py`: EA drivers (NSGA-II/NSGA-III/SMSEMOA/CTAEA), HV tracking, and JSON serialization.
   - `core/io.py`: Output writer mirroring the BO artifacts for downstream analysis.
   - `problems/mokp.py`: Binary knapsack wrapped as a `pymoo` problem with identical instances to the BO setup.
-  - `problems/__init__.py`: GA problem registry.
+  - `problems/__init__.py`: EA problem registry.
 
 ## MOKP + Augmented Tchebycheff
 
@@ -88,14 +88,14 @@ Reference point for HV (optional, one value per objective):
 python src/run_bpo.py problem.ref_point="[0, 0, 0]"
 ```
 
-## Genetic Algorithm Baselines
+## Evolutionary Algorithm Baselines
 
 Multiple algorithms from `pymoo` are available for benchmarking against BPO. Runs share the same Hydra patterns.
 
 NSGA-II (time-based termination):
 
 ```
-python src/run_ga.py \
+python src/run_ea.py \
   algorithm=nsga2 algorithm.pop_size=200 algorithm.time=00:05:00 algorithm.seed=123 \
   problem.name=mokp problem.n_items=50 problem.n_objs=3 problem.density=0.5 problem.iseed=123
 ```
@@ -106,19 +106,19 @@ Examples with additional parameters:
 
 ```
 # NSGA-III (reference directions required)
-python src/run_ga.py \
+python src/run_ea.py \
   algorithm=nsga3 algorithm.pop_size=200 algorithm.time=00:05:00 \
   algorithm.ref_dir_method=das-dennis algorithm.n_partitions=10 \
   problem.name=mokp
 
 # CTAEA (reference directions required)
-python src/run_ga.py \
+python src/run_ea.py \
   algorithm=ctaea algorithm.pop_size=200 algorithm.time=00:05:00 \
   algorithm.ref_dir_method=das-dennis algorithm.n_partitions=10 \
   problem.name=mokp
 ```
 
-Override hyperparameters directly at the CLI (e.g., `algorithm.pop_size=400`) or via config files under `src/configs/algorithm/`. Results are written to `outputs/ga/...` and include normalized hypervolume and the final nondominated set.
+Override hyperparameters directly at the CLI (e.g., `algorithm.pop_size=400`) or via config files under `src/configs/algorithm/`. Results are written to `outputs/ea/...` and include normalized hypervolume and the final nondominated set.
 
 ## Outputs
 
@@ -130,7 +130,7 @@ Run artifacts are stored under `outputs/…` with a problem- and acquisition-spe
 
 Example directory pattern for MOKP:
 - `outputs/mokp-items-<items>_objs-<objs>_iseed-<iseed>_rseed-<rseed>/<acq>/n_initial_samples-<n>/…`
-- `outputs/ga/mokp-items-<items>_objs-<objs>_iseed-<iseed>_seed-<seed>/algorithm-<algo>/pop_size-<pop>/time-<hh-mm-ss>/…`
+- `outputs/ea/mokp-items-<items>_objs-<objs>_iseed-<iseed>_seed-<seed>/algorithm-<algo>/pop_size-<pop>/time-<hh-mm-ss>/…`
 
 ## Extending
 
@@ -149,7 +149,7 @@ To add a new acquisition:
 
 - `bo.rseed` controls Torch, BoTorch sampler seeds, and NumPy/Python RNG used in BPO.
 - `problem.iseed` controls the problem instance (e.g., MOKP profits/weights and capacity).
-- `algorithm.seed` controls GA randomness (initial population, operators, etc.).
+- `algorithm.seed` controls EA randomness (initial population, operators, etc.).
 
 Hypervolume is reported in maximization convention and normalized by the product of the absolute ideal point components when available.
 

@@ -86,7 +86,7 @@ def get_algorithm(alg_cfg, n_objs):
     return algorithm
 
 
-def run_ga(problem, config):
+def run_ea(problem, config):
     alg_cfg = config.algorithm
     prob_cfg = config.problem
 

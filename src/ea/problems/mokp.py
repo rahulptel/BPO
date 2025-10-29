@@ -68,7 +68,7 @@ class MOKP(Problem):
     def io_base_dir(self, config):
         return (
             OUTPUTS_DIR
-            / "ga"
+            / "ea"
             / f"mokp-items-{self.n_items}_objs-{self.n_objs}_iseed-{self.iseed}_seed-{config.seed}"
         )
 

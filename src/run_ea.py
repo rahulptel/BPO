@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 from hydra import main as hydra_main
 from omegaconf import OmegaConf
 
-from ga.core.run import run_ga as execute_ga
-from ga.problems import available_problems
+from ea.core.run import run_ea as execute_ea
+from ea.problems import available_problems
 
 
 @dataclass
@@ -112,7 +112,7 @@ def validate_problem_config(config):
 
 def _build_mokp_problem(cfg):
     problem_cfg = cfg.problem
-    from ga.problems.mokp import MOKP
+    from ea.problems.mokp import MOKP
 
     return MOKP(
         n_items=problem_cfg.n_items,
@@ -182,13 +182,13 @@ def load_config(cfg):
     return config
 
 
-@hydra_main(config_path="configs", config_name="run_ga", version_base=None)
+@hydra_main(config_path="configs", config_name="run_ea", version_base=None)
 def main(cfg):
     config = load_config(cfg)
     validate_problem_config(config)
 
     problem = build_problem(config)
-    execute_ga(problem, config)
+    execute_ea(problem, config)
 
 
 if __name__ == "__main__":

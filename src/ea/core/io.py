@@ -58,8 +58,8 @@ def save_result(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    output_path = output_dir / f"run_ga_{timestamp}.json"
+    output_path = output_dir / f"run_ea_{timestamp}.json"
     with output_path.open("w", encoding="utf-8") as handle:
         json.dump(results, handle, indent=2)
-    print(f"Saved GA results to {output_path}")
+    print(f"Saved EA results to {output_path}")
     return output_path
