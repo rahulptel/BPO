@@ -34,7 +34,7 @@ class MOKP(Problem):
 
         self.ideal_point_values = self._compute_ideal_point()
         self.ideal_point_min = -self.ideal_point_values
-        print(f"Computed Ideal Point (for minimization): {self.ideal_point_values}\n")
+        print(f"Computed Ideal Point: {self.ideal_point_values}\n")
 
     def n_objectives(self):
         return self.n_objs
