@@ -23,7 +23,6 @@ The result is an efficient, model-based exploration of the Pareto frontier for d
 - `src/run_bpo.py`: CLI entry point to run preference-based BO end-to-end.
 - `src/acquisition.py`: Acquisition registry and implementations (qLogEHVI and random Dirichlet).
 - `src/bpo/core/`
-  - `config.py`: BO configuration container (seeds, budgets, acquisition settings).
   - `run.py`: Main BO loop, model fitting, candidate generation, HV tracking, and result saving.
   - `model.py`: Multi-output GP surrogate (ModelListGP over standardized single-task GPs).
   - `io.py`: Output structure and JSON writer for runs.
@@ -31,6 +30,12 @@ The result is an efficient, model-based exploration of the Pareto frontier for d
   - `base.py`: Abstract `Problem` interface (bounds, constraints, evaluation, IO metadata).
   - `mokp.py`: MOKP implementation with augmented Tchebycheff scalarization solved by Gurobi.
   - `__init__.py`: Problem registry and builder.
+- `src/run_ga.py`: Hydra entry point for GA baselines powered by `pymoo`.
+- `src/ga/`
+  - `core/run.py`: GA drivers (NSGA-II/NSGA-III/SMSEMOA/CTAEA), HV tracking, and JSON serialization.
+  - `core/io.py`: Output writer mirroring the BO artifacts for downstream analysis.
+  - `problems/mokp.py`: Binary knapsack wrapped as a `pymoo` problem with identical instances to the BO setup.
+  - `problems/__init__.py`: GA problem registry.
 
 ## MOKP + Augmented Tchebycheff
 
@@ -44,7 +49,7 @@ Notes:
 ## Installation
 
 Prerequisites:
-- Python 3.9+
+- Python 3.8+
 - A working Gurobi installation and license (for `gurobipy`).
 - PyTorch compatible with your platform/GPU.
 
@@ -53,34 +58,67 @@ Steps:
 - Install the remaining dependencies:
   - `pip install -r requirements.txt`
 
-The BoTorch/GPyTorch dependencies are pulled in via `botorch`, but PyTorch must typically be installed first.
+Notes:
+- BoTorch/GPyTorch are pulled in via `botorch`, but PyTorch should be installed first.
+- The code uses float64 by default for numerical stability.
 
 ## Quick Start
 
-Basic run on MOKP (3 objectives, 50 items):
+Hydra is used for configuration. Use dot-notation to override defaults at the CLI.
+
+Basic BPO run on MOKP (3 objectives, 50 items):
 
 ```
 python src/run_bpo.py \
-  --problem mokp \
-  --acquisition qlogehvi \
-  --n-items 50 --n-objs 3 --density 0.5 \
-  --n-initial-samples 10 --n-iterations 20 \
-  --batch-size-q 2 --mc-samples 128 --raw-samples 512 \
-  --rseed 123 --iseed 123 --rho 1e-4 \
-  --should-maximize true --sequential true
+  problem.name=mokp \
+  problem.n_items=50 problem.n_objs=3 problem.density=0.5 problem.iseed=123 problem.rho=1e-4 \
+  bo.n_initial_samples=10 bo.n_iterations=20 bo.raw_samples=512 bo.rseed=123 \
+  acquisition.name=qlogehvi acquisition.batch_size_q=2 acquisition.mc_samples=128 acquisition.sequential=true
 ```
 
-Switch to a random baseline acquisition:
+Random baseline acquisition (Dirichlet sampling on the simplex):
 
 ```
-python src/run_bpo.py --acquisition random
+python src/run_bpo.py acquisition.name=random
 ```
 
 Reference point for HV (optional, one value per objective):
 
 ```
-python src/run_bpo.py --ref-point 0 0 0
+python src/run_bpo.py problem.ref_point="[0, 0, 0]"
 ```
+
+## Genetic Algorithm Baselines
+
+Multiple algorithms from `pymoo` are available for benchmarking against BPO. Runs share the same Hydra patterns.
+
+NSGA-II (time-based termination):
+
+```
+python src/run_ga.py \
+  algorithm=nsga2 algorithm.pop_size=200 algorithm.time=00:05:00 algorithm.seed=123 \
+  problem.name=mokp problem.n_items=50 problem.n_objs=3 problem.density=0.5 problem.iseed=123
+```
+
+Other algorithms: `nsga3`, `smsemoa`, `ctaea`.
+
+Examples with additional parameters:
+
+```
+# NSGA-III (reference directions required)
+python src/run_ga.py \
+  algorithm=nsga3 algorithm.pop_size=200 algorithm.time=00:05:00 \
+  algorithm.ref_dir_method=das-dennis algorithm.n_partitions=10 \
+  problem.name=mokp
+
+# CTAEA (reference directions required)
+python src/run_ga.py \
+  algorithm=ctaea algorithm.pop_size=200 algorithm.time=00:05:00 \
+  algorithm.ref_dir_method=das-dennis algorithm.n_partitions=10 \
+  problem.name=mokp
+```
+
+Override hyperparameters directly at the CLI (e.g., `algorithm.pop_size=400`) or via config files under `src/configs/algorithm/`. Results are written to `outputs/ga/...` and include normalized hypervolume and the final nondominated set.
 
 ## Outputs
 
@@ -92,6 +130,7 @@ Run artifacts are stored under `outputs/…` with a problem- and acquisition-spe
 
 Example directory pattern for MOKP:
 - `outputs/mokp-items-<items>_objs-<objs>_iseed-<iseed>_rseed-<rseed>/<acq>/n_initial_samples-<n>/…`
+- `outputs/ga/mokp-items-<items>_objs-<objs>_iseed-<iseed>_seed-<seed>/algorithm-<algo>/pop_size-<pop>/time-<hh-mm-ss>/…`
 
 ## Extending
 
@@ -108,8 +147,11 @@ To add a new acquisition:
 
 ## Reproducibility
 
-- `--rseed` controls Torch, BoTorch sampler seeds, and NumPy/Python RNG used in the loop.
-- `--iseed` controls the problem instance (e.g., MOKP profits/weights and capacity).
+- `bo.rseed` controls Torch, BoTorch sampler seeds, and NumPy/Python RNG used in BPO.
+- `problem.iseed` controls the problem instance (e.g., MOKP profits/weights and capacity).
+- `algorithm.seed` controls GA randomness (initial population, operators, etc.).
+
+Hypervolume is reported in maximization convention and normalized by the product of the absolute ideal point components when available.
 
 ## License
 
