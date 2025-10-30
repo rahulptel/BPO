@@ -9,7 +9,8 @@ VENV_NAME="bpo"
 echo "Load module..."
 module purge
 module load cuda
-module load python/3.10
+module load python/3.12
+module load gurobi/11.0.3
 
 # create virtual env
 if [ ! -d "./$VENVS_DIR/$VENV_NAME" ]; then
@@ -27,7 +28,7 @@ if [ ! -d "./$VENVS_DIR/$VENV_NAME" ]; then
   pip install --no-index tensorboard
   pip install --no-index hydra-core
   pip install --no-index matplotlib
-
+  pip install --no-index gurobipy
 # activate virtual env
 else
   echo "Activate venv..."
