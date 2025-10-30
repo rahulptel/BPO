@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import numpy as np
+from omegaconf import DictConfig, OmegaConf
 
 
 def _ref_point_to_list(ref_point):
@@ -24,6 +25,24 @@ def _algorithm_directory_chain(config):
     ]
 
 
+def _algorithm_config_to_dict(algorithm_cfg):
+    if algorithm_cfg is None:
+        return {}
+    if isinstance(algorithm_cfg, DictConfig):
+        data = OmegaConf.to_container(algorithm_cfg, resolve=True)
+    elif isinstance(algorithm_cfg, dict):
+        data = dict(algorithm_cfg)
+    elif hasattr(algorithm_cfg, "__dict__"):
+        data = {
+            key: value
+            for key, value in vars(algorithm_cfg).items()
+            if not key.startswith("_")
+        }
+    else:
+        return {}
+    return data
+
+
 def save_result(
     problem,
     config,
@@ -31,13 +50,11 @@ def save_result(
     x_sol_nd,
     hv,
     n_nd,
+    n_generations,
     ref_point,
     time_dict,
-    generation_records=None,
 ):
-    algorithm_config = {}
-    if hasattr(config.algorithm, "__dict__"):
-        algorithm_config = {key: value for key, value in vars(config.algorithm).items()}
+    algorithm_config = _algorithm_config_to_dict(config.algorithm)
 
     results = {
         "problem": problem.name,
@@ -48,9 +65,9 @@ def save_result(
         "y_sol_nd": y_sol_nd,
         "hypervolume": hv,
         "n_nd": n_nd,
+        "n_generations": n_generations,
         "ref_point": _ref_point_to_list(ref_point),
         "time_dict": time_dict,
-        "generations": generation_records or [],
     }
 
     base_dir = problem.io_base_dir(config.algorithm)
