@@ -173,6 +173,7 @@ def run_bo(problem, cfg):
         problem,
         cfg,
         records,
+        problem.n_evaluations,
         ref_point,
         time_dict,
     )

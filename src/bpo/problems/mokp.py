@@ -17,6 +17,7 @@ class MOKP(Problem):
         self.density = density
         self.iseed = iseed
         self.rho = rho
+        self.n_evaluations = 0
 
         rng = np.random.default_rng(iseed)
         self.values = rng.integers(1, 1001, size=(n_items, n_objs))
@@ -109,6 +110,7 @@ class MOKP(Problem):
         return ideal_point
 
     def solve_scalarized(self, lambda_vec, maximize=True):
+        self.n_evaluations += 1
         if not isinstance(lambda_vec, np.ndarray):
             lambda_vec = lambda_vec.detach().cpu().numpy()
 

@@ -50,6 +50,7 @@ def save_result(
     problem,
     config,
     records,
+    n_evaluations,
     ref_point,
     time_dict,
 ):
@@ -76,6 +77,7 @@ def save_result(
         },
         "n_initial_samples": config.bo.n_initial_samples,
         "n_iterations": config.bo.n_iterations,
+        "n_evaluations": n_evaluations,
         "ref_point": ref_point.detach().cpu().tolist(),
         "iterations": records,
         "nondominated_solutions": records[-1]["n_nd"],
