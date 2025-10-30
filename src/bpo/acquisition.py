@@ -10,15 +10,15 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 )
 
 
-class AcquisitionConfig:
+class AcquisitionFunction(ABC):
     def __init__(
         self,
-        ref_point,
-        bounds,
-        batch_size,
-        num_restarts,
-        raw_samples,
-        sequential,
+        ref_point=None,
+        bounds=None,
+        batch_size=None,
+        num_restarts=None,
+        raw_samples=None,
+        sequential=None,
         equality_constraints=None,
         acq_options=None,
         mc_samples=128,
@@ -35,21 +35,39 @@ class AcquisitionConfig:
         self.mc_samples = mc_samples
         self.rseed = rseed
 
-
-class AcquisitionFunction(ABC):
-    def __init__(self, config):
-        self.config = config
-
     @abstractmethod
     def generate_candidates(self, model, train_x, train_obj): ...
 
 
 class QLogEHVIAcquisition(AcquisitionFunction):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(
+        self,
+        ref_point=None,
+        bounds=None,
+        batch_size=None,
+        num_restarts=None,
+        raw_samples=None,
+        sequential=None,
+        equality_constraints=None,
+        acq_options=None,
+        mc_samples=128,
+        rseed=123,
+    ):
+        super().__init__(
+            ref_point=ref_point,
+            bounds=bounds,
+            batch_size=batch_size,
+            num_restarts=num_restarts,
+            raw_samples=raw_samples,
+            sequential=sequential,
+            equality_constraints=equality_constraints,
+            acq_options=acq_options,
+            mc_samples=mc_samples,
+            rseed=rseed,
+        )
         self.sampler = SobolQMCNormalSampler(
-            sample_shape=torch.Size([self.config.mc_samples]),
-            seed=self.config.rseed,
+            sample_shape=torch.Size([self.mc_samples]),
+            seed=self.rseed,
         )
 
     def generate_candidates(self, model, train_x, train_obj, time_dict):
@@ -59,7 +77,7 @@ class QLogEHVIAcquisition(AcquisitionFunction):
         with torch.no_grad():
             posterior_mean = model.posterior(train_x).mean
         partitioning = FastNondominatedPartitioning(
-            ref_point=self.config.ref_point,
+            ref_point=self.ref_point,
             Y=posterior_mean,
         )
         if "partitioning" not in time_dict:
@@ -69,20 +87,20 @@ class QLogEHVIAcquisition(AcquisitionFunction):
 
         acq_func = qLogExpectedHypervolumeImprovement(
             model=model,
-            ref_point=self.config.ref_point,
+            ref_point=self.ref_point,
             partitioning=partitioning,
             sampler=self.sampler,
         )
-        options = {"maxiter": 200, **self.config.acq_options}
+        options = {"maxiter": 200, **self.acq_options}
         candidates, _ = optimize_acqf(
             acq_function=acq_func,
-            bounds=self.config.bounds,
-            q=self.config.batch_size,
-            num_restarts=self.config.num_restarts,
-            raw_samples=self.config.raw_samples,
+            bounds=self.bounds,
+            q=self.batch_size,
+            num_restarts=self.num_restarts,
+            raw_samples=self.raw_samples,
             options=options,
-            sequential=self.config.sequential,
-            equality_constraints=self.config.equality_constraints,
+            sequential=self.sequential,
+            equality_constraints=self.equality_constraints,
         )
         if "acquisition_optimization" not in time_dict:
             time_dict["acquisition_optimization"] = time.time() - t0
@@ -93,15 +111,38 @@ class QLogEHVIAcquisition(AcquisitionFunction):
 
 
 class RandomDirichletAcquisition(AcquisitionFunction):
-    def __init__(self, config):
-        super().__init__(config)
-        self.simplex_dim = self.config.bounds.shape[-1]
+    def __init__(
+        self,
+        ref_point=None,
+        bounds=None,
+        batch_size=None,
+        num_restarts=None,
+        raw_samples=None,
+        sequential=None,
+        equality_constraints=None,
+        acq_options=None,
+        mc_samples=128,
+        rseed=123,
+    ):
+        super().__init__(
+            ref_point=ref_point,
+            bounds=bounds,
+            batch_size=batch_size,
+            num_restarts=num_restarts,
+            raw_samples=raw_samples,
+            sequential=sequential,
+            equality_constraints=equality_constraints,
+            acq_options=acq_options,
+            mc_samples=mc_samples,
+            rseed=rseed,
+        )
+        self.simplex_dim = self.bounds.shape[-1]
 
     def generate_candidates(self, model, train_x, train_obj, time_dict):
         t0 = time.time()
         base = torch.ones(self.simplex_dim, dtype=train_x.dtype, device=train_x.device)
         distribution = torch.distributions.dirichlet.Dirichlet(base)
-        samples = distribution.sample((self.config.batch_size,))
+        samples = distribution.sample((self.batch_size,))
 
         if "acquisition_optimization" not in time_dict:
             time_dict["acquisition_optimization"] = time.time() - t0

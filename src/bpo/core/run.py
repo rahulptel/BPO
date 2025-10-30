@@ -8,7 +8,7 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 )
 from botorch.utils.multi_objective.pareto import is_non_dominated
 
-from bpo.acquisition import ACQUISITION_REGISTRY, AcquisitionConfig
+from bpo.acquisition import ACQUISITION_REGISTRY
 from bpo.core.model import available_surrogates
 
 from .io import save_result
@@ -54,22 +54,22 @@ def build_acquisition(problem, cfg, ref_point):
         acquisition_name = get_default_acquisition_name(cfg.surrogate.name)
         cfg.acquisition.name = acquisition_name
 
-    acq_cfg = AcquisitionConfig(
-        ref_point=ref_point,
-        bounds=bounds,
-        batch_size=cfg.acquisition.batch_size_q,
-        num_restarts=cfg.bo.num_restarts,
-        raw_samples=cfg.bo.raw_samples,
-        sequential=cfg.acquisition.sequential,
-        equality_constraints=equality_constraints,
-        mc_samples=cfg.acquisition.mc_samples,
-        rseed=cfg.bo.rseed,
-    )
+    kwargs = {
+        "ref_point": ref_point,
+        "bounds": bounds,
+        "batch_size": cfg.acquisition.batch_size_q,
+        "num_restarts": cfg.bo.num_restarts,
+        "raw_samples": cfg.bo.raw_samples,
+        "sequential": cfg.acquisition.sequential,
+        "equality_constraints": equality_constraints,
+        "mc_samples": cfg.acquisition.mc_samples,
+        "rseed": cfg.bo.rseed,
+    }
+    assert (
+        cfg.acquisition.name in ACQUISITION_REGISTRY
+    ), f"Unknown acquisition function '{cfg.acquisition.name}'"
 
-    if cfg.acquisition.name not in ACQUISITION_REGISTRY:
-        raise ValueError(f"Unknown acquisition function '{cfg.acquisition.name}'")
-
-    return ACQUISITION_REGISTRY[cfg.acquisition.name](acq_cfg)
+    return ACQUISITION_REGISTRY[cfg.acquisition.name](**kwargs)
 
 
 def normalize_hypervolume(unnorm_hv, ideal_point):
