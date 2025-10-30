@@ -83,7 +83,15 @@ def normalize_hypervolume(unnorm_hv, ideal_point):
     return unnorm_hv / denom
 
 
-def compute_iteration_stats(all_prefs, all_objs, ref_point, ideal_point, n_iterations):
+def compute_iteration_stats(
+    all_prefs,
+    all_objs,
+    ref_point,
+    ideal_point,
+    n_iterations,
+    save_prefs=False,
+    save_objs=False,
+):
     records = []
     prev_n_nd = -1
     for i, (prefs, objs) in enumerate(zip(all_prefs, all_objs)):
@@ -104,15 +112,16 @@ def compute_iteration_stats(all_prefs, all_objs, ref_point, ideal_point, n_itera
             prev_n_nd = n_nd
 
         print(f"Iter {i + 1}/{n_iterations} | ND: {n_nd} | " f"Hypervolume: {hv:.6f}")
-        records.append(
-            {
-                "iteration": i + 1,
-                "n_nd": n_nd,
-                "hv": float(hv),
-                "prefs": prefs.cpu().tolist(),
-                "objs": objs.cpu().tolist(),
-            }
-        )
+        iteration_record = {
+            "iteration": i + 1,
+            "n_nd": n_nd,
+            "hv": float(hv),
+        }
+        if save_prefs or i == len(all_prefs) - 1:
+            iteration_record["prefs"] = prefs.detach().cpu().tolist()
+        if save_objs or i == len(all_objs) - 1:
+            iteration_record["objs"] = objs.detach().cpu().tolist()
+        records.append(iteration_record)
 
     return records
 
@@ -186,6 +195,8 @@ def run_bo(problem, cfg):
         ref_point,
         problem.ideal_point(),
         len(all_prefs),
+        save_prefs=cfg.bo.save_prefs,
+        save_objs=cfg.bo.save_objs,
     )
     print("N evaluations:", problem.n_evaluations)
     print_time_dict(time_dict)
