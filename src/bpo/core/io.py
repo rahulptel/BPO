@@ -4,6 +4,7 @@ from pathlib import Path
 
 import torch
 from botorch.utils.multi_objective.pareto import is_non_dominated
+from omegaconf import DictConfig, OmegaConf
 
 
 def _acquisition_directory_chain(config):
@@ -25,35 +26,37 @@ def _acquisition_directory_chain(config):
     return key, [("batch_size_q", config.acquisition.batch_size_q)]
 
 
-def _ref_point_to_list(ref_point):
-    if ref_point is None:
-        return None
-    if isinstance(ref_point, torch.Tensor):
-        return ref_point.detach().cpu().tolist()
-    return list(ref_point)
+def _surrogate_config_to_dict(surrogate_cfg):
+    if surrogate_cfg is None:
+        return {}
+    if isinstance(surrogate_cfg, DictConfig):
+        data = OmegaConf.to_container(surrogate_cfg, resolve=True)
+    elif isinstance(surrogate_cfg, dict):
+        data = dict(surrogate_cfg)
+    elif hasattr(surrogate_cfg, "__dict__"):
+        data = {
+            key: value
+            for key, value in vars(surrogate_cfg).items()
+            if not key.startswith("_")
+        }
+    else:
+        return {}
+    if isinstance(data, dict):
+        data.pop("name", None)
+    return data
 
 
 def save_result(
     problem,
     config,
-    iteration_records,
-    train_obj,
+    records,
     ref_point,
     time_dict,
 ):
-    final_pareto_mask = is_non_dominated(train_obj)
-    final_nd_points = train_obj[final_pareto_mask].detach().cpu().tolist()
-
     acquisition_key, dir_chain = _acquisition_directory_chain(config)
     dir_chain.append(("surrogate", config.surrogate.name))
 
-    surrogate_config = {}
-    if hasattr(config.surrogate, "__dict__"):
-        surrogate_config = {
-            key: value
-            for key, value in vars(config.surrogate).items()
-            if key != "name" and not key.startswith("_")
-        }
+    surrogate_config = _surrogate_config_to_dict(config.surrogate)
 
     results = {
         "problem": problem.name,
@@ -73,9 +76,9 @@ def save_result(
         },
         "n_initial_samples": config.bo.n_initial_samples,
         "n_iterations": config.bo.n_iterations,
-        "ref_point": _ref_point_to_list(ref_point),
-        "iterations": iteration_records,
-        "nondominated_solutions": final_nd_points,
+        "ref_point": ref_point.detach().cpu().tolist(),
+        "iterations": records,
+        "nondominated_solutions": records[-1]["n_nd"],
         "time_dict": time_dict,
     }
 
