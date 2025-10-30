@@ -2,8 +2,6 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-import torch
-from botorch.utils.multi_objective.pareto import is_non_dominated
 from omegaconf import DictConfig, OmegaConf
 
 
@@ -55,7 +53,6 @@ def save_result(
     time_dict,
 ):
     acquisition_key, dir_chain = _acquisition_directory_chain(config)
-    dir_chain.append(("surrogate", config.surrogate.name))
 
     surrogate_config = _surrogate_config_to_dict(config.surrogate)
 
@@ -84,9 +81,10 @@ def save_result(
         "time_dict": time_dict,
     }
 
-    base_dir = problem.io_base_dir(config.bo)
-    acquisition_dir = base_dir / acquisition_key
-    output_dir = acquisition_dir
+    base_dir = Path("../outputs/bpo")
+    output_dir = base_dir / problem.io_base_dir(config.bo)
+    output_dir = output_dir / f"surrogate-{config.surrogate.name}"
+    output_dir = output_dir / acquisition_key
     for name, value in dir_chain:
         output_dir /= f"{name}-{value}"
     output_dir.mkdir(parents=True, exist_ok=True)
