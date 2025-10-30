@@ -1,0 +1,1000 @@
+1 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=1 surrogate=none
+2 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=2 surrogate=none
+3 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=3 surrogate=none
+4 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=4 surrogate=none
+5 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=5 surrogate=none
+6 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=1 surrogate=gp
+7 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=2 surrogate=gp
+8 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=3 surrogate=gp
+9 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=4 surrogate=gp
+10 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=5 surrogate=gp
+11 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+12 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+13 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+14 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+15 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+16 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+17 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+18 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+19 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+20 python src/run_bpo.py bo.time_limit=100 problem.iseed=1 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+21 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=1 surrogate=none
+22 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=2 surrogate=none
+23 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=3 surrogate=none
+24 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=4 surrogate=none
+25 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=5 surrogate=none
+26 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=1 surrogate=gp
+27 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=2 surrogate=gp
+28 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=3 surrogate=gp
+29 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=4 surrogate=gp
+30 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=5 surrogate=gp
+31 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+32 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+33 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+34 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+35 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+36 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+37 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+38 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+39 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+40 python src/run_bpo.py bo.time_limit=100 problem.iseed=2 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+41 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=1 surrogate=none
+42 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=2 surrogate=none
+43 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=3 surrogate=none
+44 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=4 surrogate=none
+45 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=5 surrogate=none
+46 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=1 surrogate=gp
+47 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=2 surrogate=gp
+48 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=3 surrogate=gp
+49 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=4 surrogate=gp
+50 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=5 surrogate=gp
+51 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+52 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+53 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+54 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+55 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+56 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+57 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+58 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+59 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+60 python src/run_bpo.py bo.time_limit=100 problem.iseed=3 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+61 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=1 surrogate=none
+62 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=2 surrogate=none
+63 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=3 surrogate=none
+64 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=4 surrogate=none
+65 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=5 surrogate=none
+66 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=1 surrogate=gp
+67 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=2 surrogate=gp
+68 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=3 surrogate=gp
+69 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=4 surrogate=gp
+70 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=5 surrogate=gp
+71 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+72 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+73 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+74 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+75 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+76 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+77 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+78 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+79 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+80 python src/run_bpo.py bo.time_limit=100 problem.iseed=4 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+81 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=1 surrogate=none
+82 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=2 surrogate=none
+83 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=3 surrogate=none
+84 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=4 surrogate=none
+85 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=5 surrogate=none
+86 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=1 surrogate=gp
+87 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=2 surrogate=gp
+88 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=3 surrogate=gp
+89 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=4 surrogate=gp
+90 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=5 surrogate=gp
+91 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+92 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+93 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+94 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+95 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+96 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+97 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+98 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+99 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+100 python src/run_bpo.py bo.time_limit=100 problem.iseed=5 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+101 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=1 surrogate=none
+102 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=2 surrogate=none
+103 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=3 surrogate=none
+104 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=4 surrogate=none
+105 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=5 surrogate=none
+106 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=1 surrogate=gp
+107 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=2 surrogate=gp
+108 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=3 surrogate=gp
+109 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=4 surrogate=gp
+110 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=5 surrogate=gp
+111 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+112 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+113 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+114 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+115 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+116 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+117 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+118 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+119 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+120 python src/run_bpo.py bo.time_limit=100 problem.iseed=6 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+121 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=1 surrogate=none
+122 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=2 surrogate=none
+123 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=3 surrogate=none
+124 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=4 surrogate=none
+125 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=5 surrogate=none
+126 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=1 surrogate=gp
+127 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=2 surrogate=gp
+128 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=3 surrogate=gp
+129 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=4 surrogate=gp
+130 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=5 surrogate=gp
+131 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+132 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+133 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+134 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+135 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+136 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+137 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+138 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+139 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+140 python src/run_bpo.py bo.time_limit=100 problem.iseed=7 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+141 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=1 surrogate=none
+142 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=2 surrogate=none
+143 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=3 surrogate=none
+144 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=4 surrogate=none
+145 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=5 surrogate=none
+146 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=1 surrogate=gp
+147 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=2 surrogate=gp
+148 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=3 surrogate=gp
+149 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=4 surrogate=gp
+150 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=5 surrogate=gp
+151 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+152 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+153 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+154 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+155 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+156 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+157 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+158 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+159 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+160 python src/run_bpo.py bo.time_limit=100 problem.iseed=8 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+161 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=1 surrogate=none
+162 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=2 surrogate=none
+163 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=3 surrogate=none
+164 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=4 surrogate=none
+165 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=5 surrogate=none
+166 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=1 surrogate=gp
+167 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=2 surrogate=gp
+168 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=3 surrogate=gp
+169 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=4 surrogate=gp
+170 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=5 surrogate=gp
+171 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+172 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+173 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+174 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+175 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+176 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+177 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+178 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+179 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+180 python src/run_bpo.py bo.time_limit=100 problem.iseed=9 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+181 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=1 surrogate=none
+182 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=2 surrogate=none
+183 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=3 surrogate=none
+184 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=4 surrogate=none
+185 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=5 surrogate=none
+186 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=1 surrogate=gp
+187 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=2 surrogate=gp
+188 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=3 surrogate=gp
+189 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=4 surrogate=gp
+190 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=5 surrogate=gp
+191 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+192 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+193 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+194 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+195 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+196 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+197 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+198 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+199 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+200 python src/run_bpo.py bo.time_limit=100 problem.iseed=10 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+201 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=1 surrogate=none
+202 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=2 surrogate=none
+203 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=3 surrogate=none
+204 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=4 surrogate=none
+205 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=5 surrogate=none
+206 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=1 surrogate=gp
+207 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=2 surrogate=gp
+208 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=3 surrogate=gp
+209 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=4 surrogate=gp
+210 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=5 surrogate=gp
+211 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+212 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+213 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+214 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+215 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+216 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+217 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+218 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+219 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+220 python src/run_bpo.py bo.time_limit=100 problem.iseed=11 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+221 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=1 surrogate=none
+222 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=2 surrogate=none
+223 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=3 surrogate=none
+224 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=4 surrogate=none
+225 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=5 surrogate=none
+226 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=1 surrogate=gp
+227 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=2 surrogate=gp
+228 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=3 surrogate=gp
+229 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=4 surrogate=gp
+230 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=5 surrogate=gp
+231 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+232 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+233 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+234 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+235 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+236 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+237 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+238 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+239 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+240 python src/run_bpo.py bo.time_limit=100 problem.iseed=12 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+241 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=1 surrogate=none
+242 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=2 surrogate=none
+243 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=3 surrogate=none
+244 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=4 surrogate=none
+245 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=5 surrogate=none
+246 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=1 surrogate=gp
+247 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=2 surrogate=gp
+248 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=3 surrogate=gp
+249 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=4 surrogate=gp
+250 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=5 surrogate=gp
+251 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+252 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+253 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+254 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+255 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+256 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+257 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+258 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+259 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+260 python src/run_bpo.py bo.time_limit=100 problem.iseed=13 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+261 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=1 surrogate=none
+262 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=2 surrogate=none
+263 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=3 surrogate=none
+264 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=4 surrogate=none
+265 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=5 surrogate=none
+266 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=1 surrogate=gp
+267 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=2 surrogate=gp
+268 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=3 surrogate=gp
+269 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=4 surrogate=gp
+270 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=5 surrogate=gp
+271 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+272 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+273 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+274 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+275 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+276 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+277 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+278 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+279 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+280 python src/run_bpo.py bo.time_limit=100 problem.iseed=14 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+281 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=1 surrogate=none
+282 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=2 surrogate=none
+283 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=3 surrogate=none
+284 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=4 surrogate=none
+285 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=5 surrogate=none
+286 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=1 surrogate=gp
+287 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=2 surrogate=gp
+288 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=3 surrogate=gp
+289 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=4 surrogate=gp
+290 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=5 surrogate=gp
+291 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+292 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+293 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+294 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+295 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+296 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+297 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+298 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+299 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+300 python src/run_bpo.py bo.time_limit=100 problem.iseed=15 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+301 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=1 surrogate=none
+302 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=2 surrogate=none
+303 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=3 surrogate=none
+304 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=4 surrogate=none
+305 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=5 surrogate=none
+306 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=1 surrogate=gp
+307 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=2 surrogate=gp
+308 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=3 surrogate=gp
+309 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=4 surrogate=gp
+310 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=5 surrogate=gp
+311 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+312 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+313 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+314 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+315 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+316 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+317 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+318 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+319 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+320 python src/run_bpo.py bo.time_limit=100 problem.iseed=16 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+321 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=1 surrogate=none
+322 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=2 surrogate=none
+323 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=3 surrogate=none
+324 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=4 surrogate=none
+325 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=5 surrogate=none
+326 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=1 surrogate=gp
+327 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=2 surrogate=gp
+328 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=3 surrogate=gp
+329 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=4 surrogate=gp
+330 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=5 surrogate=gp
+331 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+332 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+333 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+334 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+335 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+336 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+337 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+338 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+339 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+340 python src/run_bpo.py bo.time_limit=100 problem.iseed=17 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+341 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=1 surrogate=none
+342 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=2 surrogate=none
+343 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=3 surrogate=none
+344 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=4 surrogate=none
+345 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=5 surrogate=none
+346 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=1 surrogate=gp
+347 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=2 surrogate=gp
+348 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=3 surrogate=gp
+349 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=4 surrogate=gp
+350 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=5 surrogate=gp
+351 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+352 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+353 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+354 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+355 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+356 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+357 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+358 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+359 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+360 python src/run_bpo.py bo.time_limit=100 problem.iseed=18 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+361 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=1 surrogate=none
+362 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=2 surrogate=none
+363 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=3 surrogate=none
+364 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=4 surrogate=none
+365 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=5 surrogate=none
+366 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=1 surrogate=gp
+367 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=2 surrogate=gp
+368 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=3 surrogate=gp
+369 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=4 surrogate=gp
+370 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=5 surrogate=gp
+371 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+372 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+373 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+374 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+375 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+376 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+377 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+378 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+379 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+380 python src/run_bpo.py bo.time_limit=100 problem.iseed=19 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+381 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=1 surrogate=none
+382 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=2 surrogate=none
+383 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=3 surrogate=none
+384 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=4 surrogate=none
+385 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=5 surrogate=none
+386 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=1 surrogate=gp
+387 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=2 surrogate=gp
+388 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=3 surrogate=gp
+389 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=4 surrogate=gp
+390 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=5 surrogate=gp
+391 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+392 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+393 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+394 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+395 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+396 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+397 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+398 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+399 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+400 python src/run_bpo.py bo.time_limit=100 problem.iseed=20 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+401 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=1 surrogate=none
+402 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=2 surrogate=none
+403 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=3 surrogate=none
+404 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=4 surrogate=none
+405 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=5 surrogate=none
+406 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=1 surrogate=gp
+407 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=2 surrogate=gp
+408 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=3 surrogate=gp
+409 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=4 surrogate=gp
+410 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=5 surrogate=gp
+411 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+412 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+413 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+414 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+415 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+416 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+417 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+418 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+419 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+420 python src/run_bpo.py bo.time_limit=100 problem.iseed=21 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+421 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=1 surrogate=none
+422 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=2 surrogate=none
+423 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=3 surrogate=none
+424 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=4 surrogate=none
+425 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=5 surrogate=none
+426 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=1 surrogate=gp
+427 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=2 surrogate=gp
+428 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=3 surrogate=gp
+429 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=4 surrogate=gp
+430 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=5 surrogate=gp
+431 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+432 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+433 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+434 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+435 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+436 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+437 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+438 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+439 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+440 python src/run_bpo.py bo.time_limit=100 problem.iseed=22 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+441 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=1 surrogate=none
+442 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=2 surrogate=none
+443 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=3 surrogate=none
+444 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=4 surrogate=none
+445 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=5 surrogate=none
+446 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=1 surrogate=gp
+447 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=2 surrogate=gp
+448 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=3 surrogate=gp
+449 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=4 surrogate=gp
+450 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=5 surrogate=gp
+451 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+452 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+453 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+454 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+455 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+456 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+457 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+458 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+459 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+460 python src/run_bpo.py bo.time_limit=100 problem.iseed=23 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+461 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=1 surrogate=none
+462 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=2 surrogate=none
+463 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=3 surrogate=none
+464 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=4 surrogate=none
+465 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=5 surrogate=none
+466 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=1 surrogate=gp
+467 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=2 surrogate=gp
+468 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=3 surrogate=gp
+469 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=4 surrogate=gp
+470 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=5 surrogate=gp
+471 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+472 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+473 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+474 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+475 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+476 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+477 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+478 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+479 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+480 python src/run_bpo.py bo.time_limit=100 problem.iseed=24 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+481 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=1 surrogate=none
+482 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=2 surrogate=none
+483 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=3 surrogate=none
+484 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=4 surrogate=none
+485 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=5 surrogate=none
+486 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=1 surrogate=gp
+487 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=2 surrogate=gp
+488 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=3 surrogate=gp
+489 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=4 surrogate=gp
+490 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=5 surrogate=gp
+491 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+492 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+493 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+494 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+495 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+496 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+497 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+498 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+499 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+500 python src/run_bpo.py bo.time_limit=100 problem.iseed=25 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+501 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=1 surrogate=none
+502 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=2 surrogate=none
+503 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=3 surrogate=none
+504 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=4 surrogate=none
+505 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=5 surrogate=none
+506 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=1 surrogate=gp
+507 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=2 surrogate=gp
+508 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=3 surrogate=gp
+509 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=4 surrogate=gp
+510 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=5 surrogate=gp
+511 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+512 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+513 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+514 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+515 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+516 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+517 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+518 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+519 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+520 python src/run_bpo.py bo.time_limit=100 problem.iseed=26 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+521 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=1 surrogate=none
+522 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=2 surrogate=none
+523 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=3 surrogate=none
+524 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=4 surrogate=none
+525 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=5 surrogate=none
+526 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=1 surrogate=gp
+527 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=2 surrogate=gp
+528 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=3 surrogate=gp
+529 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=4 surrogate=gp
+530 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=5 surrogate=gp
+531 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+532 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+533 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+534 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+535 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+536 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+537 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+538 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+539 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+540 python src/run_bpo.py bo.time_limit=100 problem.iseed=27 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+541 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=1 surrogate=none
+542 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=2 surrogate=none
+543 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=3 surrogate=none
+544 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=4 surrogate=none
+545 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=5 surrogate=none
+546 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=1 surrogate=gp
+547 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=2 surrogate=gp
+548 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=3 surrogate=gp
+549 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=4 surrogate=gp
+550 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=5 surrogate=gp
+551 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+552 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+553 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+554 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+555 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+556 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+557 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+558 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+559 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+560 python src/run_bpo.py bo.time_limit=100 problem.iseed=28 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+561 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=1 surrogate=none
+562 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=2 surrogate=none
+563 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=3 surrogate=none
+564 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=4 surrogate=none
+565 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=5 surrogate=none
+566 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=1 surrogate=gp
+567 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=2 surrogate=gp
+568 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=3 surrogate=gp
+569 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=4 surrogate=gp
+570 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=5 surrogate=gp
+571 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+572 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+573 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+574 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+575 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+576 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+577 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+578 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+579 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+580 python src/run_bpo.py bo.time_limit=100 problem.iseed=29 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+581 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=1 surrogate=none
+582 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=2 surrogate=none
+583 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=3 surrogate=none
+584 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=4 surrogate=none
+585 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=5 surrogate=none
+586 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=1 surrogate=gp
+587 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=2 surrogate=gp
+588 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=3 surrogate=gp
+589 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=4 surrogate=gp
+590 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=5 surrogate=gp
+591 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+592 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+593 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+594 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+595 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+596 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+597 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+598 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+599 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+600 python src/run_bpo.py bo.time_limit=100 problem.iseed=30 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+601 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=1 surrogate=none
+602 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=2 surrogate=none
+603 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=3 surrogate=none
+604 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=4 surrogate=none
+605 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=5 surrogate=none
+606 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=1 surrogate=gp
+607 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=2 surrogate=gp
+608 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=3 surrogate=gp
+609 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=4 surrogate=gp
+610 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=5 surrogate=gp
+611 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+612 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+613 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+614 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+615 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+616 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+617 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+618 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+619 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+620 python src/run_bpo.py bo.time_limit=100 problem.iseed=31 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+621 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=1 surrogate=none
+622 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=2 surrogate=none
+623 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=3 surrogate=none
+624 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=4 surrogate=none
+625 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=5 surrogate=none
+626 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=1 surrogate=gp
+627 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=2 surrogate=gp
+628 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=3 surrogate=gp
+629 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=4 surrogate=gp
+630 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=5 surrogate=gp
+631 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+632 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+633 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+634 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+635 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+636 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+637 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+638 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+639 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+640 python src/run_bpo.py bo.time_limit=100 problem.iseed=32 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+641 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=1 surrogate=none
+642 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=2 surrogate=none
+643 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=3 surrogate=none
+644 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=4 surrogate=none
+645 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=5 surrogate=none
+646 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=1 surrogate=gp
+647 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=2 surrogate=gp
+648 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=3 surrogate=gp
+649 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=4 surrogate=gp
+650 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=5 surrogate=gp
+651 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+652 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+653 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+654 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+655 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+656 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+657 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+658 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+659 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+660 python src/run_bpo.py bo.time_limit=100 problem.iseed=33 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+661 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=1 surrogate=none
+662 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=2 surrogate=none
+663 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=3 surrogate=none
+664 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=4 surrogate=none
+665 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=5 surrogate=none
+666 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=1 surrogate=gp
+667 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=2 surrogate=gp
+668 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=3 surrogate=gp
+669 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=4 surrogate=gp
+670 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=5 surrogate=gp
+671 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+672 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+673 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+674 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+675 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+676 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+677 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+678 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+679 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+680 python src/run_bpo.py bo.time_limit=100 problem.iseed=34 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+681 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=1 surrogate=none
+682 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=2 surrogate=none
+683 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=3 surrogate=none
+684 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=4 surrogate=none
+685 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=5 surrogate=none
+686 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=1 surrogate=gp
+687 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=2 surrogate=gp
+688 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=3 surrogate=gp
+689 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=4 surrogate=gp
+690 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=5 surrogate=gp
+691 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+692 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+693 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+694 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+695 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+696 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+697 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+698 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+699 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+700 python src/run_bpo.py bo.time_limit=100 problem.iseed=35 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+701 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=1 surrogate=none
+702 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=2 surrogate=none
+703 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=3 surrogate=none
+704 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=4 surrogate=none
+705 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=5 surrogate=none
+706 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=1 surrogate=gp
+707 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=2 surrogate=gp
+708 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=3 surrogate=gp
+709 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=4 surrogate=gp
+710 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=5 surrogate=gp
+711 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+712 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+713 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+714 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+715 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+716 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+717 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+718 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+719 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+720 python src/run_bpo.py bo.time_limit=100 problem.iseed=36 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+721 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=1 surrogate=none
+722 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=2 surrogate=none
+723 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=3 surrogate=none
+724 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=4 surrogate=none
+725 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=5 surrogate=none
+726 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=1 surrogate=gp
+727 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=2 surrogate=gp
+728 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=3 surrogate=gp
+729 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=4 surrogate=gp
+730 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=5 surrogate=gp
+731 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+732 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+733 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+734 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+735 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+736 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+737 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+738 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+739 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+740 python src/run_bpo.py bo.time_limit=100 problem.iseed=37 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+741 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=1 surrogate=none
+742 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=2 surrogate=none
+743 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=3 surrogate=none
+744 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=4 surrogate=none
+745 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=5 surrogate=none
+746 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=1 surrogate=gp
+747 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=2 surrogate=gp
+748 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=3 surrogate=gp
+749 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=4 surrogate=gp
+750 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=5 surrogate=gp
+751 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+752 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+753 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+754 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+755 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+756 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+757 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+758 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+759 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+760 python src/run_bpo.py bo.time_limit=100 problem.iseed=38 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+761 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=1 surrogate=none
+762 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=2 surrogate=none
+763 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=3 surrogate=none
+764 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=4 surrogate=none
+765 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=5 surrogate=none
+766 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=1 surrogate=gp
+767 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=2 surrogate=gp
+768 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=3 surrogate=gp
+769 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=4 surrogate=gp
+770 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=5 surrogate=gp
+771 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+772 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+773 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+774 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+775 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+776 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+777 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+778 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+779 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+780 python src/run_bpo.py bo.time_limit=100 problem.iseed=39 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+781 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=1 surrogate=none
+782 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=2 surrogate=none
+783 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=3 surrogate=none
+784 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=4 surrogate=none
+785 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=5 surrogate=none
+786 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=1 surrogate=gp
+787 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=2 surrogate=gp
+788 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=3 surrogate=gp
+789 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=4 surrogate=gp
+790 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=5 surrogate=gp
+791 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+792 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+793 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+794 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+795 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+796 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+797 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+798 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+799 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+800 python src/run_bpo.py bo.time_limit=100 problem.iseed=40 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+801 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=1 surrogate=none
+802 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=2 surrogate=none
+803 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=3 surrogate=none
+804 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=4 surrogate=none
+805 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=5 surrogate=none
+806 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=1 surrogate=gp
+807 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=2 surrogate=gp
+808 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=3 surrogate=gp
+809 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=4 surrogate=gp
+810 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=5 surrogate=gp
+811 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+812 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+813 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+814 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+815 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+816 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+817 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+818 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+819 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+820 python src/run_bpo.py bo.time_limit=100 problem.iseed=41 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+821 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=1 surrogate=none
+822 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=2 surrogate=none
+823 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=3 surrogate=none
+824 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=4 surrogate=none
+825 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=5 surrogate=none
+826 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=1 surrogate=gp
+827 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=2 surrogate=gp
+828 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=3 surrogate=gp
+829 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=4 surrogate=gp
+830 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=5 surrogate=gp
+831 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+832 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+833 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+834 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+835 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+836 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+837 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+838 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+839 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+840 python src/run_bpo.py bo.time_limit=100 problem.iseed=42 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+841 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=1 surrogate=none
+842 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=2 surrogate=none
+843 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=3 surrogate=none
+844 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=4 surrogate=none
+845 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=5 surrogate=none
+846 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=1 surrogate=gp
+847 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=2 surrogate=gp
+848 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=3 surrogate=gp
+849 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=4 surrogate=gp
+850 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=5 surrogate=gp
+851 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+852 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+853 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+854 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+855 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+856 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+857 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+858 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+859 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+860 python src/run_bpo.py bo.time_limit=100 problem.iseed=43 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+861 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=1 surrogate=none
+862 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=2 surrogate=none
+863 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=3 surrogate=none
+864 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=4 surrogate=none
+865 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=5 surrogate=none
+866 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=1 surrogate=gp
+867 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=2 surrogate=gp
+868 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=3 surrogate=gp
+869 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=4 surrogate=gp
+870 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=5 surrogate=gp
+871 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+872 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+873 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+874 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+875 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+876 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+877 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+878 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+879 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+880 python src/run_bpo.py bo.time_limit=100 problem.iseed=44 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+881 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=1 surrogate=none
+882 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=2 surrogate=none
+883 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=3 surrogate=none
+884 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=4 surrogate=none
+885 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=5 surrogate=none
+886 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=1 surrogate=gp
+887 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=2 surrogate=gp
+888 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=3 surrogate=gp
+889 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=4 surrogate=gp
+890 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=5 surrogate=gp
+891 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+892 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+893 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+894 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+895 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+896 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+897 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+898 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+899 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+900 python src/run_bpo.py bo.time_limit=100 problem.iseed=45 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+901 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=1 surrogate=none
+902 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=2 surrogate=none
+903 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=3 surrogate=none
+904 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=4 surrogate=none
+905 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=5 surrogate=none
+906 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=1 surrogate=gp
+907 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=2 surrogate=gp
+908 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=3 surrogate=gp
+909 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=4 surrogate=gp
+910 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=5 surrogate=gp
+911 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+912 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+913 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+914 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+915 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+916 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+917 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+918 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+919 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+920 python src/run_bpo.py bo.time_limit=100 problem.iseed=46 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+921 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=1 surrogate=none
+922 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=2 surrogate=none
+923 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=3 surrogate=none
+924 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=4 surrogate=none
+925 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=5 surrogate=none
+926 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=1 surrogate=gp
+927 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=2 surrogate=gp
+928 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=3 surrogate=gp
+929 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=4 surrogate=gp
+930 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=5 surrogate=gp
+931 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+932 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+933 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+934 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+935 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+936 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+937 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+938 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+939 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+940 python src/run_bpo.py bo.time_limit=100 problem.iseed=47 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+941 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=1 surrogate=none
+942 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=2 surrogate=none
+943 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=3 surrogate=none
+944 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=4 surrogate=none
+945 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=5 surrogate=none
+946 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=1 surrogate=gp
+947 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=2 surrogate=gp
+948 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=3 surrogate=gp
+949 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=4 surrogate=gp
+950 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=5 surrogate=gp
+951 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+952 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+953 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+954 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+955 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+956 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+957 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+958 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+959 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+960 python src/run_bpo.py bo.time_limit=100 problem.iseed=48 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+961 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=1 surrogate=none
+962 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=2 surrogate=none
+963 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=3 surrogate=none
+964 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=4 surrogate=none
+965 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=5 surrogate=none
+966 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=1 surrogate=gp
+967 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=2 surrogate=gp
+968 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=3 surrogate=gp
+969 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=4 surrogate=gp
+970 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=5 surrogate=gp
+971 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+972 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+973 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+974 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+975 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+976 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+977 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+978 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+979 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+980 python src/run_bpo.py bo.time_limit=100 problem.iseed=49 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+981 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=1 surrogate=none
+982 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=2 surrogate=none
+983 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=3 surrogate=none
+984 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=4 surrogate=none
+985 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=5 surrogate=none
+986 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=1 surrogate=gp
+987 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=2 surrogate=gp
+988 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=3 surrogate=gp
+989 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=4 surrogate=gp
+990 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=5 surrogate=gp
+991 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2
+992 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2
+993 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2
+994 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2
+995 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2
+996 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=1 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+997 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=2 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+998 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=3 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+999 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=4 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
+1000 python src/run_bpo.py bo.time_limit=100 problem.iseed=50 bo.rseed=5 surrogate=gp acquisition.batch_size_q=2 acquisition.sequential=false
