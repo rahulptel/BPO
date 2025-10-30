@@ -85,16 +85,25 @@ def normalize_hypervolume(unnorm_hv, ideal_point):
 
 def compute_iteration_stats(all_prefs, all_objs, ref_point, ideal_point, n_iterations):
     records = []
+    prev_n_nd = -1
     for i, (prefs, objs) in enumerate(zip(all_prefs, all_objs)):
-        pareto_mask = is_non_dominated(objs)
-        objs_nd = objs[pareto_mask]
+        unique_objs = torch.unique(objs, dim=0)
+        pareto_mask = is_non_dominated(unique_objs)
+        if prev_n_nd > 0 and pareto_mask.sum().item() == prev_n_nd:
+            # No change in ND front, skip HV computation
+            n_nd = int(pareto_mask.sum().item())
+            hv = records[-1]["hv"]
+        else:
+            objs_nd = unique_objs[pareto_mask]
 
-        bd = FastNondominatedPartitioning(ref_point=ref_point, Y=objs_nd)
-        hv = bd.compute_hypervolume().item()
-        hv = normalize_hypervolume(hv, ideal_point)
-        n_nd = int(pareto_mask.sum().item())
+            bd = FastNondominatedPartitioning(ref_point=ref_point, Y=objs_nd)
+            hv = bd.compute_hypervolume().item()
+            hv = normalize_hypervolume(hv, ideal_point)
 
-        print(f"Iter {i + 1}/{n_iterations} | ND: {n_nd} | " f"Hypervolume: {hv:.4f}")
+            n_nd = int(pareto_mask.sum().item())
+            prev_n_nd = n_nd
+
+        print(f"Iter {i + 1}/{n_iterations} | ND: {n_nd} | " f"Hypervolume: {hv:.6f}")
         records.append(
             {
                 "iteration": i + 1,
@@ -164,9 +173,21 @@ def run_bo(problem, cfg):
         all_prefs.append(prefs)
         all_objs.append(objs)
 
+        # Check time limit (seconds) after updating iteration timing
+        if time_dict["data_collection"] + time_dict["iterations"] >= float(
+            cfg.bo.time_limit
+        ):
+            print("Time limit reached; stopping early.")
+            break
+
     records = compute_iteration_stats(
-        all_prefs, all_objs, ref_point, problem.ideal_point(), cfg.bo.n_iterations
+        all_prefs,
+        all_objs,
+        ref_point,
+        problem.ideal_point(),
+        len(all_prefs),
     )
+    print("N evaluations:", problem.n_evaluations)
     print_time_dict(time_dict)
 
     save_result(

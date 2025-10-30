@@ -12,10 +12,11 @@ acquisition:
 
 bo:
   n_initial_samples: 10
-  n_iterations: 20
+  n_iterations: 10000
   num_restarts: 10
   raw_samples: 512
   rseed: 123
+  time_limit: 100
 
 hydra:
   run:

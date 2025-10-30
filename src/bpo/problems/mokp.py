@@ -86,10 +86,7 @@ class MOKP(Problem):
         }
 
     def io_base_dir(self, config):
-        return (
-            Path("../outputs")
-            / f"mokp-items-{self.n_items}_objs-{self.n_objs}_iseed-{self.iseed}_rseed-{config.rseed}"
-        )
+        return f"mokp-items-{self.n_items}_objs-{self.n_objs}_iseed-{self.iseed}_rseed-{config.rseed}"
 
     def _compute_ideal_point(self):
         ideal_point = np.zeros(self.n_objs)
