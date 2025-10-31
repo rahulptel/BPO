@@ -31,6 +31,7 @@ class MOKP(Problem):
 
         self.env = gp.Env(empty=True)
         self.env.setParam("OutputFlag", 0)
+        self.env.setParam("Threads", 1)
         self.env.start()
 
         self.ideal_point_values = self._compute_ideal_point()
