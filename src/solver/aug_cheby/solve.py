@@ -1,5 +1,7 @@
+import json
 import random
 import time
+from datetime import datetime
 
 import numpy as np
 import torch
@@ -7,154 +9,195 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
     FastNondominatedPartitioning,
 )
 from botorch.utils.multi_objective.pareto import is_non_dominated
+from omegaconf import OmegaConf
 
 from scalarization.aug_cheby import AugChebyMOKPScalarizer
-
-from .io import save_result
-
-
-def _sample_dirichlet(n_points, dim):
-    base = torch.ones(dim, dtype=torch.get_default_dtype())
-    distribution = torch.distributions.dirichlet.Dirichlet(base)
-    return distribution.sample((n_points,)).reshape(n_points, dim)
+from utils import OUTPUTS_DIR
 
 
-def set_global_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-
-
-def normalize_hypervolume(unnorm_hv, ideal_point):
-    if ideal_point is None:
-        return unnorm_hv
-
-    denom = torch.abs(ideal_point).prod().item()
-    if denom == 0:
-        return unnorm_hv
-
-    return unnorm_hv / denom
-
-
-def compute_iteration_stats(
-    all_prefs,
-    all_objs,
-    ref_point,
-    ideal_point,
-    save_prefs=False,
-    save_objs=False,
-):
-    records = []
-    prev_n_nd = -1
-    prev_hv = None
-
-    for i, (prefs, objs) in enumerate(zip(all_prefs, all_objs)):
-        unique_objs = torch.unique(objs, dim=0)
-        pareto_mask = is_non_dominated(unique_objs)
-        current_n_nd = int(pareto_mask.sum().item())
-
-        if prev_n_nd == current_n_nd and prev_hv is not None:
-            hv = prev_hv
-        else:
-            objs_nd = unique_objs[pareto_mask]
-            bd = FastNondominatedPartitioning(ref_point=ref_point, Y=objs_nd)
-            hv_val = bd.compute_hypervolume().item()
-            hv = normalize_hypervolume(hv_val, ideal_point)
-            prev_hv = hv
-            prev_n_nd = current_n_nd
-
-        print(
-            f"Iter {i + 1}/{len(all_prefs)} | ND: {current_n_nd} | Hypervolume: {hv:.6f}"
+class AugChebySolver:
+    def __init__(self, cfg, instance):
+        self.cfg = cfg
+        self.instance = instance
+        self.scalarizer = AugChebyMOKPScalarizer(
+            instance,
+            rho=self.cfg.scalarization.rho,
         )
 
-        record = {
-            "iteration": i + 1,
-            "n_nd": current_n_nd,
-            "hv": float(hv),
+    @staticmethod
+    def _set_global_seed(seed):
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+
+    @staticmethod
+    def _sample_dirichlet(n_points, dim):
+        base = torch.ones(dim, dtype=torch.get_default_dtype())
+        distribution = torch.distributions.dirichlet.Dirichlet(base)
+        return distribution.sample((n_points,)).reshape(n_points, dim)
+
+    @staticmethod
+    def _normalize_hypervolume(unnorm_hv, ideal_point):
+        denom = torch.abs(ideal_point).prod().item()
+        if denom == 0:
+            return unnorm_hv
+        return unnorm_hv / denom
+
+    def _compute_iteration_stats(
+        self,
+        all_prefs,
+        all_objs,
+        ref_point,
+        ideal_point,
+        save_prefs=False,
+        save_objs=False,
+    ):
+        records = []
+        prev_n_nd = -1
+        prev_hv = None
+
+        for i, (prefs, objs) in enumerate(zip(all_prefs, all_objs)):
+            unique_objs = torch.unique(objs, dim=0)
+            pareto_mask = is_non_dominated(unique_objs)
+            current_n_nd = int(pareto_mask.sum().item())
+
+            if prev_n_nd == current_n_nd and prev_hv is not None:
+                hv = prev_hv
+            else:
+                objs_nd = unique_objs[pareto_mask]
+                bd = FastNondominatedPartitioning(ref_point=ref_point, Y=objs_nd)
+                hv_val = bd.compute_hypervolume().item()
+                hv = self._normalize_hypervolume(hv_val, ideal_point)
+                prev_hv = hv
+                prev_n_nd = current_n_nd
+
+            print(
+                f"Iter {i + 1}/{len(all_prefs)} | ND: {current_n_nd} | Hypervolume: {hv:.6f}"
+            )
+
+            record = {
+                "iteration": i + 1,
+                "n_nd": current_n_nd,
+                "hv": float(hv),
+            }
+
+            if save_prefs or i == len(all_prefs) - 1:
+                record["prefs"] = prefs.detach().cpu().tolist()
+            if save_objs or i == len(all_objs) - 1:
+                record["objs"] = objs.detach().cpu().tolist()
+
+            records.append(record)
+
+        return records
+
+    @staticmethod
+    def _time_suffix(value):
+        text = str(value)
+        return text.replace(":", "-").replace("/", "-").replace(" ", "_")
+
+    def _run_directory_chain(self):
+        chain = [("rseed", self.cfg.rseed)]
+        if self.cfg.n_iterations is not None:
+            chain.append(("n_iter", self.cfg.n_iterations))
+        if self.cfg.time_limit is not None:
+            chain.append(("time", self._time_suffix(self.cfg.time_limit)))
+        return chain
+
+    def save_result(self, records, ref_point, time_dict):
+        result = {
+            "cfg": OmegaConf.to_container(self.cfg, resolve=True),
+            "problem": self.instance.name,
+            "problem_metadata": self.instance.metadata(),
+            "scalarization": {
+                "name": self.cfg.scalarization.name,
+                "rho": self.cfg.scalarization.rho,
+            },
+            "n_evaluations": self.scalarizer.n_evaluations,
+            "ref_point": ref_point.detach().cpu().tolist(),
+            "iterations": records,
+            "nondominated_solutions": records[-1]["n_nd"],
+            "time_dict": time_dict,
         }
 
-        if save_prefs or i == len(all_prefs) - 1:
-            record["prefs"] = prefs.detach().cpu().tolist()
-        if save_objs or i == len(all_objs) - 1:
-            record["objs"] = objs.detach().cpu().tolist()
+        output_dir = OUTPUTS_DIR / "aug_cheby" / self.instance.base_descriptor()
+        for key, value in self._run_directory_chain():
+            output_dir /= f"{key}-{value}"
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-        records.append(record)
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        output_path = output_dir / f"run_aug_cheby_{timestamp}.json"
+        with output_path.open("w", encoding="utf-8") as handle:
+            json.dump(result, handle, indent=2)
+        print(f"Saved random solver results to {output_path}")
+        return output_path
 
-    return records
+    def run(self):
+        self._set_global_seed(self.cfg.rseed)
 
-
-def solve(instance, cfg):
-    set_global_seed(cfg.random.rseed)
-
-    scalarizer = AugChebyMOKPScalarizer(
-        instance,
-        rho=cfg.problem.rho,
-    )
-
-    try:
-        ref_point = torch.zeros(instance.n_objs, dtype=torch.get_default_dtype())
+        ref_point = torch.tensor(
+            self.instance.reference_point,
+            dtype=torch.get_default_dtype(),
+        )
         ideal_point = torch.tensor(
-            instance.ideal_point(),
+            self.instance.ideal_point,
             dtype=torch.get_default_dtype(),
         )
 
         print(f"Using reference point: {ref_point.tolist()}")
 
-        print(f"Generating {cfg.random.n_initial_samples} initial data points...")
         time_dict = {"data_collection": 0.0, "iterations": 0.0}
-        t0 = time.time()
-        prefs = _sample_dirichlet(cfg.random.n_initial_samples, instance.n_objs)
-        objs = scalarizer.evaluate(prefs)
-        time_dict["data_collection"] = time.time() - t0
-        print("Initial data generation complete.")
 
-        all_prefs = [prefs]
-        all_objs = [objs]
+        try:
+            prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
+            objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
 
-        max_iterations = int(cfg.random.n_iterations)
-        batch_size = int(cfg.random.batch_size_q)
-        time_limit = float(cfg.random.time_limit)
+            all_prefs = []
+            all_objs = []
 
-        print(f"Starting random loop for {max_iterations} iterations...")
+            max_iterations = int(self.cfg.n_iterations)
+            time_limit = float(self.cfg.time_limit)
 
-        for iteration in range(max_iterations):
-            if time_dict["data_collection"] + time_dict["iterations"] >= time_limit:
-                print("Time limit reached; stopping early.")
-                break
+            print(f"Starting random loop for {max_iterations} iterations...")
 
-            t_iter_start = time.time()
+            for _ in range(max_iterations):
+                if time_dict["iterations"] >= time_limit:
+                    print("Time limit reached; stopping early.")
+                    break
 
-            new_prefs = _sample_dirichlet(batch_size, instance.n_objs)
-            new_objs = scalarizer.evaluate(new_prefs)
+                t_iter_start = time.time()
 
-            prefs = torch.cat([prefs, new_prefs])
-            objs = torch.cat([objs, new_objs])
+                new_pref = self._sample_dirichlet(1, self.instance.n_objs)
+                new_obj = self.scalarizer.evaluate(new_pref)
 
-            all_prefs.append(prefs)
-            all_objs.append(objs)
+                prefs = torch.cat([prefs, new_pref])
+                objs = torch.cat([objs, new_obj])
 
-            time_dict["iterations"] += time.time() - t_iter_start
+                all_prefs.append(prefs)
+                all_objs.append(objs)
 
-        records = compute_iteration_stats(
-            all_prefs,
-            all_objs,
-            ref_point,
-            ideal_point,
-            save_prefs=cfg.random.save_prefs,
-            save_objs=cfg.random.save_objs,
-        )
+                time_dict["iterations"] += time.time() - t_iter_start
 
-        print("N evaluations:", scalarizer.n_evaluations)
+                if time_dict["iterations"] >= time_limit:
+                    print("Time limit reached; stopping early.")
+                    break
 
-        save_result(
-            instance,
-            cfg,
-            records,
-            scalarizer.n_evaluations,
-            ref_point,
-            time_dict,
-        )
-    finally:
-        scalarizer.close()
+            if not all_prefs:
+                print("No iterations executed; skipping result serialization.")
+                return
+
+            records = self._compute_iteration_stats(
+                all_prefs,
+                all_objs,
+                ref_point,
+                ideal_point,
+                save_prefs=self.cfg.save_prefs,
+                save_objs=self.cfg.save_objs,
+            )
+
+            print("N evaluations:", self.scalarizer.n_evaluations)
+
+            self.save_result(records, ref_point, time_dict)
+        finally:
+            self.scalarizer.close()

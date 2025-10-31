@@ -1,3 +1,3 @@
-from .solve import solve
+from .solve import AugChebySolver
 
-__all__ = ["solve"]
+__all__ = ["AugChebySolver"]
