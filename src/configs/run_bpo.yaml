@@ -1,24 +1,24 @@
 defaults:
   - surrogate: gp
   - problem: mokp
+  - scalarization: aug_cheby
   - override hydra/job_logging: disabled
   - _self_
 
 acquisition:
   name:
-  mc_samples: 128
   batch_size_q: 1
-  sequential: true
-
-bo:
-  n_initial_samples: 10
-  n_iterations: 10000
   num_restarts: 10
   raw_samples: 512
-  rseed: 123
-  time_limit: 100
-  save_prefs: false
-  save_objs: false
+  mc_samples: 128
+  sequential: true
+
+n_initial_samples: 10
+n_iterations: 10000
+rseed: 123
+time_limit: 100
+save_prefs: false
+save_objs: false
 
 hydra:
   run:
