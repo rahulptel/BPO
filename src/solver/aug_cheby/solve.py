@@ -121,7 +121,7 @@ class AugChebySolver:
             "time_dict": time_dict,
         }
 
-        output_dir = OUTPUTS_DIR / "aug_cheby" / self.instance.base_descriptor()
+        output_dir = OUTPUTS_DIR / "aug_cheby" / str(self.instance)
         for key, value in self._run_directory_chain():
             output_dir /= f"{key}-{value}"
         output_dir.mkdir(parents=True, exist_ok=True)
