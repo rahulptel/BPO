@@ -1,35 +1,29 @@
+import torch
 from hydra import main as hydra_main
 
-from ea.core.run import run_ea
+from problem import MOKPInstance
+from solver.ea import EASolver
+
+torch.set_default_dtype(torch.float64)
 
 
-def _build_mokp_problem(problem_cfg):
-    from ea.problems.mokp import MOKP
-
-    return MOKP(
-        n_items=problem_cfg.n_items,
-        n_objs=problem_cfg.n_objs,
-        density=problem_cfg.density,
-        iseed=problem_cfg.iseed,
-    )
-
-
-def build_problem(cfg):
-    builders = {
-        "mokp": _build_mokp_problem,
-    }
-    if cfg.problem.name not in builders:
-        available = ", ".join(sorted(builders))
-        raise ValueError(
-            f"Unsupported problem '{cfg.problem.name}'. Supported problems: {available}"
+def build_instance(problem_cfg):
+    if problem_cfg.name == "mokp":
+        return MOKPInstance(
+            n_items=problem_cfg.n_items,
+            n_objs=problem_cfg.n_objs,
+            density=problem_cfg.density,
+            iseed=problem_cfg.iseed,
         )
-    return builders[cfg.problem.name](cfg.problem)
+    else:
+        raise ValueError(f"Unknown problem name: {problem_cfg.name}")
 
 
 @hydra_main(config_path="configs", config_name="run_ea", version_base=None)
 def main(cfg):
-    problem = build_problem(cfg)
-    run_ea(problem, cfg)
+    instance = build_instance(cfg.problem)
+    solver = EASolver(cfg, instance)
+    solver.run()
 
 
 if __name__ == "__main__":

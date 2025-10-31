@@ -1,3 +1,3 @@
-from .solve import solve
+from .solve import EASolver
 
-__all__ = ["solve"]
+__all__ = ["EASolver"]
