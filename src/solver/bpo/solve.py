@@ -12,6 +12,7 @@ from omegaconf import OmegaConf
 from scalarization.aug_cheby import AugChebyMOKPScalarizer
 from utils import (
     OUTPUTS_DIR,
+    compute_hypervolume,
     dirichlet_initial_design,
     normalize_hypervolume,
     set_global_seed,
@@ -76,6 +77,8 @@ class BPOSolver:
             dir_chain.append(("n_init", config.n_initial_samples))
         if config.n_iterations is not None:
             dir_chain.append(("n_iter", config.n_iterations))
+        if config.time_limit is not None:
+            dir_chain.append(("time", config.time_limit))
         if config.n_iterations is not None:
             dir_chain.append(("rseed", config.rseed))
 
@@ -111,9 +114,7 @@ class BPOSolver:
                 hv = records[-1]["hv"]
             else:
                 objs_nd = unique_objs[pareto_mask]
-                bd = FastNondominatedPartitioning(ref_point=ref_point, Y=objs_nd)
-                hv = bd.compute_hypervolume().item()
-                hv = normalize_hypervolume(hv, ideal_point)
+                hv = compute_hypervolume(objs_nd, ref_point, ideal_point)
 
                 n_nd = pareto_mask.sum().item()
                 prev_n_nd = n_nd
