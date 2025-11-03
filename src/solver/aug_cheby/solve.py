@@ -5,14 +5,10 @@ from datetime import datetime
 
 import numpy as np
 import torch
-from botorch.utils.multi_objective.box_decompositions.non_dominated import (
-    FastNondominatedPartitioning,
-)
-from botorch.utils.multi_objective.pareto import is_non_dominated
 from omegaconf import OmegaConf
 
 from scalarization.aug_cheby import AugChebyMOKPScalarizer
-from utils import OUTPUTS_DIR, compute_hypervolume, compute_iteration_stats
+from utils import OUTPUTS_DIR, compute_iteration_stats
 
 
 class AugChebySolver:
@@ -20,8 +16,7 @@ class AugChebySolver:
         self.cfg = cfg
         self.instance = instance
         self.scalarizer = AugChebyMOKPScalarizer(
-            instance,
-            rho=self.cfg.scalarization.rho,
+            instance, rho=self.cfg.scalarization.rho, time_limit=self.cfg.time_limit
         )
 
     @staticmethod
@@ -93,7 +88,7 @@ class AugChebySolver:
 
         print(f"Using reference point: {ref_point.tolist()}")
 
-        time_dict = {"data_collection": 0.0, "iterations": 0.0}
+        time_dict = {"iterations": 0.0}
 
         try:
             prefs = torch.empty(
@@ -113,7 +108,7 @@ class AugChebySolver:
                     print("Time limit reached; stopping early.")
                     break
 
-                t_iter_start = time.time()
+                t0 = time.time()
 
                 new_pref = self._sample_dirichlet(1, self.instance.n_objs)
                 new_obj = self.scalarizer.evaluate(new_pref)
@@ -121,11 +116,7 @@ class AugChebySolver:
                 prefs = torch.cat([prefs, new_pref])
                 objs = torch.cat([objs, new_obj])
 
-                time_dict["iterations"] += time.time() - t_iter_start
-
-                if time_dict["iterations"] >= time_limit:
-                    print("Time limit reached; stopping early.")
-                    break
+                time_dict["iterations"] += time.time() - t0
 
             records = compute_iteration_stats(
                 objs,

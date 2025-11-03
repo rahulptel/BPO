@@ -82,7 +82,7 @@ class AugChebyMOKPScalarizer:
 
             model.optimize()
 
-            if model.Status == GRB.OPTIMAL:
+            if model.Status == GRB.OPTIMAL or model.Status == GRB.TIME_LIMIT:
                 solution_x = x.X
                 true_objective = self.instance.values.T @ solution_x
                 return true_objective if maximize else -true_objective

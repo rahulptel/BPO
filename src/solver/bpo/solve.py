@@ -3,19 +3,13 @@ import time
 from datetime import datetime
 
 import torch
-from botorch.utils.multi_objective.box_decompositions.non_dominated import (
-    FastNondominatedPartitioning,
-)
-from botorch.utils.multi_objective.pareto import is_non_dominated
 from omegaconf import OmegaConf
 
 from scalarization.aug_cheby import AugChebyMOKPScalarizer
 from utils import (
     OUTPUTS_DIR,
-    compute_hypervolume,
     compute_iteration_stats,
     dirichlet_initial_design,
-    normalize_hypervolume,
     set_global_seed,
 )
 
@@ -45,6 +39,7 @@ class BPOSolver:
             self.scalarizer = AugChebyMOKPScalarizer(
                 self.problem,
                 rho=self.cfg.scalarization.rho,
+                time_limit=self.cfg.time_limit,
             )
         else:
             raise ValueError(
@@ -184,6 +179,13 @@ class BPOSolver:
         print(f"Starting BO loop for {self.cfg.n_iterations} iterations...")
         time_dict["iterations"] = 0.0
         for _ in range(self.cfg.n_iterations):
+            # Check time limit (seconds) after updating iteration timing
+            if time_dict["data_collection"] + time_dict["iterations"] >= float(
+                self.cfg.time_limit
+            ):
+                print("Time limit reached. Stopping early.")
+                break
+
             t0 = time.time()
 
             model = surrogate.fit(prefs, objs, time_dict)
@@ -194,13 +196,6 @@ class BPOSolver:
 
             prefs = torch.cat([prefs, new_prefs])
             objs = torch.cat([objs, new_objs])
-
-            # Check time limit (seconds) after updating iteration timing
-            if time_dict["data_collection"] + time_dict["iterations"] >= float(
-                self.cfg.time_limit
-            ):
-                print("Time limit reached; stopping early.")
-                break
 
         records = compute_iteration_stats(
             objs,
