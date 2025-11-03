@@ -1,12 +1,30 @@
 import argparse
 from pathlib import Path
 
-BASE_COMMAND = "python src/run_bpo.py bo.time_limit=100"
-CASE_VARIANTS = (
-    ("surrogate=none",),
+BASE_COMMAND = "python src/run_bpo.py"
+PROBLEM_TIME_LIMITS = {
+    50: {3: 120, 4: 240, 5: 240},
+    250: {3: 120, 4: 240, 5: 240},
+    500: {3: 120, 4: 240, 5: 240},
+}
+PROBLEM_VARIANTS = tuple(
+    (
+        f"problem.n_items={n_items}",
+        f"problem.n_objs={n_objs}",
+        f"time_limit={time_limit}",
+    )
+    for n_items, objectives in PROBLEM_TIME_LIMITS.items()
+    for n_objs, time_limit in objectives.items()
+)
+ACQUISITION_VARIANTS = (
     ("surrogate=gp",),
     ("surrogate=gp", "acquisition.batch_size_q=2"),
     ("surrogate=gp", "acquisition.batch_size_q=2", "acquisition.sequential=false"),
+)
+CASE_VARIANTS = tuple(
+    problem_variant + acquisition_variant
+    for problem_variant in PROBLEM_VARIANTS
+    for acquisition_variant in ACQUISITION_VARIANTS
 )
 
 
@@ -26,7 +44,7 @@ class CaseSpec:
         parts = [
             BASE_COMMAND,
             f"problem.iseed={self.iseed}",
-            f"bo.rseed={self.rseed}",
+            f"rseed={self.rseed}",
         ]
         parts.extend(self.overrides)
         return f"{self.case_id} {' '.join(parts)}"
@@ -69,7 +87,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    iseed_values = range(1, 51)
+    iseed_values = range(1, 26)
     rseed_values = range(1, 6)
 
     specs = generate_case_specs(iseed_values, rseed_values, CASE_VARIANTS)
