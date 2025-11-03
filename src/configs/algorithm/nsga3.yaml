@@ -2,6 +2,6 @@ name: nsga3
 pop_size: 200
 time: 00:05:00
 ref_dir_method: das-dennis
-n_partitions: 10
+n_partitions: 15
 seed: 123
 eliminate_duplicates: true
