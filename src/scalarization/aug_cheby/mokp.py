@@ -5,14 +5,16 @@ from gurobipy import GRB
 
 
 class AugChebyMOKPScalarizer:
-    def __init__(self, instance, rho=1e-4, threads=1):
+    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
         self.instance = instance
         self.rho = float(rho)
         self.threads = int(threads)
+        self.time_limit = float(time_limit)
 
         self.env = gp.Env(empty=True)
         self.env.setParam("OutputFlag", 0)
         self.env.setParam("Threads", self.threads)
+        self.env.setParam("TimeLimit", self.time_limit)
         self.env.start()
 
         self.n_evaluations = 0
