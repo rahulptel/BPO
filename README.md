@@ -1,158 +1,125 @@
-# BPO: Bayesian Preference Optimization for Multiobjective Discrete Optimization
+# Bayesian Preference Optimization
 
-This repository implements Bayesian Preference Optimization (BPO) for multiobjective discrete optimization, with a concrete instantiation on the Multi-Objective Knapsack Problem (MOKP). BPO learns where to evaluate scalarization preferences on the probability simplex and selects the next preference weights by maximizing a multiobjective acquisition function.
+This repository is the official implementation of the manuscript: Bayesian Preference Optimization for Multiobjective Discrete Optimization. Alongside the Bayesian optimization pipeline for preference-guided search, it offers companion baselines based on random preference selection and evolutionary algorithms. 
+It provides a unified workflow for defining multiobjective problems, building scalarized views of those problems, and evaluating a catalog of solvers.
 
-At each BO iteration, we:
-- Sample or optimize preference weights `lambda` on the simplex (sum to 1, nonnegative).
-- Solve the discrete subproblem via an augmented Tchebycheff scalarization using Gurobi to obtain an objective vector.
-- Fit/update a GP surrogate mapping `lambda -> objective vector`.
-- Select new `lambda` with a hypervolume-based acquisition (qLogEHVI) or a baseline random Dirichlet sampler.
+## Architecture
 
-The result is an efficient, model-based exploration of the Pareto frontier for discrete problems.
+```
+src/
+  problem/        # Problem generators and metadata
+  scalarization/  # Scalarized reformulations (e.g., augmented Chebyshev)
+  solver/         # Solver implementations (BPO, randomized, evolutionary)
+  configs/        # Hydra configuration hierarchy
+  utils/          # Shared helpers (seeding, sampling, paths, etc.)
+run_*.py          # Entry points for each solver
+```
 
-## Key Features
+- **problem** – creates multiobjective instances (e.g., random landscapes, combinatorial problems) and exposes common metadata such as dimensionality, capacities, and cached ideal points.
+- **scalarization** – houses reusable scalarizers that convert multiobjective queries into single-objective subproblems. Solvers that rely on scalarization (BPO, random sampling) compose these modules with problem instances.
+- **solver** – contains solver-specific orchestration:
+  - `solver/bpo` runs Bayesian preference optimization using BoTorch-based surrogates and acquisition functions.
+  - `solver/aug_cheby` samples random preference vectors (Dirichlet) and evaluates them via a scalarizer.
+  - `solver/ea` provides evolutionary algorithm baselines implemented directly against `pymoo`.
+  Each solver manages its own logging, hypervolume tracking, and JSON output.
+- **configs** – Hydra configuration tree for problems, scalarizations, solvers, and experiments.
+- **utils** – convenience functions for seeding, Dirichlet sampling, normalization, and output directories.
 
-- Preference-space BO over the simplex with equality constraints (sum of weights = 1).
-- Multiobjective acquisition: qLogExpectedHypervolumeImprovement (qLogEHVI) from BoTorch.
-- Exact discrete solves for each `lambda` using Gurobi on an augmented Tchebycheff scalarization.
-- Modular problem interface to plug in new multiobjective discrete problems.
-- Reproducible runs with clear output artifacts (JSON) including nondominated sets and iteration logs.
+Top-level `run_*.py` scripts wire the pieces together. They load Hydra configs, instantiate problem instances, hand them to solver classes, and emit results under `outputs/...`.
 
-## Repository Structure
+## Running Solvers
 
-- `src/run_bpo.py`: CLI entry point to run preference-based BO end-to-end.
-- `src/acquisition.py`: Acquisition registry and implementations (qLogEHVI and random Dirichlet).
-- `src/bpo/core/`
-  - `run.py`: Main BO loop, model fitting, candidate generation, HV tracking, and result saving.
-  - `model.py`: Multi-output GP surrogate (ModelListGP over standardized single-task GPs).
-  - `io.py`: Output structure and JSON writer for runs.
-- `src/bpo/problems/`
-  - `base.py`: Abstract `Problem` interface (bounds, constraints, evaluation, IO metadata).
-  - `mokp.py`: MOKP implementation with augmented Tchebycheff scalarization solved by Gurobi.
-  - `__init__.py`: Problem registry and builder.
-- `src/run_ea.py`: Hydra entry point for EA baselines powered by `pymoo`.
-- `src/ea/`
-  - `core/run.py`: EA drivers (NSGA-II/NSGA-III/SMSEMOA/CTAEA), HV tracking, and JSON serialization.
-  - `core/io.py`: Output writer mirroring the BO artifacts for downstream analysis.
-  - `problems/mokp.py`: Binary knapsack wrapped as a `pymoo` problem with identical instances to the BO setup.
-  - `problems/__init__.py`: EA problem registry.
+Hydra manages configuration. Override any parameter with dot-notation at the CLI. The examples below illustrate common patterns—replace placeholders (`<...>`) with values defined in your config tree.
 
-## MOKP + Augmented Tchebycheff
-
-Given preference weights `lambda` on the simplex, we solve a single mixed-integer problem using an augmented Tchebycheff objective that balances the max-deviation from the ideal point with a small augmentation term (`rho`) to avoid weakly Pareto-optimal solutions. The solver returns the true multiobjective vector (maximization convention configurable), which serves as supervised data for the surrogate.
-
-Notes:
-- Initial design points are drawn from a Dirichlet over the simplex.
-- Equality constraint `sum(lambda) = 1` is enforced during acquisition optimization.
-- Hypervolume is optionally normalized by the product of the absolute ideal point components when available.
-
-## Installation
-
-Prerequisites:
-- Python 3.8+
-- A working Gurobi installation and license (for `gurobipy`).
-- PyTorch compatible with your platform/GPU.
-
-Steps:
-- Install PyTorch following the official instructions for your platform.
-- Install the remaining dependencies:
-  - `pip install -r requirements.txt`
-
-Notes:
-- BoTorch/GPyTorch are pulled in via `botorch`, but PyTorch should be installed first.
-- The code uses float64 by default for numerical stability.
-
-## Quick Start
-
-Hydra is used for configuration. Use dot-notation to override defaults at the CLI.
-
-Basic BPO run on MOKP (3 objectives, 50 items):
+### Bayesian Preference Optimization (BPO)
 
 ```
 python src/run_bpo.py \
-  problem.name=mokp \
-  problem.n_items=50 problem.n_objs=3 problem.density=0.5 problem.iseed=123 problem.rho=1e-4 \
-  bo.n_initial_samples=10 bo.n_iterations=20 bo.raw_samples=512 bo.rseed=123 \
-  acquisition.name=qlogehvi acquisition.batch_size_q=2 acquisition.mc_samples=128 acquisition.sequential=true
+  problem.name=<problem_id> \
+  scalarization.rho=1e-4 \
+  bo.n_iterations=50 \
+  bo.time_limit=300 \
+  acquisition.name=qlogehvi
 ```
 
-Random baseline acquisition (Dirichlet sampling on the simplex):
+This command launches the preference-based BO loop using the augmented Chebyshev scalarizer. You can swap surrogate or acquisition settings via `configs/surrogate/*.yaml` and `configs/acquisition/*.yaml` (see the Hydra defaults inside `src/configs/run_bpo.yaml`).
+
+### Random Augmented Chebyshev Sampling
 
 ```
-python src/run_bpo.py acquisition.name=random
+python src/run_aug_cheby.py \
+  problem.name=<problem_id> \
+  scalarization.rho=1e-4 \
+  n_iterations=200 \
+  time_limit=120 \
+  rseed=42
 ```
 
-Reference point for HV (optional, one value per objective):
+The solver samples one preference vector per iteration from a Dirichlet, evaluates it through the scalarizer, and records the evolving Pareto front.
 
-```
-python src/run_bpo.py problem.ref_point="[0, 0, 0]"
-```
-
-## Evolutionary Algorithm Baselines
-
-Multiple algorithms from `pymoo` are available for benchmarking against BPO. Runs share the same Hydra patterns.
-
-NSGA-II (time-based termination):
+### Evolutionary Algorithms
 
 ```
 python src/run_ea.py \
-  algorithm=nsga2 algorithm.pop_size=200 algorithm.time=00:05:00 algorithm.seed=123 \
-  problem.name=mokp problem.n_items=50 problem.n_objs=3 problem.density=0.5 problem.iseed=123
+  problem.name=<problem_id> \
+  algorithm.name=nsga2 \
+  algorithm.pop_size=200 \
+  algorithm.time=00:05:00 \
+  algorithm.seed=123
 ```
 
-Other algorithms: `nsga3`, `smsemoa`, `ctaea`.
+Available algorithms include `nsga2`, `nsga3`, `smsemoa`, and `ctaea`. Each algorithm’s parameters live under `configs/algorithm/<name>.yaml`. Override or extend them via Hydra (e.g., `algorithm.n_partitions=12`).
 
-Examples with additional parameters:
+## Configuration & Customization
 
-```
-# NSGA-III (reference directions required)
-python src/run_ea.py \
-  algorithm=nsga3 algorithm.pop_size=200 algorithm.time=00:05:00 \
-  algorithm.ref_dir_method=das-dennis algorithm.n_partitions=10 \
-  problem.name=mokp
-
-# CTAEA (reference directions required)
-python src/run_ea.py \
-  algorithm=ctaea algorithm.pop_size=200 algorithm.time=00:05:00 \
-  algorithm.ref_dir_method=das-dennis algorithm.n_partitions=10 \
-  problem.name=mokp
-```
-
-Override hyperparameters directly at the CLI (e.g., `algorithm.pop_size=400`) or via config files under `src/configs/algorithm/`. Results are written to `outputs/ea/...` and include normalized hypervolume and the final nondominated set.
+- **Problems** – add new instances under `src/problem/` and register their configs in `src/configs/problem/`. Problems should expose metadata, a reference point, and a cached ideal point.
+- **Scalarizations** – implement new formulations in `src/scalarization/`; solvers can compose them with problem instances for preference evaluation or other transformations.
+- **Solvers** – inherit from existing solver patterns or create new ones under `src/solver/`. Each solver is responsible for its execution loop, metrics, and output serialization.
+- **Hydra Defaults** – the files in `src/configs/run_*.yaml` declare default config chains. Modify these defaults or supply CLI overrides to experiment with different setups.
 
 ## Outputs
 
-Run artifacts are stored under `outputs/…` with a problem- and acquisition-specific directory chain. Each run writes a timestamped JSON file containing:
-- Problem metadata and config
-- Acquisition settings
-- Per-iteration metrics (hypervolume, nondominated count)
-- Final nondominated set of objective vectors
+Every run produces a timestamped JSON report in `outputs/<solver>/...`. Directory chains encode the problem descriptor (via `str(instance)`), random seeds, and solver-specific settings.
 
-Example directory pattern for MOKP:
-- `outputs/mokp-items-<items>_objs-<objs>_iseed-<iseed>_rseed-<rseed>/<acq>/n_initial_samples-<n>/…`
-- `outputs/ea/mokp-items-<items>_objs-<objs>_iseed-<iseed>_seed-<seed>/algorithm-<algo>/pop_size-<pop>/time-<hh-mm-ss>/…`
+Examples:
 
-## Extending
+- `outputs/bpo/<problem_descriptor>/surr-<name>/acq-<name>/n_init-<N>/n_iter-<N>/.../run_bo_<timestamp>.json`
+- `outputs/aug_cheby/<problem_descriptor>/rseed-<seed>/n_iter-<N>/time-<seconds>/run_aug_cheby_<timestamp>.json`
+- `outputs/ea/<problem_descriptor>_seed-<seed>/algorithm-<name>/pop_size-<N>/time-<hh-mm-ss>/run_ea_<timestamp>.json`
 
-To add a new problem:
-- Subclass `bpo.problems.base.Problem` and implement:
-  - `n_objectives()`, `lambda_bounds()`, and optionally `lambda_equality_constraints()`
-  - `initial_design(n)` and `evaluate(lambda_batch, maximize=True)`
-  - `metadata()` and `io_base_dir(config)`
-- Register it in `bpo/problems/__init__.py` so it appears in `--problem` choices.
+Files contain the resolved Hydra config, problem metadata, per-iteration metrics (hypervolume, nondominated counts), nondominated sets, and run timing.
 
-To add a new acquisition:
-- Implement a subclass of `AcquisitionFunction` in `src/acquisition.py`.
-- Register it in `ACQUISITION_REGISTRY` so it appears in `--acquisition` choices.
+## Extending the Playground
+
+1. **Define a Problem** – create a generator in `problem/` that produces objective vectors/constraints and caches the ideal point. Add a Hydra config under `configs/problem/` to expose it.
+2. **Provide Scalarizations (optional)** – if the solver requires a scalarized subproblem, implement it in `scalarization/` and compose it with the problem instance.
+3. **Build a Solver** – follow the patterns in `solver/bpo`, `solver/aug_cheby`, or `solver/ea` to implement training loops, candidate generation, and result serialization.
+4. **Register Configs** – extend the corresponding `run_*.yaml` or create new entry points for custom experiments.
+
+## Requirements & Setup
+
+- Python 3.8+
+- Gurobi (for scalarizers that solve mixed-integer programs) with a valid license
+- PyTorch and BoTorch (installed via `requirements.txt`)
+- Optional: CUDA for GPU acceleration, `pymoo` for evolutionary algorithms
+
+Install dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+The code runs in float64 by default for numerical stability.
 
 ## Reproducibility
 
-- `bo.rseed` controls Torch, BoTorch sampler seeds, and NumPy/Python RNG used in BPO.
-- `problem.iseed` controls the problem instance (e.g., MOKP profits/weights and capacity).
-- `algorithm.seed` controls EA randomness (initial population, operators, etc.).
+- `problem.iseed` controls the stochastic generation of problem instances.
+- `bo.rseed`, `n_iterations`, and related fields govern the BO loop’s randomness.
+- `rseed` in `run_aug_cheby` sets Dirichlet sampling seeds.
+- `algorithm.seed` (and `algorithm.time`) configure evolutionary runs.
 
-Hypervolume is reported in maximization convention and normalized by the product of the absolute ideal point components when available.
+All solvers record their resolved configs alongside results to aid reproducibility.
 
 ## License
 
-This project is licensed under the terms of the MIT License. See `LICENSE`.
+Distributed under the MIT License. See `LICENSE` for details.

@@ -1,1 +1,0 @@
-# BPO package initializer
