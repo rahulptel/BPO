@@ -12,7 +12,7 @@ from botorch.utils.multi_objective.pareto import is_non_dominated
 from omegaconf import OmegaConf
 
 from scalarization.aug_cheby import AugChebyMOKPScalarizer
-from utils import OUTPUTS_DIR
+from utils import OUTPUTS_DIR, compute_hypervolume, compute_iteration_stats
 
 
 class AugChebySolver:
@@ -37,60 +37,6 @@ class AugChebySolver:
         base = torch.ones(dim, dtype=torch.get_default_dtype())
         distribution = torch.distributions.dirichlet.Dirichlet(base)
         return distribution.sample((n_points,)).reshape(n_points, dim)
-
-    @staticmethod
-    def _normalize_hypervolume(unnorm_hv, ideal_point):
-        denom = torch.abs(ideal_point).prod().item()
-        if denom == 0:
-            return unnorm_hv
-        return unnorm_hv / denom
-
-    def _compute_iteration_stats(
-        self,
-        all_prefs,
-        all_objs,
-        ref_point,
-        ideal_point,
-        save_prefs=False,
-        save_objs=False,
-    ):
-        records = []
-        prev_n_nd = -1
-        prev_hv = None
-
-        for i, (prefs, objs) in enumerate(zip(all_prefs, all_objs)):
-            unique_objs = torch.unique(objs, dim=0)
-            pareto_mask = is_non_dominated(unique_objs)
-            current_n_nd = int(pareto_mask.sum().item())
-
-            if prev_n_nd == current_n_nd and prev_hv is not None:
-                hv = prev_hv
-            else:
-                objs_nd = unique_objs[pareto_mask]
-                bd = FastNondominatedPartitioning(ref_point=ref_point, Y=objs_nd)
-                hv_val = bd.compute_hypervolume().item()
-                hv = self._normalize_hypervolume(hv_val, ideal_point)
-                prev_hv = hv
-                prev_n_nd = current_n_nd
-
-            print(
-                f"Iter {i + 1}/{len(all_prefs)} | ND: {current_n_nd} | Hypervolume: {hv:.6f}"
-            )
-
-            record = {
-                "iteration": i + 1,
-                "n_nd": current_n_nd,
-                "hv": float(hv),
-            }
-
-            if save_prefs or i == len(all_prefs) - 1:
-                record["prefs"] = prefs.detach().cpu().tolist()
-            if save_objs or i == len(all_objs) - 1:
-                record["objs"] = objs.detach().cpu().tolist()
-
-            records.append(record)
-
-        return records
 
     @staticmethod
     def _time_suffix(value):
@@ -150,11 +96,12 @@ class AugChebySolver:
         time_dict = {"data_collection": 0.0, "iterations": 0.0}
 
         try:
-            prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
-            objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
-
-            all_prefs = []
-            all_objs = []
+            prefs = torch.empty(
+                (0, self.instance.n_objs), dtype=torch.get_default_dtype()
+            )
+            objs = torch.empty(
+                (0, self.instance.n_objs), dtype=torch.get_default_dtype()
+            )
 
             max_iterations = int(self.cfg.n_iterations)
             time_limit = float(self.cfg.time_limit)
@@ -174,30 +121,22 @@ class AugChebySolver:
                 prefs = torch.cat([prefs, new_pref])
                 objs = torch.cat([objs, new_obj])
 
-                all_prefs.append(prefs)
-                all_objs.append(objs)
-
                 time_dict["iterations"] += time.time() - t_iter_start
 
                 if time_dict["iterations"] >= time_limit:
                     print("Time limit reached; stopping early.")
                     break
 
-            if not all_prefs:
-                print("No iterations executed; skipping result serialization.")
-                return
-
-            records = self._compute_iteration_stats(
-                all_prefs,
-                all_objs,
-                ref_point,
-                ideal_point,
-                save_prefs=self.cfg.save_prefs,
+            records = compute_iteration_stats(
+                objs,
+                self.instance.reference_point,
+                self.instance.ideal_point,
+                len(objs),
+                all_prefs=prefs,
                 save_objs=self.cfg.save_objs,
+                save_prefs=self.cfg.save_prefs,
             )
-
             print("N evaluations:", self.scalarizer.n_evaluations)
-
             self.save_result(records, ref_point, time_dict)
         finally:
             self.scalarizer.close()

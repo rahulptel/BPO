@@ -13,6 +13,7 @@ from scalarization.aug_cheby import AugChebyMOKPScalarizer
 from utils import (
     OUTPUTS_DIR,
     compute_hypervolume,
+    compute_iteration_stats,
     dirichlet_initial_design,
     normalize_hypervolume,
     set_global_seed,
@@ -91,49 +92,6 @@ class BPOSolver:
             raise ValueError(
                 f"Cannot infer acquisition for surrogate '{surrogate_name}'."
             )
-
-    def compute_iteration_stats(
-        self,
-        all_prefs,
-        all_objs,
-        ref_point,
-        ideal_point,
-        n_iterations,
-        save_prefs=False,
-        save_objs=False,
-    ):
-        records, prev_n_nd = [], -1
-        ref_point = torch.tensor(ref_point, dtype=torch.get_default_dtype())
-
-        for i, (prefs, objs) in enumerate(zip(all_prefs, all_objs)):
-            unique_objs = torch.unique(objs, dim=0)
-            pareto_mask = is_non_dominated(unique_objs)
-            if prev_n_nd > 0 and pareto_mask.sum().item() == prev_n_nd:
-                # No change in ND front, skip HV computation
-                n_nd = int(pareto_mask.sum().item())
-                hv = records[-1]["hv"]
-            else:
-                objs_nd = unique_objs[pareto_mask]
-                hv = compute_hypervolume(objs_nd, ref_point, ideal_point)
-
-                n_nd = pareto_mask.sum().item()
-                prev_n_nd = n_nd
-
-            iteration_record = {
-                "iteration": i + 1,
-                "n_nd": n_nd,
-                "hv": hv,
-            }
-            if save_prefs or i == len(all_prefs) - 1:
-                iteration_record["prefs"] = prefs.detach().cpu().tolist()
-            if save_objs or i == len(all_objs) - 1:
-                iteration_record["objs"] = objs.detach().cpu().tolist()
-            records.append(iteration_record)
-            print(
-                f"Iter {i + 1}/{n_iterations} | ND: {n_nd} | " f"Hypervolume: {hv:.6f}"
-            )
-
-        return records
 
     @staticmethod
     def print_time_dict(time_dict):
@@ -225,7 +183,6 @@ class BPOSolver:
         prefs, objs = self.prepare_initial_training_data(time_dict)
         print(f"Starting BO loop for {self.cfg.n_iterations} iterations...")
         time_dict["iterations"] = 0.0
-        all_prefs, all_objs = [], []
         for _ in range(self.cfg.n_iterations):
             t0 = time.time()
 
@@ -237,8 +194,6 @@ class BPOSolver:
 
             prefs = torch.cat([prefs, new_prefs])
             objs = torch.cat([objs, new_objs])
-            all_prefs.append(prefs)
-            all_objs.append(objs)
 
             # Check time limit (seconds) after updating iteration timing
             if time_dict["data_collection"] + time_dict["iterations"] >= float(
@@ -247,14 +202,14 @@ class BPOSolver:
                 print("Time limit reached; stopping early.")
                 break
 
-        records = self.compute_iteration_stats(
-            all_prefs,
-            all_objs,
+        records = compute_iteration_stats(
+            objs,
             self.problem.reference_point,
             self.problem.ideal_point,
-            len(all_prefs),
-            save_prefs=self.cfg.save_prefs,
+            len(objs),
+            all_prefs=prefs,
             save_objs=self.cfg.save_objs,
+            save_prefs=self.cfg.save_prefs,
         )
         self.save_result(records, time_dict)
         self.print_time_dict(time_dict)
