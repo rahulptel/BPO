@@ -1,22 +1,10 @@
 import torch
 from hydra import main as hydra_main
 
-from problem import MOKPInstance
+from problem import build_instance
 from solver.ea import EASolver
 
 torch.set_default_dtype(torch.float64)
-
-
-def build_instance(problem_cfg):
-    if problem_cfg.name == "mokp":
-        return MOKPInstance(
-            n_items=problem_cfg.n_items,
-            n_objs=problem_cfg.n_objs,
-            density=problem_cfg.density,
-            iseed=problem_cfg.iseed,
-        )
-    else:
-        raise ValueError(f"Unknown problem name: {problem_cfg.name}")
 
 
 def build_pymoo_instance(problem_cfg, problem):
