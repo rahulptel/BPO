@@ -19,10 +19,20 @@ def build_instance(problem_cfg):
         raise ValueError(f"Unknown problem name: {problem_cfg.name}")
 
 
+def build_pymoo_instance(problem_cfg, problem):
+    if problem_cfg.name == "mokp":
+        from solver.ea.adapters import PymooMOKPProblem
+
+        return PymooMOKPProblem(problem)
+    else:
+        raise ValueError(f"Unknown problem name: {problem_cfg.name}")
+
+
 @hydra_main(config_path="configs", config_name="run_ea", version_base=None)
 def main(cfg):
-    instance = build_instance(cfg.problem)
-    solver = EASolver(cfg, instance)
+    base_instance = build_instance(cfg.problem)
+    pymoo_instance = build_pymoo_instance(cfg.problem, base_instance)
+    solver = EASolver(cfg, base_instance, pymoo_instance)
     solver.run()
 
 
