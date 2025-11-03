@@ -199,7 +199,7 @@ class EASolver:
         Y_nd = []
         X_nd = []
         if n_nd > 0:
-            hv = compute_hypervolume(Y_nd_t, ref_point_t, ideal_point)
+            hv = compute_hypervolume(Y_nd_t, ref_point_t, ideal_point=ideal_point)
             Y_nd = Y_nd_t.cpu().numpy().tolist()
             X_nd = result.X[mask].tolist() if result.X is not None else None
         n_generations = -1 if callback is None else callback.n_generation
