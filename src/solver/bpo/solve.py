@@ -9,7 +9,7 @@ from scalarization.aug_cheby import AugChebyMOKPScalarizer
 from utils import (
     OUTPUTS_DIR,
     compute_iteration_stats,
-    dirichlet_initial_design,
+    get_dirichlet_distribution,
     set_global_seed,
 )
 
@@ -27,17 +27,17 @@ def get_default_acquisition_name(surrogate_name):
 
 
 class BPOSolver:
-    def __init__(self, cfg, problem):
+    def __init__(self, cfg, instance):
         self.cfg = cfg
-        self.problem = problem
+        self.instance = instance
         self.scalarizer = None
-
+        self.dirichlet = get_dirichlet_distribution(self.cfg.problem.n_objs)
         self._init_scalarizer()
 
     def _init_scalarizer(self):
         if self.cfg.scalarization.name == "aug_cheby":
             self.scalarizer = AugChebyMOKPScalarizer(
-                self.problem,
+                self.instance,
                 rho=self.cfg.scalarization.rho,
                 time_limit=self.cfg.time_limit,
             )
@@ -124,7 +124,7 @@ class BPOSolver:
         }
 
         base_dir = OUTPUTS_DIR / "bpo"
-        output_dir = base_dir / str(self.problem)
+        output_dir = base_dir / str(self.instance)
         for name, value in surrogate_dir_chain:
             output_dir /= f"{name}-{value}"
         for name, value in acquisition_dir_chain:
@@ -142,20 +142,36 @@ class BPOSolver:
 
     def prepare_initial_training_data(self, time_dict):
         print(f"Generating {self.cfg.n_initial_samples} initial data points...")
-        t0 = time.time()
-        prefs = dirichlet_initial_design(
-            self.cfg.n_initial_samples, self.problem.n_objs
-        )
-        objs = self.scalarizer.evaluate(prefs)
-        time_dict["data_collection"] = time.time() - t0
-        print("Initial data generation complete.")
+        time_dict["data_collection"] = 0
+        # prefs = dirichlet_initial_design(
+        #     self.cfg.n_initial_samples, self.instance.n_objs
+        # )
+        prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
+        objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
+
+        data_collection_complete = True
+        for _ in range(self.cfg.n_initial_samples):
+            t0 = time.time()
+            pref = self.dirichlet.sample((1,)).reshape(1, self.instance.n_objs)
+            obj = self.scalarizer.evaluate(pref)
+            time_dict["data_collection"] += time.time() - t0
+
+            prefs = torch.cat([prefs, pref])
+            objs = torch.cat([objs, obj])
+            if time_dict["data_collection"] > self.cfg.time_limit:
+                data_collection_complete = False
+                break
+
+        if data_collection_complete:
+            print("Initial data generation complete.")
+
         return prefs, objs
 
     def run(self):
         set_global_seed(self.cfg.rseed)
         time_dict, records = {}, []
 
-        print(f"Using reference point: {self.problem.reference_point.tolist()}")
+        print(f"Using reference point: {self.instance.reference_point.tolist()}")
 
         surrogate = build_surrogate(self.cfg.surrogate)
         print(f"Using surrogate: {self.cfg.surrogate.name}")
@@ -166,8 +182,8 @@ class BPOSolver:
             )
         acquisition = build_acquisition(
             self.cfg.acquisition,
-            n_objs=self.problem.n_objs,
-            ref_point=self.problem.reference_point,
+            n_objs=self.instance.n_objs,
+            ref_point=self.instance.reference_point,
             rseed=self.cfg.rseed,
         )
         print(
@@ -199,8 +215,8 @@ class BPOSolver:
 
         records = compute_iteration_stats(
             objs,
-            self.problem.reference_point,
-            self.problem.ideal_point,
+            self.instance.reference_point,
+            self.instance.ideal_point,
             len(objs),
             all_prefs=prefs,
             save_objs=self.cfg.save_objs,

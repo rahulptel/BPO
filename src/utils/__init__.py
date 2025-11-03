@@ -20,10 +20,10 @@ def set_global_seed(seed):
         torch.cuda.manual_seed_all(seed)
 
 
-def dirichlet_initial_design(n_points, dim):
+def get_dirichlet_distribution(dim):
     base = torch.ones(dim, dtype=torch.get_default_dtype())
     distribution = torch.distributions.dirichlet.Dirichlet(base)
-    return distribution.sample((n_points,)).reshape(n_points, dim)
+    return distribution
 
 
 def compute_hypervolume(Y_nd, ref_point, ideal_point=None, normalize=True):
