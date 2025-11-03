@@ -25,10 +25,10 @@ def dirichlet_initial_design(n_points, dim):
     return distribution.sample((n_points,)).reshape(n_points, dim)
 
 
-def compute_hypervolume(Y_nd, ref_point, ideal_point, normalize=True):
+def compute_hypervolume(Y_nd, ref_point, ideal_point=None, normalize=True):
     bd = FastNondominatedPartitioning(ref_point=ref_point, Y=Y_nd)
     hv_val = bd.compute_hypervolume().item()
-    if normalize:
+    if normalize and ideal_point is not None:
         return normalize_hypervolume(hv_val, ideal_point)
     return hv_val
 
