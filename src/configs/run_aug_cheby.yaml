@@ -4,7 +4,7 @@ defaults:
   - override hydra/job_logging: disabled
   - _self_
 
-n_iterations: 10000
+n_iterations: 500
 rseed: 123
 time_limit: 100
 save_prefs: false
