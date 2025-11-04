@@ -2,15 +2,13 @@ import gurobipy as gp
 import numpy as np
 import torch
 from gurobipy import GRB
-from pyscipopt import Model, quicksum
-from docplex.mp.model import Model as DocplexModel
+
+# from docplex.mp.model import Model as DocplexModel
+# from pyscipopt import Model, quicksum
 
 
 def _log_scalarization_start(rho, solver_name, ideal_point):
-    print(
-        f"Scalarization: Augmented Tchebycheff "
-        f"(solver={solver_name}, rho={rho})"
-    )
+    print(f"Scalarization: Augmented Tchebycheff " f"(solver={solver_name}, rho={rho})")
     print(f"Computed Ideal Point: {ideal_point}\n")
 
 
@@ -102,189 +100,187 @@ class AugChebyMOKPScalarizer:
         self.env.dispose()
 
 
-class SCIPAugChebyMOKPScalarizer:
-    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
-        self.instance = instance
-        self.rho = float(rho)
-        self.threads = int(threads)
-        self.time_limit = float(time_limit)
+# class SCIPAugChebyMOKPScalarizer:
+#     def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
+#         self.instance = instance
+#         self.rho = float(rho)
+#         self.threads = int(threads)
+#         self.time_limit = float(time_limit)
 
-        self.n_evaluations = 0
+#         self.n_evaluations = 0
 
-        self._ideal_point = self.instance.ideal_point
-        self._ideal_point_min = -self._ideal_point
+#         self._ideal_point = self.instance.ideal_point
+#         self._ideal_point_min = -self._ideal_point
 
-        _log_scalarization_start(self.rho, "scip", self._ideal_point)
+#         _log_scalarization_start(self.rho, "scip", self._ideal_point)
 
-    @property
-    def n_objectives(self):
-        return self.instance.n_objs
+#     @property
+#     def n_objectives(self):
+#         return self.instance.n_objs
 
-    def evaluate(self, pref_batch):
-        prefs = pref_batch.cpu()
-        batch_size, dim = prefs.shape
-        assert dim == self.n_objectives
+#     def evaluate(self, pref_batch):
+#         prefs = pref_batch.cpu()
+#         batch_size, dim = prefs.shape
+#         assert dim == self.n_objectives
 
-        results = []
-        for i in range(batch_size):
-            pref = prefs[i]
-            pref_norm = pref / torch.sum(pref)
-            objective_vector = self._solve_scalarized(pref_norm, maximize=True)
-            results.append(objective_vector)
+#         results = []
+#         for i in range(batch_size):
+#             pref = prefs[i]
+#             pref_norm = pref / torch.sum(pref)
+#             objective_vector = self._solve_scalarized(pref_norm, maximize=True)
+#             results.append(objective_vector)
 
-        results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
-        return results_tensor.reshape(batch_size, self.n_objectives)
+#         results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
+#         return results_tensor.reshape(batch_size, self.n_objectives)
 
-    def _solve_scalarized(self, pref_vec, maximize=True):
-        self.n_evaluations += 1
-        if not isinstance(pref_vec, np.ndarray):
-            pref_vec = pref_vec.detach().cpu().numpy()
+#     def _solve_scalarized(self, pref_vec, maximize=True):
+#         self.n_evaluations += 1
+#         if not isinstance(pref_vec, np.ndarray):
+#             pref_vec = pref_vec.detach().cpu().numpy()
 
-        model = Model("aug_cheby_mokp_scip")
-        model.setIntParam("display/verblevel", 0)
-        if self.threads > 0:
-            model.setIntParam("parallel/maxnthreads", self.threads)
-        if self.time_limit > 0:
-            model.setRealParam("limits/time", self.time_limit)
+#         model = Model("aug_cheby_mokp_scip")
+#         model.setIntParam("display/verblevel", 0)
+#         if self.threads > 0:
+#             model.setIntParam("parallel/maxnthreads", self.threads)
+#         if self.time_limit > 0:
+#             model.setRealParam("limits/time", self.time_limit)
 
-        x_vars = []
-        for i in range(self.instance.n_items):
-            var = model.addVar(name=f"x_{i}", vtype="BINARY")
-            x_vars.append(var)
-        alpha = model.addVar(
-            name="alpha", vtype="CONTINUOUS", lb=-model.infinity(), ub=model.infinity()
-        )
+#         x_vars = []
+#         for i in range(self.instance.n_items):
+#             var = model.addVar(name=f"x_{i}", vtype="BINARY")
+#             x_vars.append(var)
+#         alpha = model.addVar(
+#             name="alpha", vtype="CONTINUOUS", lb=-model.infinity(), ub=model.infinity()
+#         )
 
-        capacity_expr = quicksum(
-            self.instance.weights[i] * x_vars[i] for i in range(self.instance.n_items)
-        )
-        model.addCons(capacity_expr <= self.instance.capacity, name="capacity")
+#         capacity_expr = quicksum(
+#             self.instance.weights[i] * x_vars[i] for i in range(self.instance.n_items)
+#         )
+#         model.addCons(capacity_expr <= self.instance.capacity, name="capacity")
 
-        achievements_delta = []
-        for j in range(self.n_objectives):
-            value_expr = -quicksum(
-                self.instance.values[i, j] * x_vars[i]
-                for i in range(self.instance.n_items)
-            )
-            achievement_delta = value_expr - self._ideal_point_min[j]
-            achievements_delta.append(achievement_delta)
-            model.addCons(alpha >= float(pref_vec[j]) * achievement_delta)
+#         achievements_delta = []
+#         for j in range(self.n_objectives):
+#             value_expr = -quicksum(
+#                 self.instance.values[i, j] * x_vars[i]
+#                 for i in range(self.instance.n_items)
+#             )
+#             achievement_delta = value_expr - self._ideal_point_min[j]
+#             achievements_delta.append(achievement_delta)
+#             model.addCons(alpha >= float(pref_vec[j]) * achievement_delta)
 
-        augmentation = self.rho * quicksum(achievements_delta)
-        model.setObjective(alpha + augmentation, "minimize")
+#         augmentation = self.rho * quicksum(achievements_delta)
+#         model.setObjective(alpha + augmentation, "minimize")
 
-        model.optimize()
+#         model.optimize()
 
-        status = model.getStatus()
-        if status not in {"optimal", "timelimit"}:
-            raise RuntimeError(
-                f"SCIP solver failed for pref={pref_vec.tolist()} with status {status}"
-            )
+#         status = model.getStatus()
+#         if status not in {"optimal", "timelimit"}:
+#             raise RuntimeError(
+#                 f"SCIP solver failed for pref={pref_vec.tolist()} with status {status}"
+#             )
 
-        sol = model.getBestSol()
-        if sol is None:
-            raise RuntimeError(
-                f"SCIP did not return a solution for pref={pref_vec.tolist()}"
-            )
+#         sol = model.getBestSol()
+#         if sol is None:
+#             raise RuntimeError(
+#                 f"SCIP did not return a solution for pref={pref_vec.tolist()}"
+#             )
 
-        solution_x = np.array([model.getSolVal(sol, var) for var in x_vars])
-        true_objective = self.instance.values.T @ solution_x
-        return true_objective if maximize else -true_objective
+#         solution_x = np.array([model.getSolVal(sol, var) for var in x_vars])
+#         true_objective = self.instance.values.T @ solution_x
+#         return true_objective if maximize else -true_objective
 
-    def close(self):
-        pass
+#     def close(self):
+#         pass
 
 
-class DocplexAugChebyMOKPScalarizer:
-    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
-        self.instance = instance
-        self.rho = float(rho)
-        self.threads = int(threads)
-        self.time_limit = float(time_limit)
+# class DocplexAugChebyMOKPScalarizer:
+#     def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
+#         self.instance = instance
+#         self.rho = float(rho)
+#         self.threads = int(threads)
+#         self.time_limit = float(time_limit)
 
-        self.n_evaluations = 0
+#         self.n_evaluations = 0
 
-        self._ideal_point = self.instance.ideal_point
-        self._ideal_point_min = -self._ideal_point
+#         self._ideal_point = self.instance.ideal_point
+#         self._ideal_point_min = -self._ideal_point
 
-        _log_scalarization_start(self.rho, "docplex", self._ideal_point)
+#         _log_scalarization_start(self.rho, "docplex", self._ideal_point)
 
-    @property
-    def n_objectives(self):
-        return self.instance.n_objs
+#     @property
+#     def n_objectives(self):
+#         return self.instance.n_objs
 
-    def evaluate(self, pref_batch):
-        prefs = pref_batch.cpu()
-        batch_size, dim = prefs.shape
-        assert dim == self.n_objectives
+#     def evaluate(self, pref_batch):
+#         prefs = pref_batch.cpu()
+#         batch_size, dim = prefs.shape
+#         assert dim == self.n_objectives
 
-        results = []
-        for i in range(batch_size):
-            pref = prefs[i]
-            pref_norm = pref / torch.sum(pref)
-            objective_vector = self._solve_scalarized(pref_norm, maximize=True)
-            results.append(objective_vector)
+#         results = []
+#         for i in range(batch_size):
+#             pref = prefs[i]
+#             pref_norm = pref / torch.sum(pref)
+#             objective_vector = self._solve_scalarized(pref_norm, maximize=True)
+#             results.append(objective_vector)
 
-        results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
-        return results_tensor.reshape(batch_size, self.n_objectives)
+#         results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
+#         return results_tensor.reshape(batch_size, self.n_objectives)
 
-    def _solve_scalarized(self, pref_vec, maximize=True):
-        self.n_evaluations += 1
-        if not isinstance(pref_vec, np.ndarray):
-            pref_vec = pref_vec.detach().cpu().numpy()
+#     def _solve_scalarized(self, pref_vec, maximize=True):
+#         self.n_evaluations += 1
+#         if not isinstance(pref_vec, np.ndarray):
+#             pref_vec = pref_vec.detach().cpu().numpy()
 
-        model = DocplexModel(name="aug_cheby_mokp_docplex")
-        model.parameters.mip.tolerances.mipgap = 0.0
-        if self.threads > 0:
-            model.parameters.threads = self.threads
-        if self.time_limit > 0:
-            model.parameters.timelimit = self.time_limit
-        model.parameters.mip.display = 0
+#         model = DocplexModel(name="aug_cheby_mokp_docplex")
+#         model.parameters.mip.tolerances.mipgap = 0.0
+#         if self.threads > 0:
+#             model.parameters.threads = self.threads
+#         if self.time_limit > 0:
+#             model.parameters.timelimit = self.time_limit
+#         model.parameters.mip.display = 0
 
-        n_items = self.instance.n_items
-        x_vars = model.binary_var_list(n_items, name="x")
-        alpha = model.continuous_var(lb=-model.infinity, name="alpha")
+#         n_items = self.instance.n_items
+#         x_vars = model.binary_var_list(n_items, name="x")
+#         alpha = model.continuous_var(lb=-model.infinity, name="alpha")
 
-        model.add_constraint(
-            model.sum(
-                float(self.instance.weights[i]) * x_vars[i]
-                for i in range(n_items)
-            )
-            <= float(self.instance.capacity),
-            ctname="capacity",
-        )
+#         model.add_constraint(
+#             model.sum(
+#                 float(self.instance.weights[i]) * x_vars[i] for i in range(n_items)
+#             )
+#             <= float(self.instance.capacity),
+#             ctname="capacity",
+#         )
 
-        achievements_delta = []
-        for j in range(self.n_objectives):
-            achievement = -model.sum(
-                float(self.instance.values[i, j]) * x_vars[i]
-                for i in range(n_items)
-            )
-            delta = achievement - float(self._ideal_point_min[j])
-            achievements_delta.append(delta)
-            model.add_constraint(
-                alpha >= float(pref_vec[j]) * delta,
-                ctname=f"aug_{j}",
-            )
+#         achievements_delta = []
+#         for j in range(self.n_objectives):
+#             achievement = -model.sum(
+#                 float(self.instance.values[i, j]) * x_vars[i] for i in range(n_items)
+#             )
+#             delta = achievement - float(self._ideal_point_min[j])
+#             achievements_delta.append(delta)
+#             model.add_constraint(
+#                 alpha >= float(pref_vec[j]) * delta,
+#                 ctname=f"aug_{j}",
+#             )
 
-        augmentation = self.rho * model.sum(achievements_delta)
-        model.minimize(alpha + augmentation)
+#         augmentation = self.rho * model.sum(achievements_delta)
+#         model.minimize(alpha + augmentation)
 
-        try:
-            solution = model.solve(log_output=False)
-            if solution is None:
-                raise RuntimeError(
-                    f"DOcplex solver failed for pref={pref_vec.tolist()} (no solution)."
-                )
-            solution_x = np.array([solution.get_value(var) for var in x_vars])
-        finally:
-            model.end()
+#         try:
+#             solution = model.solve(log_output=False)
+#             if solution is None:
+#                 raise RuntimeError(
+#                     f"DOcplex solver failed for pref={pref_vec.tolist()} (no solution)."
+#                 )
+#             solution_x = np.array([solution.get_value(var) for var in x_vars])
+#         finally:
+#             model.end()
 
-        true_objective = self.instance.values.T @ solution_x
-        return true_objective if maximize else -true_objective
+#         true_objective = self.instance.values.T @ solution_x
+#         return true_objective if maximize else -true_objective
 
-    def close(self):
-        pass
+#     def close(self):
+#         pass
 
 
 def build_aug_cheby_scalarizer(instance, scalarization_cfg, time_limit, threads=None):
@@ -298,10 +294,10 @@ def build_aug_cheby_scalarizer(instance, scalarization_cfg, time_limit, threads=
 
     if solver_key == "gurobi":
         scalarizer_cls = AugChebyMOKPScalarizer
-    elif solver_key == "scip":
-        scalarizer_cls = SCIPAugChebyMOKPScalarizer
-    elif solver_key in {"cplex", "cpx", "docplex"}:
-        scalarizer_cls = DocplexAugChebyMOKPScalarizer
+        # elif solver_key == "scip":
+        #     scalarizer_cls = SCIPAugChebyMOKPScalarizer
+        # elif solver_key in {"cplex", "cpx", "docplex"}:
+        #     scalarizer_cls = DocplexAugChebyMOKPScalarizer
     else:
         raise ValueError(
             f"Unknown AugCheby optimizer '{solver_name}'. "

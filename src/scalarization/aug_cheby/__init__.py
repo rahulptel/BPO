@@ -1,13 +1,11 @@
-from .mokp import (
+from .mokp import (  # SCIPAugChebyMOKPScalarizer,; DocplexAugChebyMOKPScalarizer,
     AugChebyMOKPScalarizer,
-    SCIPAugChebyMOKPScalarizer,
-    DocplexAugChebyMOKPScalarizer,
     build_aug_cheby_scalarizer,
 )
 
 __all__ = [
     "AugChebyMOKPScalarizer",
-    "SCIPAugChebyMOKPScalarizer",
-    "DocplexAugChebyMOKPScalarizer",
+    # "SCIPAugChebyMOKPScalarizer",
+    # "DocplexAugChebyMOKPScalarizer",
     "build_aug_cheby_scalarizer",
 ]
