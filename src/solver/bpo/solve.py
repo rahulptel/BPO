@@ -5,7 +5,7 @@ from datetime import datetime
 import torch
 from omegaconf import OmegaConf
 
-from scalarization.aug_cheby import AugChebyMOKPScalarizer
+from scalarization.aug_cheby import build_aug_cheby_scalarizer
 from utils import (
     OUTPUTS_DIR,
     compute_iteration_stats,
@@ -36,9 +36,9 @@ class BPOSolver:
 
     def _init_scalarizer(self):
         if self.cfg.scalarization.name == "aug_cheby":
-            self.scalarizer = AugChebyMOKPScalarizer(
+            self.scalarizer = build_aug_cheby_scalarizer(
                 self.instance,
-                rho=self.cfg.scalarization.rho,
+                self.cfg.scalarization,
                 time_limit=self.cfg.time_limit,
             )
         else:

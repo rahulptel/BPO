@@ -1,3 +1,11 @@
-from .mokp import AugChebyMOKPScalarizer
+from .mokp import (
+    AugChebyMOKPScalarizer,
+    SCIPAugChebyMOKPScalarizer,
+    build_aug_cheby_scalarizer,
+)
 
-__all__ = ["AugChebyMOKPScalarizer"]
+__all__ = [
+    "AugChebyMOKPScalarizer",
+    "SCIPAugChebyMOKPScalarizer",
+    "build_aug_cheby_scalarizer",
+]

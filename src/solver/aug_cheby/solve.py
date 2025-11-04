@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from omegaconf import OmegaConf
 
-from scalarization.aug_cheby import AugChebyMOKPScalarizer
+from scalarization.aug_cheby import build_aug_cheby_scalarizer
 from utils import OUTPUTS_DIR, compute_iteration_stats
 
 
@@ -15,8 +15,10 @@ class AugChebySolver:
     def __init__(self, cfg, instance):
         self.cfg = cfg
         self.instance = instance
-        self.scalarizer = AugChebyMOKPScalarizer(
-            instance, rho=self.cfg.scalarization.rho, time_limit=self.cfg.time_limit
+        self.scalarizer = build_aug_cheby_scalarizer(
+            instance,
+            self.cfg.scalarization,
+            time_limit=self.cfg.time_limit,
         )
 
     @staticmethod
