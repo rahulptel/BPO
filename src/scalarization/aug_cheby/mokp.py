@@ -1,8 +1,7 @@
 import os
 
-if os["machine"] == "cc":
-    os.environ["GRB_LICENSE_FILE"] = "~/license/gurobi.lic"
-    print(os.environ["GRB_LICENSE_FILE"])
+if os.environ["machine"] == "cc":
+    os.environ["GRB_LICENSE_FILE"] = "/home/rahulpat/license/gurobi.lic"
 
 import gurobipy as gp
 import numpy as np
