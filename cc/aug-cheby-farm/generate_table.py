@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-BASE_COMMAND = "python src/run_aug_cheby.py"
+BASE_COMMAND = "python $BASEPATH/src/run_aug_cheby.py"
 PROBLEM_TIME_LIMITS = {
     50: {3: 120, 4: 240, 5: 240},
     250: {3: 120, 4: 240, 5: 240},
