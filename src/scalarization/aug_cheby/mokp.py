@@ -1,3 +1,9 @@
+import os
+
+if os["machine"] == "cc":
+    os.environ["GRB_LICENSE_FILE"] = "~/license/gurobi.lic"
+    print(os.environ["GRB_LICENSE_FILE"])
+
 import gurobipy as gp
 import numpy as np
 import torch
