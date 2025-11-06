@@ -84,29 +84,30 @@ def compute_iteration_stats(
 
     n_evaluations = len(all_objs) if n_evaluations is None else n_evaluations
     for i in range(1, n_evaluations + 1):
-        objs = all_objs[:i]
-        unique_objs = torch.unique(objs, dim=0)
-        pareto_mask = is_non_dominated(unique_objs)
-        n_nd = int(pareto_mask.sum().item())
-        if prev_n_nd > 0 and pareto_mask.sum().item() == prev_n_nd:
-            # No change in ND front, skip HV computation
-            hv = records[-1]["hv"]
-        else:
-            objs_nd = unique_objs[pareto_mask]
-            hv = compute_hypervolume(objs_nd, ref_point, ideal_point=ideal_point)
-            prev_n_nd = n_nd
+        if i <= 100 or i == n_evaluations:
+            objs = all_objs[:i]
+            unique_objs = torch.unique(objs, dim=0)
+            pareto_mask = is_non_dominated(unique_objs)
+            n_nd = int(pareto_mask.sum().item())
+            if prev_n_nd > 0 and pareto_mask.sum().item() == prev_n_nd:
+                # No change in ND front, skip HV computation
+                hv = records[-1]["hv"]
+            else:
+                objs_nd = unique_objs[pareto_mask]
+                hv = compute_hypervolume(objs_nd, ref_point, ideal_point=ideal_point)
+                prev_n_nd = n_nd
 
-        iteration_record = {
-            "n_evaluation": i,
-            "n_nd": n_nd,
-            "hv": hv,
-        }
+            iteration_record = {
+                "n_evaluation": i,
+                "n_nd": n_nd,
+                "hv": hv,
+            }
 
-        if save_prefs or i == len(all_objs) - 1:
-            iteration_record["prefs"] = all_prefs[:i]
-        if save_objs or i == len(all_objs) - 1:
-            iteration_record["objs"] = objs.detach().cpu().tolist()
-        records.append(iteration_record)
-        print(f"Iter {i}/{n_evaluations} | ND: {n_nd} | " f"Hypervolume: {hv:.6f}")
+            if save_prefs or i == len(all_objs) - 1:
+                iteration_record["prefs"] = all_prefs[:i]
+            if save_objs or i == len(all_objs) - 1:
+                iteration_record["objs"] = objs.detach().cpu().tolist()
+            records.append(iteration_record)
+            print(f"Iter {i}/{n_evaluations} | ND: {n_nd} | " f"Hypervolume: {hv:.6f}")
 
     return records
