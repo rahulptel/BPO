@@ -2,6 +2,7 @@ import json
 import random
 import time
 from datetime import datetime
+from pprint import pprint
 
 import numpy as np
 import torch
@@ -11,15 +12,15 @@ from utils import OUTPUTS_DIR, compute_iteration_stats
 
 
 class AugChebySolver:
-    def __init__(self, cfg, env, instance):
+    def __init__(self, cfg, instance, env=None):
         self.cfg = cfg
         self.instance = instance
         if cfg.problem.name == "mokp":
-            from scalarization.aug_cheby import AugChebyMOKPScalarizer
+            from scalarization.aug_cheby.mokp import build_scalarizer
 
-            self.scalarizer = AugChebyMOKPScalarizer(
-                instance, env, rho=self.cfg.scalarization.rho
-            )
+            self.scalarizer = build_scalarizer(cfg, instance, env=env)
+        else:
+            raise ValueError("Invalid problem name")
 
     @staticmethod
     def _set_global_seed(seed):
@@ -115,6 +116,7 @@ class AugChebySolver:
 
             time_dict["iterations"] += time.time() - t0
 
+        t0 = time.time()
         records = compute_iteration_stats(
             objs,
             self.instance.reference_point,
@@ -124,5 +126,7 @@ class AugChebySolver:
             save_objs=self.cfg.save_objs,
             save_prefs=self.cfg.save_prefs,
         )
+        time_dict["stats"] = time.time() - t0
         print("N evaluations:", self.scalarizer.n_evaluations)
+        pprint(time_dict)
         self.save_result(records, ref_point, time_dict)

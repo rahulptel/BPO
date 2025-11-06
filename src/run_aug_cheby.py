@@ -15,7 +15,7 @@ def main(cfg):
     for pid in range(cfg.from_pid, cfg.to_pid):
         cfg.problem.iseed = pid
         instance = build_instance(cfg.problem)
-        solver = AugChebySolver(cfg, env, instance)
+        solver = AugChebySolver(cfg, instance, env=env)
         solver.run()
     env.dispose()
 
