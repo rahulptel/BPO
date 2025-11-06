@@ -1,6 +1,7 @@
 import random
 from pathlib import Path
 
+import gurobipy as gp
 import numpy as np
 import torch
 from botorch.utils.multi_objective.box_decompositions.non_dominated import (
@@ -18,6 +19,15 @@ def set_global_seed(seed):
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+
+
+def build_gurobi_env(output_flag=0, threads=1, time_limit=100):
+    env = gp.Env(empty=True)
+    env.setParam("OutputFlag", output_flag)
+    env.setParam("Threads", threads)
+    env.setParam("TimeLimit", time_limit)
+
+    return env
 
 
 def get_dirichlet_distribution(dim):

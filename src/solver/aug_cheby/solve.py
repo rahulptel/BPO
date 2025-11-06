@@ -7,19 +7,19 @@ import numpy as np
 import torch
 from omegaconf import OmegaConf
 
-from scalarization.aug_cheby import build_aug_cheby_scalarizer
 from utils import OUTPUTS_DIR, compute_iteration_stats
 
 
 class AugChebySolver:
-    def __init__(self, cfg, instance):
+    def __init__(self, cfg, env, instance):
         self.cfg = cfg
         self.instance = instance
-        self.scalarizer = build_aug_cheby_scalarizer(
-            instance,
-            self.cfg.scalarization,
-            time_limit=self.cfg.time_limit,
-        )
+        if cfg.problem.name == "mokp":
+            from scalarization.aug_cheby import AugChebyMOKPScalarizer
+
+            self.scalarizer = AugChebyMOKPScalarizer(
+                instance, env, rho=self.cfg.scalarization.rho
+            )
 
     @staticmethod
     def _set_global_seed(seed):
@@ -92,44 +92,37 @@ class AugChebySolver:
 
         time_dict = {"iterations": 0.0}
 
-        try:
-            prefs = torch.empty(
-                (0, self.instance.n_objs), dtype=torch.get_default_dtype()
-            )
-            objs = torch.empty(
-                (0, self.instance.n_objs), dtype=torch.get_default_dtype()
-            )
+        prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
+        objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
 
-            max_iterations = int(self.cfg.n_iterations)
-            time_limit = float(self.cfg.time_limit)
+        max_iterations = int(self.cfg.n_iterations)
+        time_limit = float(self.cfg.time_limit)
 
-            print(f"Starting random loop for {max_iterations} iterations...")
+        print(f"Starting random loop for {max_iterations} iterations...")
 
-            for _ in range(max_iterations):
-                if time_dict["iterations"] >= time_limit:
-                    print("Time limit reached; stopping early.")
-                    break
+        for _ in range(max_iterations):
+            if time_dict["iterations"] >= time_limit:
+                print("Time limit reached; stopping early.")
+                break
 
-                t0 = time.time()
+            t0 = time.time()
 
-                new_pref = self._sample_dirichlet(1, self.instance.n_objs)
-                new_obj = self.scalarizer.evaluate(new_pref)
+            new_pref = self._sample_dirichlet(1, self.instance.n_objs)
+            new_obj = self.scalarizer.evaluate(new_pref)
 
-                prefs = torch.cat([prefs, new_pref])
-                objs = torch.cat([objs, new_obj])
+            prefs = torch.cat([prefs, new_pref])
+            objs = torch.cat([objs, new_obj])
 
-                time_dict["iterations"] += time.time() - t0
+            time_dict["iterations"] += time.time() - t0
 
-            records = compute_iteration_stats(
-                objs,
-                self.instance.reference_point,
-                self.instance.ideal_point,
-                len(objs),
-                all_prefs=prefs,
-                save_objs=self.cfg.save_objs,
-                save_prefs=self.cfg.save_prefs,
-            )
-            print("N evaluations:", self.scalarizer.n_evaluations)
-            self.save_result(records, ref_point, time_dict)
-        finally:
-            self.scalarizer.close()
+        records = compute_iteration_stats(
+            objs,
+            self.instance.reference_point,
+            self.instance.ideal_point,
+            len(objs),
+            all_prefs=prefs,
+            save_objs=self.cfg.save_objs,
+            save_prefs=self.cfg.save_prefs,
+        )
+        print("N evaluations:", self.scalarizer.n_evaluations)
+        self.save_result(records, ref_point, time_dict)
