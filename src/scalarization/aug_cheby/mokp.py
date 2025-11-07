@@ -5,127 +5,131 @@ from gurobipy import GRB
 from pyscipopt import Model, quicksum
 
 
-def _log_scalarization_start(rho, solver_name, ideal_point):
-    print(f"Scalarization: Augmented Tchebycheff " f"(solver={solver_name}, rho={rho})")
-    print(f"Computed Ideal Point: {ideal_point}\n")
-
-
-class AugChebyMOKPScalarizer:
-    def __init__(self, instance, env, rho=1e-4):
+class BaseAugChebyMOKPScalarizer:
+    def __init__(self, instance, rho=1e-4, name="Base"):
+        self.name = name
         self.instance = instance
         self.rho = float(rho)
-        self.env = env
 
         self.n_evaluations = 0
 
+        # Assume: Ideal point provided considering maximization form
         self._ideal_point = self.instance.ideal_point
         self._ideal_point_min = -self._ideal_point
+        self._log_scalarization_start()
 
-        _log_scalarization_start(self.rho, "gurobi", self._ideal_point)
+    def _log_scalarization_start(self):
+        print(
+            f"Scalarization: Augmented Tchebycheff "
+            f"(solver={self.name}, rho={self.rho})"
+        )
+        print(f"Computed Ideal Point: {self.ideal_point}\n")
 
-    @property
-    def n_objectives(self):
-        return self.instance.n_objs
+    def evaluate(self, prefs):
+        orig_type = None
+        if isinstance(prefs, torch.Tensor):
+            orig_type = torch.Tensor
+            prefs = prefs.detach().cpu().numpy()
+        else:
+            prefs = np.asarray(prefs)
 
-    def evaluate(self, pref_batch):
-        prefs = pref_batch.cpu()
         batch_size, dim = prefs.shape
-        assert dim == self.n_objectives
+        assert dim == self.instance.n_objs
 
         results = []
-        for i in range(batch_size):
-            pref = prefs[i]
-            pref_norm = pref / torch.sum(pref)
+        for pref in prefs:
+            pref_norm = pref / np.sum(pref)
             objective_vector = self._solve_scalarized(pref_norm, maximize=True)
             results.append(objective_vector)
 
-        results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
-        return results_tensor.reshape(batch_size, self.n_objectives)
+        formatted = self._format_results(np.array(results), batch_size)
+        if orig_type is torch.Tensor:
+            formatted = torch.tensor(formatted, dtype=torch.float64)
+
+        return formatted
+
+    def _format_results(self, results, batch_size):
+        return results.reshape(batch_size, self.instance.n_objs)
+
+    @property
+    def ideal_point(self):
+        return self._ideal_point
 
     def _solve_scalarized(self, pref_vec, maximize=True):
+        """
+        Solves the problem in minimization form
+        If maximize is True, we return the negative of objective value.
+        """
+        raise NotImplementedError
+
+
+class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
+    def __init__(self, instance, env, rho=1e-4):
+        super().__init__(instance, rho=rho, name="Gurobi")
+        self.env = env
+
+    def _build_model(self, pref):
+        model = gp.Model(env=self.env)
+        x = model.addMVar(
+            shape=self.instance.n_items,
+            vtype=GRB.BINARY,
+            name="x",
+        )
+        alpha = model.addMVar(
+            shape=1,
+            vtype=GRB.CONTINUOUS,
+            lb=-GRB.INFINITY,
+            name="alpha",
+        )
+
+        model.addConstr(
+            self.instance.weights @ x <= self.instance.capacity,
+            name="capacity",
+        )
+
+        achievements = []
+        achievements_delta = []
+        for j in range(self.instance.n_objs):
+            value = -(self.instance.values[:, j] @ x)
+            achievements.append(value)
+            achievements_delta.append(value - self._ideal_point_min[j])
+
+        for j in range(self.instance.n_objs):
+            model.addConstr(alpha >= pref[j] * achievements_delta[j])
+
+        augmentation = self.rho * gp.quicksum(achievements_delta)
+        model.setObjective(alpha + augmentation, GRB.MINIMIZE)
+
+        model._x = x
+        return model
+
+    def _get_solution(self, model):
+        if model.Status in (GRB.OPTIMAL, GRB.TIME_LIMIT):
+            return model._x.X
+        return None
+
+    def _solve_scalarized(self, pref, maximize=True):
         self.n_evaluations += 1
-        if not isinstance(pref_vec, np.ndarray):
-            pref_vec = pref_vec.detach().cpu().numpy()
+        if isinstance(pref, torch.Tensor):
+            pref = pref.detach().cpu().numpy()
 
-        with gp.Model(env=self.env) as model:
-            x = model.addMVar(
-                shape=self.instance.n_items,
-                vtype=GRB.BINARY,
-                name="x",
-            )
-            alpha = model.addMVar(
-                shape=1,
-                vtype=GRB.CONTINUOUS,
-                lb=-GRB.INFINITY,
-                name="alpha",
-            )
+        model = self._build_model(pref)
+        model.optimize()
+        solution = self._get_solution(model)
+        if solution is None:
+            raise RuntimeError(f"Gurobi solver failed for pref={pref.tolist()}")
 
-            model.addConstr(
-                self.instance.weights @ x <= self.instance.capacity,
-                name="capacity",
-            )
-
-            achievements = []
-            achievements_delta = []
-            for j in range(self.n_objectives):
-                value = -(self.instance.values[:, j] @ x)
-                achievements.append(value)
-                achievements_delta.append(value - self._ideal_point_min[j])
-
-            for j in range(self.n_objectives):
-                model.addConstr(alpha >= pref_vec[j] * achievements_delta[j])
-
-            augmentation = self.rho * gp.quicksum(achievements_delta)
-            model.setObjective(alpha + augmentation, GRB.MINIMIZE)
-
-            model.optimize()
-
-            if model.Status == GRB.OPTIMAL or model.Status == GRB.TIME_LIMIT:
-                solution_x = x.X
-                true_objective = self.instance.values.T @ solution_x
-                return true_objective if maximize else -true_objective
-
-        raise RuntimeError(f"Gurobi solver failed for pref={pref_vec.tolist()}")
+        true_objective = self.instance.values.T @ solution
+        return true_objective if maximize else -true_objective
 
 
-class SCIPAugChebyMOKPScalarizer:
+class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
     def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
-        self.instance = instance
-        self.rho = float(rho)
+        super().__init__(instance, rho=rho, name="SCIP")
         self.threads = int(threads)
         self.time_limit = float(time_limit)
 
-        self.n_evaluations = 0
-
-        self._ideal_point = self.instance.ideal_point
-        self._ideal_point_min = -self._ideal_point
-
-        _log_scalarization_start(self.rho, "scip", self._ideal_point)
-
-    @property
-    def n_objectives(self):
-        return self.instance.n_objs
-
-    def evaluate(self, pref_batch):
-        prefs = pref_batch.cpu()
-        batch_size, dim = prefs.shape
-        assert dim == self.n_objectives
-
-        results = []
-        for i in range(batch_size):
-            pref = prefs[i]
-            pref_norm = pref / torch.sum(pref)
-            objective_vector = self._solve_scalarized(pref_norm, maximize=True)
-            results.append(objective_vector)
-
-        results_tensor = torch.tensor(np.array(results), dtype=torch.float64)
-        return results_tensor.reshape(batch_size, self.n_objectives)
-
-    def _solve_scalarized(self, pref_vec, maximize=True):
-        self.n_evaluations += 1
-        if not isinstance(pref_vec, np.ndarray):
-            pref_vec = pref_vec.detach().cpu().numpy()
-
+    def _build_model(self, pref):
         model = Model("aug_cheby_mokp_scip")
         model.setIntParam("display/verblevel", 0)
         if self.threads > 0:
@@ -147,40 +151,52 @@ class SCIPAugChebyMOKPScalarizer:
         model.addCons(capacity_expr <= self.instance.capacity, name="capacity")
 
         achievements_delta = []
-        for j in range(self.n_objectives):
+        for j in range(self.instance.n_objs):
             value_expr = -quicksum(
                 self.instance.values[i, j] * x_vars[i]
                 for i in range(self.instance.n_items)
             )
             achievement_delta = value_expr - self._ideal_point_min[j]
             achievements_delta.append(achievement_delta)
-            model.addCons(alpha >= float(pref_vec[j]) * achievement_delta)
+            model.addCons(alpha >= float(pref[j]) * achievement_delta)
 
         augmentation = self.rho * quicksum(achievements_delta)
         model.setObjective(alpha + augmentation, "minimize")
 
-        model.optimize()
+        model._x_vars = x_vars
+        return model
 
+    def _get_solution(self, model, pref):
         status = model.getStatus()
         if status not in {"optimal", "timelimit"}:
             raise RuntimeError(
-                f"SCIP solver failed for pref={pref_vec.tolist()} with status {status}"
+                f"SCIP solver failed for pref={pref.tolist()} with status {status}"
             )
 
         sol = model.getBestSol()
         if sol is None:
             raise RuntimeError(
-                f"SCIP did not return a solution for pref={pref_vec.tolist()}"
+                f"SCIP did not return a solution for pref={pref.tolist()}"
             )
 
-        solution_x = np.array([model.getSolVal(sol, var) for var in x_vars])
+        return np.array([model.getSolVal(sol, var) for var in model._x_vars])
+
+    def _solve_scalarized(self, pref, maximize=True):
+        self.n_evaluations += 1
+        if not isinstance(pref, np.ndarray):
+            pref = pref.detach().cpu().numpy()
+
+        model = self._build_model(pref)
+        model.optimize()
+        solution_x = self._get_solution(model, pref)
+
         true_objective = self.instance.values.T @ solution_x
         return true_objective if maximize else -true_objective
 
 
 def build_scalarizer(cfg, instance, env=None):
     if cfg.scalarization.optimizer == "gurobi":
-        return AugChebyMOKPScalarizer(instance, env, rho=cfg.scalarization.rho)
+        return GurobiAugChebyMOKPScalarizer(instance, env, rho=cfg.scalarization.rho)
     elif cfg.scalarization.optimizer == "scip":
         return SCIPAugChebyMOKPScalarizer(
             instance, rho=cfg.scalarization.rho, time_limit=cfg.time_limit
