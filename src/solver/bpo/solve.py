@@ -5,7 +5,6 @@ from datetime import datetime
 import torch
 from omegaconf import OmegaConf
 
-from scalarization.aug_cheby import build_aug_cheby_scalarizer
 from utils import (
     OUTPUTS_DIR,
     compute_iteration_stats,
@@ -27,19 +26,23 @@ def get_default_acquisition_name(surrogate_name):
 
 
 class BPOSolver:
-    def __init__(self, cfg, instance):
+    def __init__(self, cfg, instance, env=None):
         self.cfg = cfg
         self.instance = instance
+        self.env = env
         self.scalarizer = None
         self.dirichlet = get_dirichlet_distribution(self.cfg.problem.n_objs)
         self._init_scalarizer()
 
     def _init_scalarizer(self):
         if self.cfg.scalarization.name == "aug_cheby":
-            self.scalarizer = build_aug_cheby_scalarizer(
+            from scalarization.aug_cheby import build_scalarizer
+
+            self.scalarizer = build_scalarizer(
+                self.cfg,
                 self.instance,
-                self.cfg.scalarization,
-                time_limit=self.cfg.time_limit,
+                env=self.env,
+                maximization=True,
             )
         else:
             raise ValueError(
@@ -104,21 +107,23 @@ class BPOSolver:
         if "partitioning" in time_dict:
             print(f"\t\t\tPartitioning: {time_dict['partitioning']:.2f} seconds.")
 
-    def save_result(
-        self,
-        records,
-        time_dict,
-    ):
+    def save_result(self, iter_records, final_record, time_dict):
         cfg = self.cfg
         surrogate_dir_chain = self._surrogate_directory_chain(cfg.surrogate)
         acquisition_dir_chain = self._acquisition_directory_chain(self.cfg.acquisition)
         run_dir_chain = self._run_directory_chain(cfg)
+        final_stats = None
+        if final_record:
+            final_stats = final_record[-1]
+        elif iter_records:
+            final_stats = iter_records[-1]
 
         results = {
             "cfg": OmegaConf.to_container(cfg, resolve=True),
-            "iterations": records,
-            "nondominated_solutions": records[-1]["n_nd"],
-            "hv": records[-1]["hv"],
+            "iterations": iter_records,
+            "final_record": final_record,
+            "nondominated_solutions": final_stats["n_nd"] if final_stats else 0,
+            "hv": final_stats["hv"] if final_stats else 0.0,
             "n_evaluations": self.scalarizer.n_evaluations,
             "time_dict": time_dict,
         }
@@ -169,7 +174,7 @@ class BPOSolver:
 
     def run(self):
         set_global_seed(self.cfg.rseed)
-        time_dict, records = {}, []
+        time_dict = {}
 
         print(f"Using reference point: {self.instance.reference_point.tolist()}")
 
@@ -213,16 +218,37 @@ class BPOSolver:
             prefs = torch.cat([prefs, new_prefs])
             objs = torch.cat([objs, new_objs])
 
-        records = compute_iteration_stats(
-            objs,
+        prefs_np = prefs.detach().cpu().numpy()
+        objs_np = objs.detach().cpu().numpy()
+        if self.scalarizer.maximize:
+            objs_np = -objs_np
+
+        t0 = time.time()
+        iter_records = compute_iteration_stats(
+            objs_np,
             self.instance.reference_point,
-            self.instance.ideal_point,
-            len(objs),
-            all_prefs=prefs,
-            save_objs=self.cfg.save_objs,
-            save_prefs=self.cfg.save_prefs,
+            ideal_point=self.instance.ideal_point,
+            all_prefs=prefs_np,
+            normalize_hypervolume=self.cfg.hypervolume.normalize,
+            approx=self.cfg.hypervolume.approx,
+            eps=self.cfg.hypervolume.eps,
+            delta=self.cfg.hypervolume.delta,
+            from_iteration=1,
+            to_iteration=self.cfg.compute_stats_upto,
         )
-        self.save_result(records, time_dict)
+        final_record = compute_iteration_stats(
+            objs_np,
+            self.instance.reference_point,
+            ideal_point=self.instance.ideal_point,
+            all_prefs=prefs_np,
+            normalize_hypervolume=self.cfg.hypervolume.normalize,
+            approx=self.cfg.hypervolume.approx,
+            eps=self.cfg.hypervolume.eps,
+            delta=self.cfg.hypervolume.delta,
+            from_iteration=len(objs_np),
+            to_iteration=len(objs_np),
+        )
+        time_dict["stats"] = time.time() - t0
+        self.save_result(iter_records, final_record, time_dict)
         self.print_time_dict(time_dict)
         print("N evaluations:", self.scalarizer.n_evaluations)
-        self.scalarizer.n_evaluations = 0
