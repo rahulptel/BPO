@@ -42,14 +42,11 @@ class BaseAugChebyMOKPScalarizer:
             objective_vector = self._solve_scalarized(pref_norm, maximize=True)
             results.append(objective_vector)
 
-        formatted = self._format_results(np.array(results), batch_size)
+        results = np.array(results).reshape(batch_size, self.instance.n_objs)
         if orig_type is torch.Tensor:
-            formatted = torch.tensor(formatted, dtype=torch.float64)
+            results = torch.tensor(results, dtype=torch.float64)
 
-        return formatted
-
-    def _format_results(self, results, batch_size):
-        return results.reshape(batch_size, self.instance.n_objs)
+        return results
 
     @property
     def ideal_point(self):
