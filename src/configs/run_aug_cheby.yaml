@@ -7,10 +7,15 @@ defaults:
 n_iterations: 100
 rseed: 123
 time_limit: 100
-save_prefs: false
-save_objs: false
 from_pid: 1
 to_pid: 3
+
+compute_stats_upto: 100
+hypervolume:
+  approx: false
+  eps: 0.1
+  delta: 0.1
+  normalize: true
 
 hydra:
   run:

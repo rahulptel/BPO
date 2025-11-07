@@ -3,11 +3,13 @@ from pathlib import Path
 
 import gurobipy as gp
 import numpy as np
+import pygmo as pg
 import torch
 from botorch.utils.multi_objective.box_decompositions.non_dominated import (
     FastNondominatedPartitioning,
 )
 from botorch.utils.multi_objective.pareto import is_non_dominated
+from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 
 SRC_DIR = Path(__file__).parent.parent
 OUTPUTS_DIR = SRC_DIR.parent / "outputs"
@@ -36,12 +38,33 @@ def get_dirichlet_distribution(dim):
     return distribution
 
 
-def compute_hypervolume(Y_nd, ref_point, ideal_point=None, normalize=True):
-    bd = FastNondominatedPartitioning(ref_point=ref_point, Y=Y_nd)
-    hv_val = bd.compute_hypervolume().item()
-    if normalize and ideal_point is not None:
-        return normalize_hypervolume(hv_val, ideal_point)
-    return float(hv_val)
+# def compute_hypervolume(Y_nd, ref_point, ideal_point=None, normalize=True):
+#     bd = FastNondominatedPartitioning(ref_point=ref_point, Y=Y_nd)
+#     hv_val = bd.compute_hypervolume().item()
+#     if normalize and ideal_point is not None:
+#         return normalize_hypervolume(hv_val, ideal_point)
+#     return float(hv_val)
+
+
+def compute_hypervolume(
+    points,
+    ref_point,
+    ideal_point=None,
+    normalize=True,
+    approx=False,
+    eps=0.1,
+    delta=0.1,
+):
+    # pygmo expects points in minimization form
+    hv = pg.hypervolume(points)
+    hv_val = (
+        hv.compute(ref_point, hv_algo=pg.bf_fpras(eps=eps, delta=delta))
+        if approx
+        else hv.compute(ref_point)
+    )
+    hv_val = normalize_hypervolume(hv_val, ideal_point) if normalize else hv_val
+
+    return hv_val
 
 
 def normalize_hypervolume(unnorm_hv, ideal_point):
@@ -59,55 +82,57 @@ def compute_iteration_stats(
     all_objs,
     ref_point,
     ideal_point=None,
-    n_evaluations=None,
     all_prefs=None,
-    save_prefs=False,
-    save_objs=False,
+    normalize_hypervolume=True,
+    approx=False,
+    eps=0.1,
+    delta=0.1,
+    from_iteration=1,
+    to_iteration=100,
 ):
     """
-    Expect all_objs to be tensor
+    Expect all_objs to be in minimization form
     """
     records, prev_n_nd = [], -1
 
-    # Save reference point to tensor
-    if type(ref_point) != torch.Tensor:
-        ref_point = torch.tensor(ref_point, dtype=torch.get_default_dtype())
-
-    # Save preference to list
     if all_prefs is not None:
-        if type(all_prefs) == torch.Tensor:
+        if isinstance(all_prefs, torch.Tensor):
             all_prefs = all_prefs.detach().cpu().numpy()
-        if type(all_prefs) == np.ndarray:
+        if isinstance(all_prefs, np.ndarray):
             all_prefs = all_prefs.tolist()
 
-    # Save objs to list for saving
+    to_iteration = min(len(all_objs), to_iteration)
+    for i in range(from_iteration, to_iteration + 1):
+        objs = all_objs[:i]
+        objs = np.unique(objs, axis=0)
+        nd_idx = NonDominatedSorting().do(objs, only_non_dominated_front=True)
 
-    n_evaluations = len(all_objs) if n_evaluations is None else n_evaluations
-    for i in range(1, n_evaluations + 1):
-        if i <= 100 or i == n_evaluations:
-            objs = all_objs[:i]
-            unique_objs = torch.unique(objs, dim=0)
-            pareto_mask = is_non_dominated(unique_objs)
-            n_nd = int(pareto_mask.sum().item())
-            if prev_n_nd > 0 and pareto_mask.sum().item() == prev_n_nd:
-                # No change in ND front, skip HV computation
-                hv = records[-1]["hv"]
-            else:
-                objs_nd = unique_objs[pareto_mask]
-                hv = compute_hypervolume(objs_nd, ref_point, ideal_point=ideal_point)
-                prev_n_nd = n_nd
+        n_nd = len(nd_idx)
+        if n_nd > 0:
+            objs = objs[nd_idx]
 
-            iteration_record = {
-                "n_evaluation": i,
-                "n_nd": n_nd,
-                "hv": hv,
-            }
+        if prev_n_nd > 0 and n_nd == prev_n_nd:
+            # No change in ND front, skip HV computation
+            hv = records[-1]["hv"]
+        else:
+            hv = compute_hypervolume(
+                objs,
+                ref_point,
+                ideal_point=ideal_point,
+                normalize=normalize_hypervolume,
+                approx=approx,
+                eps=eps,
+                delta=delta,
+            )
 
-            if save_prefs or i == len(all_objs) - 1:
-                iteration_record["prefs"] = all_prefs[:i]
-            if save_objs or i == len(all_objs) - 1:
-                iteration_record["objs"] = objs.detach().cpu().tolist()
-            records.append(iteration_record)
-            print(f"Iter {i}/{n_evaluations} | ND: {n_nd} | " f"Hypervolume: {hv:.6f}")
+        prev_n_nd = n_nd
+        iteration_record = {
+            "n_evaluation": i,
+            "n_nd": n_nd,
+            "hv": hv,
+        }
+
+        records.append(iteration_record)
+        print(f"Iter {i}/{len(all_objs)} | ND: {n_nd} | " f"Hypervolume: {hv}")
 
     return records

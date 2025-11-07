@@ -10,7 +10,7 @@ class BaseAugChebyMOKPScalarizer:
         self.name = name
         self.instance = instance
         self.rho = float(rho)
-        self.maximization = maximization
+        self.maximize = maximization
         self.n_evaluations = 0
 
         # Assume: Ideal point provided considering maximization form
@@ -84,7 +84,7 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         for j in range(self.instance.n_objs):
             value = -(self.instance.values[:, j] @ x)
             achievements.append(value)
-            achievements_delta.append(value - self._ideal_point_min[j])
+            achievements_delta.append(value - self._ideal_point[j])
 
         for j in range(self.instance.n_objs):
             model.addConstr(alpha >= pref[j] * achievements_delta[j])
@@ -150,7 +150,7 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
                 self.instance.values[i, j] * x_vars[i]
                 for i in range(self.instance.n_items)
             )
-            achievement_delta = value_expr - self._ideal_point_min[j]
+            achievement_delta = value_expr - self._ideal_point[j]
             achievements_delta.append(achievement_delta)
             model.addCons(alpha >= float(pref[j]) * achievement_delta)
 
