@@ -6,16 +6,15 @@ from pyscipopt import Model, quicksum
 
 
 class BaseAugChebyMOKPScalarizer:
-    def __init__(self, instance, rho=1e-4, name="Base"):
+    def __init__(self, instance, rho=1e-4, name="Base", maximization=False):
         self.name = name
         self.instance = instance
         self.rho = float(rho)
-
+        self.maximization = maximization
         self.n_evaluations = 0
 
         # Assume: Ideal point provided considering maximization form
-        self._ideal_point = self.instance.ideal_point
-        self._ideal_point_min = -self._ideal_point
+        self._ideal_point = -self.instance.ideal_point
         self._log_scalarization_start()
 
     def _log_scalarization_start(self):
@@ -23,7 +22,7 @@ class BaseAugChebyMOKPScalarizer:
             f"Scalarization: Augmented Tchebycheff "
             f"(solver={self.name}, rho={self.rho})"
         )
-        print(f"Computed Ideal Point: {self.ideal_point}\n")
+        print(f"Computed Ideal Point: {self._ideal_point}\n")
 
     def evaluate(self, prefs):
         orig_type = None
@@ -39,7 +38,7 @@ class BaseAugChebyMOKPScalarizer:
         results = []
         for pref in prefs:
             pref_norm = pref / np.sum(pref)
-            objective_vector = self._solve_scalarized(pref_norm, maximize=True)
+            objective_vector = self._solve_scalarized(pref_norm)
             results.append(objective_vector)
 
         results = np.array(results).reshape(batch_size, self.instance.n_objs)
@@ -48,11 +47,7 @@ class BaseAugChebyMOKPScalarizer:
 
         return results
 
-    @property
-    def ideal_point(self):
-        return self._ideal_point
-
-    def _solve_scalarized(self, pref_vec, maximize=True):
+    def _solve_scalarized(self, pref):
         """
         Solves the problem in minimization form
         If maximize is True, we return the negative of objective value.
@@ -61,8 +56,8 @@ class BaseAugChebyMOKPScalarizer:
 
 
 class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
-    def __init__(self, instance, env, rho=1e-4):
-        super().__init__(instance, rho=rho, name="Gurobi")
+    def __init__(self, instance, env, rho=1e-4, maximization=True):
+        super().__init__(instance, rho=rho, name="Gurobi", maximization=maximization)
         self.env = env
 
     def _build_model(self, pref):
@@ -105,7 +100,7 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
             return model._x.X
         return None
 
-    def _solve_scalarized(self, pref, maximize=True):
+    def _solve_scalarized(self, pref):
         self.n_evaluations += 1
         if isinstance(pref, torch.Tensor):
             pref = pref.detach().cpu().numpy()
@@ -117,12 +112,14 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
             raise RuntimeError(f"Gurobi solver failed for pref={pref.tolist()}")
 
         true_objective = self.instance.values.T @ solution
-        return true_objective if maximize else -true_objective
+        return true_objective if self.maximize else -true_objective
 
 
 class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
-    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
-        super().__init__(instance, rho=rho, name="SCIP")
+    def __init__(
+        self, instance, rho=1e-4, threads=1, time_limit=100, maximization=True
+    ):
+        super().__init__(instance, rho=rho, name="SCIP", maximization=maximization)
         self.threads = int(threads)
         self.time_limit = float(time_limit)
 
@@ -178,7 +175,7 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
 
         return np.array([model.getSolVal(sol, var) for var in model._x_vars])
 
-    def _solve_scalarized(self, pref, maximize=True):
+    def _solve_scalarized(self, pref):
         self.n_evaluations += 1
         if not isinstance(pref, np.ndarray):
             pref = pref.detach().cpu().numpy()
@@ -188,15 +185,20 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         solution_x = self._get_solution(model, pref)
 
         true_objective = self.instance.values.T @ solution_x
-        return true_objective if maximize else -true_objective
+        return true_objective if self.maximize else -true_objective
 
 
-def build_scalarizer(cfg, instance, env=None):
+def build_scalarizer(cfg, instance, env=None, maximization=True):
     if cfg.scalarization.optimizer == "gurobi":
-        return GurobiAugChebyMOKPScalarizer(instance, env, rho=cfg.scalarization.rho)
+        return GurobiAugChebyMOKPScalarizer(
+            instance, env, rho=cfg.scalarization.rho, maximization=maximization
+        )
     elif cfg.scalarization.optimizer == "scip":
         return SCIPAugChebyMOKPScalarizer(
-            instance, rho=cfg.scalarization.rho, time_limit=cfg.time_limit
+            instance,
+            rho=cfg.scalarization.rho,
+            time_limit=cfg.time_limit,
+            maximization=maximization,
         )
     else:
         raise ValueError("Invalid scalarizer")
