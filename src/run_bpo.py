@@ -21,7 +21,7 @@ def main(cfg):
 
     for pid in range(cfg.from_pid, cfg.to_pid):
         cfg.problem.iseed = pid
-        instance = build_instance(cfg.problem, env)
+        instance = build_instance(cfg.problem, env, cfg.optimizer)
         scalarizer = build_scalarizer(cfg, instance, env=env, maximization=True)
         solver = BPOSolver(cfg, instance, scalarizer)
         solver.run()

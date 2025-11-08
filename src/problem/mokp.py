@@ -1,12 +1,15 @@
 import gurobipy as gp
 import numpy as np
 from gurobipy import GRB
+from pyscipopt import Model, quicksum
 
 
 class MOKPInstance:
     name = "mokp"
 
-    def __init__(self, n_items=50, n_objs=3, density=0.5, iseed=123, env=None):
+    def __init__(
+        self, n_items=50, n_objs=3, density=0.5, iseed=123, env=None, optimizer="gurobi"
+    ):
         self.n_items = int(n_items)
         self.n_objs = int(n_objs)
         self.density = float(density)
@@ -19,6 +22,11 @@ class MOKPInstance:
         self.capacity = int(np.sum(self.weights) * self.density)
 
         self._ideal_point = None
+        self._compute_ideal_point_fn = (
+            self._compute_ideal_point_gurobi
+            if optimizer == "gurobi"
+            else self._compute_ideal_point_scip
+        )
 
         print(f"MOKP Instance (iseed: {self.iseed}):")
         print(f"  Items: {self.n_items}, Objectives: {self.n_objs}")
@@ -39,7 +47,7 @@ class MOKPInstance:
     def reference_point(self):
         return np.zeros(self.n_objs, dtype=np.float64)
 
-    def _compute_ideal_point(self):
+    def _compute_ideal_point_gurobi(self):
         ideal_point = np.zeros(self.n_objs, dtype=np.float64)
         for j in range(self.n_objs):
             with gp.Model(env=self.env) as model:
@@ -61,8 +69,49 @@ class MOKPInstance:
 
         return ideal_point
 
+    def _compute_ideal_point_scip(self):
+        ideal_point = np.zeros(self.n_objs, dtype=np.float64)
+        for j in range(self.n_objs):
+            model = Model("mokp_ideal_point")
+            model.setIntParam("display/verblevel", 0)
+
+            x_vars = [
+                model.addVar(name=f"x_{item_idx}", vtype="BINARY")
+                for item_idx in range(self.n_items)
+            ]
+
+            capacity_expr = quicksum(
+                self.weights[i] * x_vars[i] for i in range(self.n_items)
+            )
+            model.addCons(capacity_expr <= self.capacity, name="capacity")
+
+            objective_expr = quicksum(
+                float(self.values[i, j]) * x_vars[i] for i in range(self.n_items)
+            )
+            model.setObjective(objective_expr, sense="maximize")
+
+            model.optimize()
+            status = model.getStatus()
+            if status != "optimal":
+                raise RuntimeError(
+                    f"Could not solve for ideal point objective {j} with status {status}"
+                )
+
+            sol = model.getBestSol()
+            if sol is None:
+                raise RuntimeError(
+                    f"SCIP did not return a solution for ideal point objective {j}"
+                )
+
+            ideal_point[j] = sum(
+                float(self.values[i, j]) * model.getSolVal(sol, x_vars[i])
+                for i in range(self.n_items)
+            )
+
+        return ideal_point
+
     @property
     def ideal_point(self):
         if self._ideal_point is None:
-            self._ideal_point = self._compute_ideal_point()
+            self._ideal_point = self._compute_ideal_point_fn()
         return self._ideal_point.copy()

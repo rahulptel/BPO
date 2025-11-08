@@ -1,7 +1,7 @@
 from .mokp import MOKPInstance
 
 
-def build_instance(problem_cfg, env):
+def build_instance(problem_cfg, env, optimizer):
     if problem_cfg.name == "mokp":
         return MOKPInstance(
             n_items=problem_cfg.n_items,
@@ -9,6 +9,7 @@ def build_instance(problem_cfg, env):
             density=problem_cfg.density,
             iseed=problem_cfg.iseed,
             env=env,
+            optimizer=optimizer,
         )
     else:
         raise ValueError(f"Unknown problem name: {problem_cfg.name}")
