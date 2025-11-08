@@ -20,6 +20,8 @@ time_limit: 100
 compute_stats_upto: 100
 from_pid: 1
 to_pid: 3
+optimizer: gurobi
+
 hypervolume:
   approx: false
   eps: 0.1

@@ -13,8 +13,8 @@ class BaseAugChebyMOKPScalarizer:
         self.maximize = maximization
         self.n_evaluations = 0
 
-        # Assume: Ideal point provided considering maximization form
-        self._ideal_point = -self.instance.ideal_point
+        # Assume: Instance ideal point provided considering maximization form
+        self._ideal_point_min = -self.instance.ideal_point
         self._log_scalarization_start()
 
     def _log_scalarization_start(self):
@@ -22,7 +22,7 @@ class BaseAugChebyMOKPScalarizer:
             f"Scalarization: Augmented Tchebycheff "
             f"(solver={self.name}, rho={self.rho})"
         )
-        print(f"Computed Ideal Point: {self._ideal_point}\n")
+        print(f"Computed Ideal Point (Minimization): {self._ideal_point_min}\n")
 
     def evaluate(self, prefs):
         orig_type = None
@@ -84,7 +84,7 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         for j in range(self.instance.n_objs):
             value = -(self.instance.values[:, j] @ x)
             achievements.append(value)
-            achievements_delta.append(value - self._ideal_point[j])
+            achievements_delta.append(value - self._ideal_point_min[j])
 
         for j in range(self.instance.n_objs):
             model.addConstr(alpha >= pref[j] * achievements_delta[j])
@@ -150,7 +150,7 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
                 self.instance.values[i, j] * x_vars[i]
                 for i in range(self.instance.n_items)
             )
-            achievement_delta = value_expr - self._ideal_point[j]
+            achievement_delta = value_expr - self._ideal_point_min[j]
             achievements_delta.append(achievement_delta)
             model.addCons(alpha >= float(pref[j]) * achievement_delta)
 
@@ -186,19 +186,3 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
 
         true_objective = self.instance.values.T @ solution_x
         return true_objective if self.maximize else -true_objective
-
-
-def build_scalarizer(cfg, instance, env=None, maximization=True):
-    if cfg.scalarization.optimizer == "gurobi":
-        return GurobiAugChebyMOKPScalarizer(
-            instance, env, rho=cfg.scalarization.rho, maximization=maximization
-        )
-    elif cfg.scalarization.optimizer == "scip":
-        return SCIPAugChebyMOKPScalarizer(
-            instance,
-            rho=cfg.scalarization.rho,
-            time_limit=cfg.time_limit,
-            maximization=maximization,
-        )
-    else:
-        raise ValueError("Invalid scalarizer")

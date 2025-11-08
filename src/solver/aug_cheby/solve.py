@@ -12,17 +12,10 @@ from utils import OUTPUTS_DIR, compute_iteration_stats
 
 
 class AugChebySolver:
-    def __init__(self, cfg, instance, env=None):
+    def __init__(self, cfg, instance, scalarizer):
         self.cfg = cfg
         self.instance = instance
-        if cfg.problem.name == "mokp":
-            from scalarization.aug_cheby.mokp import build_scalarizer
-
-            self.scalarizer = build_scalarizer(
-                cfg, instance, env=env, maximization=False
-            )
-        else:
-            raise ValueError("Invalid problem name")
+        self.scalarizer = scalarizer
 
     @staticmethod
     def _set_global_seed(seed):

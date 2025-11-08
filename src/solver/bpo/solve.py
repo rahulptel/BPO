@@ -26,28 +26,11 @@ def get_default_acquisition_name(surrogate_name):
 
 
 class BPOSolver:
-    def __init__(self, cfg, instance, env=None):
+    def __init__(self, cfg, instance, scalarizer):
         self.cfg = cfg
         self.instance = instance
-        self.env = env
-        self.scalarizer = None
+        self.scalarizer = scalarizer
         self.dirichlet = get_dirichlet_distribution(self.cfg.problem.n_objs)
-        self._init_scalarizer()
-
-    def _init_scalarizer(self):
-        if self.cfg.scalarization.name == "aug_cheby":
-            from scalarization.aug_cheby import build_scalarizer
-
-            self.scalarizer = build_scalarizer(
-                self.cfg,
-                self.instance,
-                env=self.env,
-                maximization=True,
-            )
-        else:
-            raise ValueError(
-                f"Unknown scalarization name: {self.cfg.scalarization.name}"
-            )
 
     @staticmethod
     def _surrogate_directory_chain(config):

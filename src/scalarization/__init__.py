@@ -1,11 +1,24 @@
-from .aug_cheby.mokp import (  # SCIPAugChebyMOKPScalarizer,; DocplexAugChebyMOKPScalarizer,
-    GurobiAugChebyMOKPScalarizer,
-    SCIPAugChebyMOKPScalarizer,
-    build_scalarizer,
-)
+def build_scalarizer(cfg, instance, env=None, maximization=True):
+    if cfg.problem.name == "mokp":
+        if cfg.scalarization.name == "aug_cheby":
+            if cfg.optimizer == "gurobi":
+                from .aug_cheby.mokp import GurobiAugChebyMOKPScalarizer
 
-__all__ = [
-    "GurobiAugChebyMOKPScalarizer",
-    "SCIPAugChebyMOKPScalarizer",
-    "build_scalarizer",
-]
+                return GurobiAugChebyMOKPScalarizer(
+                    instance, env, rho=cfg.scalarization.rho, maximization=maximization
+                )
+            elif cfg.optimizer == "scip":
+                from .aug_cheby.mokp import SCIPAugChebyMOKPScalarizer
+
+                return SCIPAugChebyMOKPScalarizer(
+                    instance,
+                    rho=cfg.scalarization.rho,
+                    time_limit=cfg.time_limit,
+                    maximization=maximization,
+                )
+            else:
+                raise ValueError("Invalid solver")
+        else:
+            raise ValueError("Invalid scalarizer")
+    else:
+        raise ValueError("Invalid problem!")

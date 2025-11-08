@@ -9,6 +9,7 @@ rseed: 123
 time_limit: 100
 from_pid: 1
 to_pid: 3
+optimizer: gurobi
 
 compute_stats_upto: 100
 hypervolume:
