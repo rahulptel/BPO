@@ -1,5 +1,7 @@
 pymoo
+pygmo
 botorch
 gurobipy
+pyscipopt
 matplotlib
 hydra-core
