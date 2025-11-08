@@ -7,6 +7,7 @@ PROBLEM_TIME_LIMITS = {
     250: {3: 120, 4: 240, 5: 240},
     500: {3: 120, 4: 240, 5: 240},
 }
+INSTANCES_PER_CASE = 10
 PROBLEM_VARIANTS = tuple(
     (
         f"problem.n_items={n_items}",
@@ -31,11 +32,12 @@ CASE_VARIANTS = tuple(
 class CaseSpec:
     """Encapsulates the parameters needed for a single run command."""
 
-    __slots__ = ("case_id", "iseed", "rseed", "overrides")
+    __slots__ = ("case_id", "from_pid", "to_pid", "rseed", "overrides")
 
-    def __init__(self, case_id, iseed, rseed, overrides):
+    def __init__(self, case_id, from_pid, to_pid, rseed, overrides):
         self.case_id = case_id
-        self.iseed = iseed
+        self.from_pid = from_pid
+        self.to_pid = to_pid
         self.rseed = rseed
         self.overrides = tuple(overrides)
 
@@ -43,25 +45,37 @@ class CaseSpec:
         """Return the formatted line for table.dat."""
         parts = [
             BASE_COMMAND,
-            f"problem.iseed={self.iseed}",
+            f"from_pid={self.from_pid}",
+            f"to_pid={self.to_pid}",
             f"rseed={self.rseed}",
         ]
         parts.extend(self.overrides)
         return f"{self.case_id} {' '.join(parts)}"
 
 
+def build_pid_windows(pid_range, instances_per_case):
+    """Partition the PID range into non-overlapping [from_pid, to_pid) windows."""
+    windows = []
+    start = pid_range.start
+    while start < pid_range.stop:
+        stop = min(start + instances_per_case, pid_range.stop)
+        windows.append((start, stop))
+        start = stop
+    return windows
+
+
 def generate_case_specs(
-    iseed_range,
+    pid_windows,
     rseed_range,
     variants,
 ):
     """Return every CaseSpec for the provided parameter grid."""
     specs = []
     case_id = 1
-    for iseed in iseed_range:
+    for from_pid, to_pid in pid_windows:
         for variant in variants:
             for rseed in rseed_range:
-                specs.append(CaseSpec(case_id, iseed, rseed, variant))
+                specs.append(CaseSpec(case_id, from_pid, to_pid, rseed, variant))
                 case_id += 1
     return specs
 
@@ -87,10 +101,11 @@ def parse_args():
 
 def main():
     args = parse_args()
-    iseed_values = range(1, 26)
+    pid_range = range(1, 26)
     rseed_values = range(1, 6)
 
-    specs = generate_case_specs(iseed_values, rseed_values, CASE_VARIANTS)
+    pid_windows = build_pid_windows(pid_range, INSTANCES_PER_CASE)
+    specs = generate_case_specs(pid_windows, rseed_values, CASE_VARIANTS)
     lines = [spec.render() for spec in specs]
     write_table(lines, args.output)
 

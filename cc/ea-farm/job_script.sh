@@ -5,8 +5,9 @@
 #SBATCH --cpus-per-task 2
 #SBATCH --mem 16G
 
-module load python/3.12
+module load python/3.10
 module load gurobi/11.0.3
+module load scipoptsuite
 module load meta-farm
 
 source ~/envs/bpo/bin/activate

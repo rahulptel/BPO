@@ -8,6 +8,19 @@ from utils import build_gurobi_env
 torch.set_default_dtype(torch.float64)
 
 
+def time_str_to_int(time_value):
+    """Convert an HH:MM:SS-style string (or seconds) into an integer seconds value."""
+    if isinstance(time_value, (int, float)):
+        return int(time_value)
+    time_parts = str(time_value).strip().split(":")
+    if len(time_parts) != 3:
+        raise ValueError(
+            f"Expected time in 'HH:MM:SS' format, but received '{time_value}'."
+        )
+    hours, minutes, seconds = map(int, time_parts)
+    return hours * 3600 + minutes * 60 + seconds
+
+
 def build_pymoo_instance(problem_cfg, problem):
     if problem_cfg.name == "mokp":
         from solver.ea.adapters import PymooMOKPProblem
@@ -19,8 +32,9 @@ def build_pymoo_instance(problem_cfg, problem):
 
 @hydra_main(config_path="configs", config_name="run_ea", version_base=None)
 def main(cfg):
+    time_limit_seconds = time_str_to_int(cfg.algorithm.time)
     env = (
-        build_gurobi_env(time_limit=cfg.time_limit)
+        build_gurobi_env(time_limit=time_limit_seconds)
         if cfg.optimizer == "gurobi"
         else None
     )
@@ -39,5 +53,4 @@ def main(cfg):
 
 
 if __name__ == "__main__":
-    main()
     main()
