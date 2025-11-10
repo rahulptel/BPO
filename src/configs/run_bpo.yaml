@@ -27,6 +27,7 @@ hypervolume:
   eps: 0.1
   delta: 0.1
   normalize: true
+  lib: pygmo
 
 hydra:
   run:

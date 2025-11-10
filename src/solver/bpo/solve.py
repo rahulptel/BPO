@@ -216,6 +216,7 @@ class BPOSolver:
             approx=self.cfg.hypervolume.approx,
             eps=self.cfg.hypervolume.eps,
             delta=self.cfg.hypervolume.delta,
+            lib=self.cfg.hypervolume.lib,
             from_iteration=1,
             to_iteration=self.cfg.compute_stats_upto,
         )
@@ -228,6 +229,7 @@ class BPOSolver:
             approx=self.cfg.hypervolume.approx,
             eps=self.cfg.hypervolume.eps,
             delta=self.cfg.hypervolume.delta,
+            lib=self.cfg.hypervolume.lib,
             from_iteration=len(objs_np),
             to_iteration=len(objs_np),
         )

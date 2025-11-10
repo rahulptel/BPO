@@ -3,7 +3,6 @@ from pathlib import Path
 
 import gurobipy as gp
 import numpy as np
-import pygmo as pg
 import torch
 from botorch.utils.multi_objective.box_decompositions.non_dominated import (
     FastNondominatedPartitioning,
@@ -13,6 +12,11 @@ from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 
 SRC_DIR = Path(__file__).parent.parent
 OUTPUTS_DIR = SRC_DIR.parent / "outputs"
+
+try:
+    import pygmo as pg
+except:
+    print("pygmo not available")
 
 
 def set_global_seed(seed):
@@ -38,15 +42,19 @@ def get_dirichlet_distribution(dim):
     return distribution
 
 
-# def compute_hypervolume(Y_nd, ref_point, ideal_point=None, normalize=True):
-#     bd = FastNondominatedPartitioning(ref_point=ref_point, Y=Y_nd)
-#     hv_val = bd.compute_hypervolume().item()
-#     if normalize and ideal_point is not None:
-#         return normalize_hypervolume(hv_val, ideal_point)
-#     return float(hv_val)
+def compute_hypervolume_botorch(Y_nd, ref_point, ideal_point=None, normalize=True):
+    Y_nd, ref_point = (
+        torch.from_numpy(Y_nd, dtype=torch.get_default_dtype()),
+        torch.from_numpy(ref_point, dtype=torch.get_default_dtype()),
+    )
+    bd = FastNondominatedPartitioning(ref_point=ref_point, Y=Y_nd)
+    hv_val = bd.compute_hypervolume().item()
+    if normalize and ideal_point is not None:
+        return normalize_hypervolume(hv_val, ideal_point)
+    return float(hv_val)
 
 
-def compute_hypervolume(
+def compute_hypervolume_pygmo(
     points,
     ref_point,
     ideal_point=None,
@@ -64,7 +72,31 @@ def compute_hypervolume(
     )
     hv_val = normalize_hypervolume(hv_val, ideal_point) if normalize else hv_val
 
-    return hv_val
+
+def compute_hypervolume(
+    points,
+    ref_point,
+    ideal_point=None,
+    normalize=True,
+    approx=False,
+    eps=0.1,
+    delta=0.1,
+    lib="pygmo",
+):
+    if lib == "pygmo":
+        return compute_hypervolume_pygmo(
+            points,
+            ref_point,
+            ideal_point=ideal_point,
+            normalize=normalize,
+            approx=approx,
+            eps=eps,
+            delta=delta,
+        )
+    else:
+        return compute_hypervolume_botorch(
+            points, ref_point, ideal_point=ideal_point, normalize=normalize
+        )
 
 
 def normalize_hypervolume(unnorm_hv, ideal_point):
@@ -87,6 +119,7 @@ def compute_iteration_stats(
     approx=False,
     eps=0.1,
     delta=0.1,
+    lib="pygmo",
     from_iteration=1,
     to_iteration=100,
 ):
@@ -123,6 +156,7 @@ def compute_iteration_stats(
                 approx=approx,
                 eps=eps,
                 delta=delta,
+                lib=lib,
             )
 
         prev_n_nd = n_nd
