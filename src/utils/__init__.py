@@ -70,7 +70,7 @@ def compute_hypervolume_pygmo(
         if approx
         else hv.compute(ref_point)
     )
-    hv_val = normalize_hypervolume(hv_val, ideal_point) if normalize else hv_val
+    return normalize_hypervolume(hv_val, ideal_point) if normalize else hv_val
 
 
 def compute_hypervolume(
