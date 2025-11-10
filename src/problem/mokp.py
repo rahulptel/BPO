@@ -1,7 +1,4 @@
-import gurobipy as gp
 import numpy as np
-from gurobipy import GRB
-from pyscipopt import Model, quicksum
 
 
 class MOKPInstance:
@@ -48,6 +45,9 @@ class MOKPInstance:
         return np.zeros(self.n_objs, dtype=np.float64)
 
     def _compute_ideal_point_gurobi(self):
+        import gurobipy as gp
+        from gurobipy import GRB
+
         ideal_point = np.zeros(self.n_objs, dtype=np.float64)
         for j in range(self.n_objs):
             with gp.Model(env=self.env) as model:
@@ -70,6 +70,8 @@ class MOKPInstance:
         return ideal_point
 
     def _compute_ideal_point_scip(self):
+        from pyscipopt import Model, quicksum
+
         ideal_point = np.zeros(self.n_objs, dtype=np.float64)
         for j in range(self.n_objs):
             model = Model("mokp_ideal_point")

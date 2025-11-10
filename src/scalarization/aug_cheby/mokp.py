@@ -1,8 +1,5 @@
-import gurobipy as gp
 import numpy as np
 import torch
-from gurobipy import GRB
-from pyscipopt import Model, quicksum
 
 
 class BaseAugChebyMOKPScalarizer:
@@ -59,8 +56,20 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
     def __init__(self, instance, env, rho=1e-4, maximization=True):
         super().__init__(instance, rho=rho, name="Gurobi", maximization=maximization)
         self.env = env
+        try:
+            import gurobipy as gp
+            from gurobipy import GRB
+        except ImportError as exc:  # pragma: no cover - import guard
+            raise RuntimeError(
+                "GurobiAugChebyMOKPScalarizer requires the gurobipy package"
+            ) from exc
+
+        self._gp = gp
+        self._GRB = GRB
 
     def _build_model(self, pref):
+        gp = self._gp
+        GRB = self._GRB
         model = gp.Model(env=self.env)
         x = model.addMVar(
             shape=self.instance.n_items,
@@ -96,6 +105,7 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         return model
 
     def _get_solution(self, model):
+        GRB = self._GRB
         if model.Status in (GRB.OPTIMAL, GRB.TIME_LIMIT):
             return model._x.X
         return None
@@ -122,8 +132,19 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         super().__init__(instance, rho=rho, name="SCIP", maximization=maximization)
         self.threads = int(threads)
         self.time_limit = float(time_limit)
+        try:
+            from pyscipopt import Model, quicksum
+        except ImportError as exc:  # pragma: no cover - import guard
+            raise RuntimeError(
+                "SCIPAugChebyMOKPScalarizer requires the pyscipopt package"
+            ) from exc
+
+        self._Model = Model
+        self._quicksum = quicksum
 
     def _build_model(self, pref):
+        Model = self._Model
+        quicksum = self._quicksum
         model = Model("aug_cheby_mokp_scip")
         model.setIntParam("display/verblevel", 0)
         if self.threads > 0:
