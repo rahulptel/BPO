@@ -23,7 +23,7 @@ def main(cfg):
     for pid in range(cfg.from_pid, cfg.to_pid):
         cfg.problem.iseed = pid
         instance = build_instance(cfg.problem, env, cfg.optimizer)
-        solver = KSASolver(cfg, instance, env)
+        solver = KSASolver(cfg, instance, env=env)
         solver.run()
 
     env.dispose()

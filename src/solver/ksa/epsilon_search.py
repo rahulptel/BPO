@@ -97,7 +97,7 @@ class EpsilonSearch:
         else:
             raise ValueError("Invalid rectangle selection criterion!")
 
-    def run(self):
+    def run(self, time_limit=None):
         z_ideal, z_upper = self.moop.get_bounds()
         if z_ideal is None:
             return
@@ -110,8 +110,12 @@ class EpsilonSearch:
         b = Box(l=z_ideal_bar, u=z_upper_bar)
         self.L[b.id] = b
 
+        time_limit = None if time_limit is None else float(time_limit)
         start_time = time.time()
         while len(self.L.keys()):
+            if time_limit is not None and time.time() - start_time >= time_limit:
+                print("Time limit reached; stopping early.")
+                break
             sel_id, sel_box = self._select(self.MAX_VOLUME_IDEAL)
             self.n_evaluations += 1
 

@@ -23,7 +23,7 @@ class KSASolver:
         return text.replace(":", "-").replace("/", "-").replace(" ", "_")
 
     def _run_directory_chain(self):
-        chain = [("obj", self.cfg.objective_index), ("delta", self.cfg.delta)]
+        chain = []
         if self.cfg.time_limit is not None:
             chain.append(("time", self._time_suffix(self.cfg.time_limit)))
         return chain
@@ -70,7 +70,7 @@ class KSASolver:
             delta=self.cfg.delta,
         )
         search = EpsilonSearch(problem)
-        search.run()
+        search.run(time_limit=self.cfg.time_limit)
         total_time = time.time() - t0
         time_dict = {"search": total_time}
 
