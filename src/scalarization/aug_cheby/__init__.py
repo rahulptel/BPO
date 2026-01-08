@@ -2,8 +2,11 @@ from .mokp import (  # SCIPAugChebyMOKPScalarizer,; DocplexAugChebyMOKPScalarize
     GurobiAugChebyMOKPScalarizer,
     SCIPAugChebyMOKPScalarizer,
 )
+from .moap import GurobiAugChebyMOAPScalarizer, SCIPAugChebyMOAPScalarizer
 
 __all__ = [
     "GurobiAugChebyMOKPScalarizer",
     "SCIPAugChebyMOKPScalarizer",
+    "GurobiAugChebyMOAPScalarizer",
+    "SCIPAugChebyMOAPScalarizer",
 ]
