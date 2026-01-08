@@ -98,7 +98,9 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         for j in range(self.instance.n_objs):
             model.addConstr(alpha >= pref[j] * achievements_delta[j])
 
-        augmentation = self.rho * gp.quicksum(achievements_delta)
+        augmentation = self.rho * gp.quicksum(
+            pref[j] * achievements_delta[j] for j in range(self.instance.n_objs)
+        )
         model.setObjective(alpha + augmentation, GRB.MINIMIZE)
 
         model._x = x
@@ -175,7 +177,9 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
             achievements_delta.append(achievement_delta)
             model.addCons(alpha >= float(pref[j]) * achievement_delta)
 
-        augmentation = self.rho * quicksum(achievements_delta)
+        augmentation = self.rho * quicksum(
+            pref[j] * achievements_delta[j] for j in range(self.instance.n_objs)
+        )
         model.setObjective(alpha + augmentation, "minimize")
 
         model._x_vars = x_vars
