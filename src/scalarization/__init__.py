@@ -1,5 +1,6 @@
-def build_scalarizer(cfg, instance, env=None, maximization=True):
+def build_scalarizer(cfg, instance, env=None, maximization=None):
     if cfg.problem.name == "mokp":
+        maximization = True if maximization is None else maximization
         if cfg.scalarization.name == "aug_cheby":
             if cfg.optimizer == "gurobi":
                 from .aug_cheby.mokp import GurobiAugChebyMOKPScalarizer
@@ -21,6 +22,7 @@ def build_scalarizer(cfg, instance, env=None, maximization=True):
         else:
             raise ValueError("Invalid scalarizer")
     if cfg.problem.name == "moap":
+        maximization = False if maximization is None else maximization
         if cfg.scalarization.name == "aug_cheby":
             if cfg.optimizer == "gurobi":
                 from .aug_cheby.moap import GurobiAugChebyMOAPScalarizer
