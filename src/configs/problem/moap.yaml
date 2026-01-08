@@ -1,0 +1,8 @@
+name: moap
+n_agents: 10
+n_objs: 3
+cost_min: 1
+cost_max: 20
+iseed: 123
+rho: 0.0001
+ref_point: null
