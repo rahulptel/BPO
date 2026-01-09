@@ -15,6 +15,7 @@ class PymooMOKPProblem(Problem):
     def __init__(self, instance):
         self.instance = instance
         self._ideal_point = self.instance.ideal_point
+        self._reference_point = self.instance.reference_point
 
         super().__init__(
             n_var=self.instance.n_items,
@@ -30,10 +31,10 @@ class PymooMOKPProblem(Problem):
         return self.instance.metadata()
 
     def io_base_dir(self, config):
-        return OUTPUTS_DIR / "ea" / (f"{str(self.instance)}" f"_seed-{config.seed}")
+        return OUTPUTS_DIR / "ea" / f"{str(self.instance)}" / f"rseed-{config.seed}"
 
     def default_ref_point(self):
-        return np.zeros(self.instance.n_objs, dtype=np.float64)
+        return self._reference_point.copy()
 
     def ideal_point(self):
         return self._ideal_point.copy()
@@ -61,6 +62,7 @@ class PymooMOAPProblem(Problem):
     def __init__(self, instance):
         self.instance = instance
         self._ideal_point = self.instance.ideal_point
+        self._reference_point = self.instance.reference_point
         self._n_agents = self.instance.n_agents
         self._n_tasks = self.instance.n_tasks
         if self._n_agents != self._n_tasks:
@@ -83,10 +85,10 @@ class PymooMOAPProblem(Problem):
         return self.instance.metadata()
 
     def io_base_dir(self, config):
-        return OUTPUTS_DIR / "ea" / (f"{str(self.instance)}" f"_seed-{config.seed}")
+        return OUTPUTS_DIR / "ea" / f"{str(self.instance)}" / f"rseed-{config.seed}"
 
     def default_ref_point(self):
-        return self.instance.reference_point.copy()
+        return self._reference_point.copy()
 
     def ideal_point(self):
         return self._ideal_point.copy()
