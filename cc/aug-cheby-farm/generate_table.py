@@ -7,7 +7,7 @@ PROBLEM_TIME_LIMITS = {
     250: {3: 120, 4: 240, 5: 240},
     500: {3: 120, 4: 240, 5: 240},
 }
-PROBLEM_VARIANTS = tuple(
+MOKP_VARIANTS = tuple(
     (
         f"problem.n_items={n_items}",
         f"problem.n_objs={n_objs}",
@@ -16,7 +16,17 @@ PROBLEM_VARIANTS = tuple(
     for n_items, objectives in PROBLEM_TIME_LIMITS.items()
     for n_objs, time_limit in objectives.items()
 )
-CASE_VARIANTS = PROBLEM_VARIANTS
+MOAP_N_AGENTS = 10
+MOAP_N_OBJS = 3
+MOAP_TIME_LIMIT = 120
+MOAP_VARIANTS = (
+    (
+        "problem=moap",
+        f"problem.n_agents={MOAP_N_AGENTS}",
+        f"problem.n_objs={MOAP_N_OBJS}",
+        f"time_limit={MOAP_TIME_LIMIT}",
+    ),
+)
 INSTANCES_PER_CASE = 10
 
 
@@ -77,6 +87,14 @@ def write_table(lines, output_path):
     output_path.write_text("\n".join(lines) + "\n")
 
 
+def select_problem_variants(problem):
+    if problem == "mokp":
+        return MOKP_VARIANTS
+    if problem == "moap":
+        return MOAP_VARIANTS
+    return MOKP_VARIANTS + MOAP_VARIANTS
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate the table.dat file with Augmented Chebyshev runs."
@@ -87,6 +105,12 @@ def parse_args():
         default=Path(__file__).with_name("table.dat"),
         help="Where to write the table.dat file (default: alongside this script).",
     )
+    parser.add_argument(
+        "--problem",
+        choices=("all", "mokp", "moap"),
+        default="all",
+        help="Which problem cases to generate (default: all).",
+    )
     return parser.parse_args()
 
 
@@ -96,10 +120,11 @@ def main():
     rseed_values = range(1, 6)
 
     pid_windows = build_pid_windows(pid_range, INSTANCES_PER_CASE)
+    problem_variants = select_problem_variants(args.problem)
     specs = generate_case_specs(
         pid_windows,
         rseed_values,
-        CASE_VARIANTS,
+        problem_variants,
     )
     lines = [spec.render() for spec in specs]
     write_table(lines, args.output)
