@@ -26,6 +26,10 @@ def build_pymoo_instance(problem_cfg, problem):
         from solver.ea.adapters import PymooMOKPProblem
 
         return PymooMOKPProblem(problem)
+    if problem_cfg.name == "moap":
+        from solver.ea.adapters import PymooMOAPProblem
+
+        return PymooMOAPProblem(problem)
     else:
         raise ValueError(f"Unknown problem name: {problem_cfg.name}")
 

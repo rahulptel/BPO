@@ -12,8 +12,11 @@ from botorch.utils.multi_objective.pareto import is_non_dominated
 from omegaconf import DictConfig, OmegaConf
 from pymoo.core.callback import Callback
 from pymoo.operators.crossover.pntx import SinglePointCrossover
+from pymoo.operators.crossover.ox import OrderCrossover
 from pymoo.operators.mutation.bitflip import BitflipMutation
+from pymoo.operators.mutation.inversion import InversionMutation
 from pymoo.operators.sampling.rnd import BinaryRandomSampling
+from pymoo.operators.sampling.rnd import PermutationRandomSampling
 from pymoo.optimize import minimize
 from pymoo.termination import get_termination
 
@@ -57,14 +60,24 @@ class EASolver:
         alg_cfg = self.cfg.algorithm
         n_objs = self.cfg.problem.n_objs
 
+        encoding = getattr(self.pymoo_instance, "encoding", "binary")
+        if encoding == "permutation":
+            sampling = PermutationRandomSampling()
+            crossover = OrderCrossover()
+            mutation = InversionMutation()
+        else:
+            sampling = BinaryRandomSampling()
+            crossover = SinglePointCrossover()
+            mutation = BitflipMutation()
+
         if alg_cfg.name == "nsga2":
             from pymoo.algorithms.moo.nsga2 import NSGA2
 
             return NSGA2(
                 pop_size=alg_cfg.pop_size,
-                sampling=BinaryRandomSampling(),
-                crossover=SinglePointCrossover(),
-                mutation=BitflipMutation(),
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
                 eliminate_duplicates=alg_cfg.eliminate_duplicates,
             )
         if alg_cfg.name == "nsga3":
@@ -79,9 +92,9 @@ class EASolver:
             return NSGA3(
                 pop_size=alg_cfg.pop_size,
                 ref_dirs=ref_dirs,
-                sampling=BinaryRandomSampling(),
-                crossover=SinglePointCrossover(),
-                mutation=BitflipMutation(),
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
                 eliminate_duplicates=alg_cfg.eliminate_duplicates,
             )
         if alg_cfg.name == "smsemoa":
@@ -89,9 +102,9 @@ class EASolver:
 
             return SMSEMOA(
                 pop_size=alg_cfg.pop_size,
-                sampling=BinaryRandomSampling(),
-                crossover=SinglePointCrossover(),
-                mutation=BitflipMutation(),
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
                 eliminate_duplicates=alg_cfg.eliminate_duplicates,
             )
         if alg_cfg.name == "ctaea":
@@ -105,9 +118,9 @@ class EASolver:
 
             return CTAEA(
                 ref_dirs=ref_dirs,
-                sampling=BinaryRandomSampling(),
-                crossover=SinglePointCrossover(),
-                mutation=BitflipMutation(),
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
                 eliminate_duplicates=alg_cfg.eliminate_duplicates,
             )
 
@@ -190,8 +203,12 @@ class EASolver:
         time_dict = {"optimization": total_time}
         print("Optimization finished in {:.2f} seconds.".format(total_time))
 
+        is_minimization = getattr(self.pymoo_instance, "is_minimization", False)
+        objectives_for_nd = -result.F
+        objectives_for_hv = result.F if is_minimization else -result.F
+
         # Get nondominated expects objective vector in the maximization form
-        mask_t, Y_nd_t = self._get_nondominated(-result.F)
+        mask_t, _ = self._get_nondominated(objectives_for_nd)
         mask = mask_t.cpu().numpy().astype(bool)
         n_nd = int(mask.sum())
 
@@ -199,6 +216,9 @@ class EASolver:
         Y_nd = []
         X_nd = []
         if n_nd > 0:
+            Y_nd_t = torch.tensor(
+                objectives_for_hv[mask], dtype=torch.get_default_dtype()
+            )
             hv = compute_hypervolume(Y_nd_t, ref_point_t, ideal_point=ideal_point)
             Y_nd = Y_nd_t.cpu().numpy().tolist()
             X_nd = result.X[mask].tolist() if result.X is not None else None
