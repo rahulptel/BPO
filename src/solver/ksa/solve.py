@@ -7,7 +7,7 @@ from omegaconf import OmegaConf
 
 from utils import OUTPUTS_DIR, compute_iteration_stats
 
-from .adapters import KSAMOKPProblem
+from .adapters import KSAMOKPProblem, KSAMOAPProblem
 from .epsilon_search import EpsilonSearch
 
 
@@ -63,12 +63,22 @@ class KSASolver:
 
     def run(self):
         t0 = time.time()
-        problem = KSAMOKPProblem(
-            self.instance,
-            env=self.env,
-            objective_index=self.cfg.objective_index,
-            delta=self.cfg.delta,
-        )
+        if self.instance.name == "mokp":
+            problem = KSAMOKPProblem(
+                self.instance,
+                env=self.env,
+                objective_index=self.cfg.objective_index,
+                delta=self.cfg.delta,
+            )
+        elif self.instance.name == "moap":
+            problem = KSAMOAPProblem(
+                self.instance,
+                env=self.env,
+                objective_index=self.cfg.objective_index,
+                delta=self.cfg.delta,
+            )
+        else:
+            raise ValueError(f"Unsupported instance: {self.instance.name}")
         search = EpsilonSearch(problem)
         search.run(time_limit=self.cfg.time_limit)
         total_time = time.time() - t0
