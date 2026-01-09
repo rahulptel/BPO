@@ -42,7 +42,7 @@ class MOKPInstance:
 
     @property
     def reference_point(self):
-        return np.zeros(self.n_objs, dtype=np.float64)
+        return self.values.min(axis=0) - 1.0        
 
     def _compute_ideal_point_gurobi(self):
         import gurobipy as gp
