@@ -1,1 +1,4 @@
 name: gp
+kernel: default
+matern:
+  nu: 2.5
