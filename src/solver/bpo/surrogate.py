@@ -3,6 +3,7 @@ import time
 from botorch import fit_gpytorch_mll
 from botorch.models import ModelListGP, SingleTaskGP
 from botorch.models.transforms.outcome import Standardize
+from gpytorch.kernels import MaternKernel, ScaleKernel
 from gpytorch.mlls.sum_marginal_log_likelihood import SumMarginalLogLikelihood
 
 
@@ -18,16 +19,29 @@ class GPSurrogate(Surrogate):
     def __init__(self, config=None):
         super().__init__(config)
 
-    @staticmethod
-    def _build_gp_components(x, y):
+    def _build_gp_components(self, x, y):
         x_flat = x.reshape(-1, x.shape[-1])
         y_flat = y.reshape(-1, y.shape[-1])
 
         models = []
         for i in range(y_flat.shape[-1]):
             y_flat_obj = y_flat[:, i].unsqueeze(-1)
+            kernel = None
+            if self.config.kernel == "matern":
+                matern_nu = (
+                    self.config.matern.nu
+                    if self.config.matern and self.config.matern.nu
+                    else 2.5
+                )
+                kernel = ScaleKernel(MaternKernel(nu=matern_nu))
+
             models.append(
-                SingleTaskGP(x_flat, y_flat_obj, outcome_transform=Standardize(m=1))
+                SingleTaskGP(
+                    x_flat,
+                    y_flat_obj,
+                    covar_module=kernel,
+                    outcome_transform=Standardize(m=1),
+                )
             )
 
         model = ModelListGP(*models)
