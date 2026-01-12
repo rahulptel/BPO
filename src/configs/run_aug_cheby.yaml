@@ -4,7 +4,7 @@ defaults:
   - override hydra/job_logging: disabled
   - _self_
 
-n_iterations: 100
+n_iterations: 500
 rseed: 123
 time_limit: 100
 from_pid: 1
@@ -18,7 +18,7 @@ hypervolume:
   delta: 0.1
   normalize: true
   lib: pygmo
-  
+
 hydra:
   run:
     dir: .

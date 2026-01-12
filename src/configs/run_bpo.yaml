@@ -14,7 +14,7 @@ acquisition:
   sequential: true
 
 n_initial_samples: 10
-n_iterations: 100
+n_iterations: 500
 rseed: 123
 time_limit: 100
 compute_stats_upto: 100
