@@ -50,7 +50,7 @@ def compute_hypervolume_botorch(Y_nd, ref_point, ideal_point=None, normalize=Tru
     bd = FastNondominatedPartitioning(ref_point=ref_point, Y=Y_nd)
     hv_val = bd.compute_hypervolume().item()
     if normalize and ideal_point is not None:
-        return normalize_hypervolume(hv_val, ideal_point)
+        return normalize_hypervolume(hv_val, ref_point - ideal_point)
     return float(hv_val)
 
 
@@ -70,7 +70,9 @@ def compute_hypervolume_pygmo(
         if approx
         else hv.compute(ref_point)
     )
-    return normalize_hypervolume(hv_val, ideal_point) if normalize else hv_val
+    return (
+        normalize_hypervolume(hv_val, ref_point - ideal_point) if normalize else hv_val
+    )
 
 
 def compute_hypervolume(
