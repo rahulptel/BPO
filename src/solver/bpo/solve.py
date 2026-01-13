@@ -35,6 +35,8 @@ class BPOSolver:
     @staticmethod
     def _surrogate_directory_chain(config):
         dir_chain = [("surr", config.name)]
+        if config.kernel is not None:
+            dir_chain.append(("kernel", config.kernel))
         return dir_chain
 
     @staticmethod
