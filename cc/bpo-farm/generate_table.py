@@ -13,7 +13,7 @@ MOKP_VARIANTS = tuple(
         f"problem.n_items={n_items}",
         f"problem.n_objs={n_objs}",
         f"time_limit={time_limit}",
-        f"n_initial_samples=10" if n_objs == 3 else f"n_initial_samples=50",
+        f"n_initial_samples={10 if n_objs == 3 else 50}",
     )
     for n_items, objectives in PROBLEM_TIME_LIMITS.items()
     for n_objs, time_limit in objectives.items()
@@ -31,7 +31,7 @@ MOAP_VARIANTS = tuple(
     )
     for n_agents in MOAP_N_AGENTS
 )
-ACQUISITION_VARIANTS = (("surrogate=gp",),)
+ACQUISITION_VARIANTS = (("surrogate=gp",), ("surrogate=gp", "surrogate.kernel=matern"))
 # ACQUISITION_VARIANTS = (
 #     ("surrogate=gp",),
 #     ("surrogate=gp", "acquisition.batch_size_q=2"),
