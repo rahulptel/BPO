@@ -7,7 +7,7 @@ from omegaconf import OmegaConf
 
 from utils import OUTPUTS_DIR, compute_iteration_stats
 
-from .adapters import KSAMOKPProblem, KSAMOAPProblem
+from .adapters import KSAMOAPProblem, KSAMOKPProblem
 from .epsilon_search import EpsilonSearch
 
 
@@ -96,8 +96,8 @@ class KSASolver:
         if objs.size > 0:
             iter_records = compute_iteration_stats(
                 objs,
-                self.instance.reference_point,
-                ideal_point=self.instance.ideal_point,
+                problem.ub,
+                ideal_point=problem.lb,
                 normalize_hypervolume=self.cfg.hypervolume.normalize,
                 approx=self.cfg.hypervolume.approx,
                 eps=self.cfg.hypervolume.eps,
@@ -108,8 +108,8 @@ class KSASolver:
             )
             final_record = compute_iteration_stats(
                 objs,
-                self.instance.reference_point,
-                ideal_point=self.instance.ideal_point,
+                problem.ub,
+                ideal_point=problem.lb,
                 normalize_hypervolume=self.cfg.hypervolume.normalize,
                 approx=self.cfg.hypervolume.approx,
                 eps=self.cfg.hypervolume.eps,

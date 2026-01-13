@@ -97,11 +97,19 @@ class AugChebySolver:
         if self.scalarizer.maximize is True:
             objs = -objs
 
+        if self.cfg.problem.name == "mokp":
+            ideal_point = -self.instance.ideal_point
+            ref_point = -self.instance.reference_point
+        elif self.cfg.problem.name == "moap":
+            ideal_point = self.instance.ideal_point
+            ref_point = self.instance.reference_point
+        else:
+            raise ValueError(f"Unknown problem '{self.cfg.problem.name}'.")
         t0 = time.time()
         iter_records = compute_iteration_stats(
             objs,
-            self.instance.reference_point,
-            ideal_point=self.instance.ideal_point,
+            ref_point,
+            ideal_point=ideal_point,
             all_prefs=prefs,
             normalize_hypervolume=self.cfg.hypervolume.normalize,
             approx=self.cfg.hypervolume.approx,
@@ -113,8 +121,8 @@ class AugChebySolver:
         )
         final_record = compute_iteration_stats(
             objs,
-            self.instance.reference_point,
-            ideal_point=self.instance.ideal_point,
+            ref_point,
+            ideal_point=ideal_point,
             all_prefs=prefs,
             normalize_hypervolume=self.cfg.hypervolume.normalize,
             approx=self.cfg.hypervolume.approx,
