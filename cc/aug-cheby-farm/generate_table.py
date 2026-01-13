@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+N_ITERATIONS = 10000
 BASE_COMMAND = "python $BASEPATH/src/run_aug_cheby.py"
 PROBLEM_TIME_LIMITS = {
     50: {3: 120, 4: 240, 5: 240},
@@ -12,20 +13,23 @@ MOKP_VARIANTS = tuple(
         f"problem.n_items={n_items}",
         f"problem.n_objs={n_objs}",
         f"time_limit={time_limit}",
+        f"n_iterations={N_ITERATIONS}",
     )
     for n_items, objectives in PROBLEM_TIME_LIMITS.items()
     for n_objs, time_limit in objectives.items()
 )
-MOAP_N_AGENTS = 10
+MOAP_N_AGENTS = (10, 25, 50)
 MOAP_N_OBJS = 3
 MOAP_TIME_LIMIT = 120
-MOAP_VARIANTS = (
+MOAP_VARIANTS = tuple(
     (
         "problem=moap",
-        f"problem.n_agents={MOAP_N_AGENTS}",
+        f"problem.n_agents={n_agents}",
         f"problem.n_objs={MOAP_N_OBJS}",
         f"time_limit={MOAP_TIME_LIMIT}",
-    ),
+        f"n_iterations={N_ITERATIONS}",
+    )
+    for n_agents in MOAP_N_AGENTS
 )
 INSTANCES_PER_CASE = 10
 
