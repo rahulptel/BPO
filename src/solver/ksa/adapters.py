@@ -4,12 +4,13 @@ from gurobipy import GRB
 
 
 class KSAProblem:
-    def __init__(self, instance, env=None, objective_index=0, delta=1):
+    def __init__(self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0):
         self.instance = instance
         self.env = env
         self.delta = float(delta)
         self.K = int(objective_index)
-
+        self.outputflag = outputflag
+        self.mipgap = mipgap
         self.n_objectives = self.instance.n_objs
         if self.K < 0 or self.K >= self.n_objectives:
             raise ValueError(f"Invalid objective index: {self.K}")
@@ -28,8 +29,8 @@ class KSAProblem:
         self._initialize_base_model()
 
     def _configure_model(self, model):
-        model.setParam("OutputFlag", 0)
-        model.setParam("MIPGap", 0)
+        model.setParam("OutputFlag", self.outputflag)
+        model.setParam("MIPGap", self.mipgap)
 
     def _initialize_base_model(self):
         raise NotImplementedError
@@ -96,9 +97,14 @@ class KSAProblem:
 
 
 class KSAMOKPProblem(KSAProblem):
-    def __init__(self, instance, env=None, objective_index=0, delta=1):
+    def __init__(self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0):
         super().__init__(
-            instance, env=env, objective_index=objective_index, delta=delta
+            instance, 
+            env=env, 
+            objective_index=objective_index, 
+            delta=delta, 
+            outputflag=outputflag, 
+            mipgap=mipgap
         )
         self.n_variables = instance.n_items
         self.objectives = -instance.values.T
@@ -150,7 +156,15 @@ class KSAMOKPProblem(KSAProblem):
 
 
 class KSAMOAPProblem(KSAProblem):
-    def __init__(self, instance, env=None, objective_index=0, delta=1):
+    def __init__(self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0):
+        super().__init__(
+            instance, 
+            env=env, 
+            objective_index=objective_index, 
+            delta=delta, 
+            outputflag=outputflag, 
+            mipgap=mipgap
+        )
         self.n_agents = instance.n_agents
         self.n_tasks = instance.n_tasks
         self.costs = instance.costs.astype(np.float64)
@@ -158,11 +172,7 @@ class KSAMOAPProblem(KSAProblem):
         self.v_assign = None
         self.c_assign_agents = None
         self.c_assign_tasks = None
-        self.objectives_bar_expr = None
-
-        super().__init__(
-            instance, env=env, objective_index=objective_index, delta=delta
-        )
+                
         self.objectives_bar_expr = [
             self.objectives_expr[i]
             for i in range(self.n_objectives)

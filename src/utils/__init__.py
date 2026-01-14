@@ -27,11 +27,12 @@ def set_global_seed(seed):
         torch.cuda.manual_seed_all(seed)
 
 
-def build_gurobi_env(output_flag=0, threads=1, time_limit=100):
+def build_gurobi_env(output_flag=0, threads=1, time_limit=100, mipgap=0.0):
     env = gp.Env(empty=True)
     env.setParam("OutputFlag", output_flag)
     env.setParam("Threads", threads)
     env.setParam("TimeLimit", time_limit)
+    env.setParam("MipGap", mipgap)
 
     return env
 

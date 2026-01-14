@@ -16,7 +16,9 @@ def main(cfg):
     t0 = time.time()
 
     env = (
-        build_gurobi_env(time_limit=cfg.time_limit)
+        build_gurobi_env(
+            time_limit=cfg.time_limit, output_flag=cfg.outputflag, mipgap=cfg.mipgap
+        )
         if cfg.optimizer == "gurobi"
         else None
     )

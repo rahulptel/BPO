@@ -16,7 +16,9 @@ def main(cfg):
         raise ValueError("KSA currently supports only the Gurobi optimizer.")
 
     t0 = time.time()
-    env = build_gurobi_env(time_limit=cfg.time_limit)
+    env = build_gurobi_env(
+        time_limit=cfg.time_limit, output_flag=cfg.outputflag, mipgap=cfg.mipgap
+    )
     env.start()
     print("Time taken to start gurobi env: ", time.time() - t0)
 

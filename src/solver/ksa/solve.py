@@ -69,6 +69,8 @@ class KSASolver:
                 env=self.env,
                 objective_index=self.cfg.objective_index,
                 delta=self.cfg.delta,
+                outputflag=self.cfg.outputflag,
+                mipgap=self.cfg.mipgap,
             )
         elif self.instance.name == "moap":
             problem = KSAMOAPProblem(
@@ -76,6 +78,8 @@ class KSASolver:
                 env=self.env,
                 objective_index=self.cfg.objective_index,
                 delta=self.cfg.delta,
+                outputflag=self.cfg.outputflag,
+                mipgap=self.cfg.mipgap,
             )
         else:
             raise ValueError(f"Unsupported instance: {self.instance.name}")

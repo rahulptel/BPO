@@ -8,6 +8,8 @@ delta: 1
 from_pid: 1
 to_pid: 3
 time_limit: 100
+outputflag: 0
+mipgap: 0.0
 optimizer: gurobi
 
 compute_stats_upto: 100

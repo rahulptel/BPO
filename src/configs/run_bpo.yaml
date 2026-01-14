@@ -17,6 +17,8 @@ n_initial_samples: 10
 n_iterations: 500
 rseed: 123
 time_limit: 100
+outputflag: 0
+mipgap: 0.0
 compute_stats_upto: 100
 from_pid: 1
 to_pid: 3
