@@ -3,15 +3,13 @@ import torch
 
 
 class BaseAugChebyMOKPScalarizer:
-    def __init__(self, instance, rho=1e-4, name="Base", maximization=False):
+    def __init__(self, instance, rho=1e-4, name="Base"):
         self.name = name
         self.instance = instance
         self.rho = float(rho)
-        self.maximize = maximization
         self.n_evaluations = 0
 
-        # Assume: Instance ideal point provided considering maximization form
-        self._ideal_point_min = -self.instance.ideal_point
+        self._ideal_point_min = self.instance.ideal_point
         self._log_scalarization_start()
 
     def _log_scalarization_start(self):
@@ -47,14 +45,13 @@ class BaseAugChebyMOKPScalarizer:
     def _solve_scalarized(self, pref):
         """
         Solves the problem in minimization form
-        If maximize is True, we return the negative of objective value.
         """
         raise NotImplementedError
 
 
 class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
-    def __init__(self, instance, env, rho=1e-4, maximization=True):
-        super().__init__(instance, rho=rho, name="Gurobi", maximization=maximization)
+    def __init__(self, instance, env, rho=1e-4):
+        super().__init__(instance, rho=rho, name="Gurobi")
         self.env = env
         try:
             import gurobipy as gp
@@ -91,7 +88,7 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         achievements = []
         achievements_delta = []
         for j in range(self.instance.n_objs):
-            value = -(self.instance.values[:, j] @ x)
+            value = self.instance.values[:, j] @ x
             achievements.append(value)
             achievements_delta.append(value - self._ideal_point_min[j])
 
@@ -124,14 +121,12 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
             raise RuntimeError(f"Gurobi solver failed for pref={pref.tolist()}")
 
         true_objective = self.instance.values.T @ solution
-        return true_objective if self.maximize else -true_objective
+        return true_objective
 
 
 class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
-    def __init__(
-        self, instance, rho=1e-4, threads=1, time_limit=100, maximization=True
-    ):
-        super().__init__(instance, rho=rho, name="SCIP", maximization=maximization)
+    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
+        super().__init__(instance, rho=rho, name="SCIP")
         self.threads = int(threads)
         self.time_limit = float(time_limit)
         try:
@@ -169,7 +164,7 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
 
         achievements_delta = []
         for j in range(self.instance.n_objs):
-            value_expr = -quicksum(
+            value_expr = quicksum(
                 self.instance.values[i, j] * x_vars[i]
                 for i in range(self.instance.n_items)
             )
@@ -210,4 +205,4 @@ class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
         solution_x = self._get_solution(model, pref)
 
         true_objective = self.instance.values.T @ solution_x
-        return true_objective if self.maximize else -true_objective
+        return true_objective

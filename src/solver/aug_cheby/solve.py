@@ -92,18 +92,8 @@ class AugChebySolver:
             prefs = np.concatenate((prefs, new_pref), axis=0)
             objs = np.concatenate((objs, new_obj), axis=0)
 
-        # Convert the objs to minimization form
-        if self.scalarizer.maximize is True:
-            objs = -objs
-
-        if self.cfg.problem.name == "mokp":
-            ideal_point = -self.instance.ideal_point
-            ref_point = -self.instance.reference_point
-        elif self.cfg.problem.name == "moap":
-            ideal_point = self.instance.ideal_point
-            ref_point = self.instance.reference_point
-        else:
-            raise ValueError(f"Unknown problem '{self.cfg.problem.name}'.")
+        ideal_point = self.instance.ideal_point
+        ref_point = self.instance.reference_point
         t0 = time.time()
         iter_records = compute_iteration_stats(
             objs,

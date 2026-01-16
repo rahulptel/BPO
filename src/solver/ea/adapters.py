@@ -9,7 +9,6 @@ OUTPUTS_DIR = SRC_DIR.parent.joinpath("outputs")
 
 class PymooMOKPProblem(Problem):
     name = "mokp"
-    is_minimization = False
     encoding = "binary"
 
     def __init__(self, instance):
@@ -50,13 +49,12 @@ class PymooMOKPProblem(Problem):
         weights = decisions @ self.instance.weights
         constraint_violation = weights - self.instance.capacity
 
-        out["F"] = -profits
+        out["F"] = profits
         out["G"] = constraint_violation.reshape(-1, 1)
 
 
 class PymooMOAPProblem(Problem):
     name = "moap"
-    is_minimization = True
     encoding = "permutation"
 
     def __init__(self, instance):

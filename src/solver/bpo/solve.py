@@ -110,7 +110,7 @@ class BPOSolver:
             "objs": objs.tolist(),
             "n_evaluations": len(prefs),
             "iter_records": iter_records,
-            "final_record": final_record,                                    
+            "final_record": final_record,
             "time_dict": time_dict,
         }
 
@@ -201,17 +201,9 @@ class BPOSolver:
 
         prefs_np = prefs.detach().cpu().numpy()
         objs_np = objs.detach().cpu().numpy()
-        if self.scalarizer.maximize:
-            objs_np = -objs_np
 
-        if self.cfg.problem.name == "mokp":
-            ideal_point = -self.instance.ideal_point
-            ref_point = -self.instance.reference_point
-        elif self.cfg.problem.name == "moap":
-            ideal_point = self.instance.ideal_point
-            ref_point = self.instance.reference_point
-        else:
-            raise ValueError(f"Unknown problem '{self.cfg.problem.name}'.")
+        ideal_point = self.instance.ideal_point
+        ref_point = self.instance.reference_point
         t0 = time.time()
         iter_records = compute_iteration_stats(
             objs_np,

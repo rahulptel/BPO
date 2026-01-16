@@ -11,12 +11,11 @@ from botorch.utils.multi_objective.box_decompositions.non_dominated import (
 from botorch.utils.multi_objective.pareto import is_non_dominated
 from omegaconf import DictConfig, OmegaConf
 from pymoo.core.callback import Callback
-from pymoo.operators.crossover.pntx import SinglePointCrossover
 from pymoo.operators.crossover.ox import OrderCrossover
+from pymoo.operators.crossover.pntx import SinglePointCrossover
 from pymoo.operators.mutation.bitflip import BitflipMutation
 from pymoo.operators.mutation.inversion import InversionMutation
-from pymoo.operators.sampling.rnd import BinaryRandomSampling
-from pymoo.operators.sampling.rnd import PermutationRandomSampling
+from pymoo.operators.sampling.rnd import BinaryRandomSampling, PermutationRandomSampling
 from pymoo.optimize import minimize
 from pymoo.termination import get_termination
 
@@ -206,9 +205,8 @@ class EASolver:
         print("Optimization finished in {:.2f} seconds.".format(time_dict["search"]))
 
         t0 = time.time()
-        is_minimization = getattr(self.pymoo_instance, "is_minimization", False)
         objectives_for_nd = -result.F
-        objectives_for_hv = result.F if is_minimization else -result.F
+        objectives_for_hv = result.F
 
         # Get nondominated expects objective vector in the maximization form
         mask_t, _ = self._get_nondominated(objectives_for_nd)

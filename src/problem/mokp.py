@@ -14,7 +14,7 @@ class MOKPInstance:
         self.env = env
 
         rng = np.random.default_rng(self.iseed)
-        self.values = rng.integers(1, 1001, size=(self.n_items, self.n_objs))
+        self.values = -rng.integers(1, 1001, size=(self.n_items, self.n_objs))
         self.weights = rng.integers(1, 1001, size=self.n_items)
         self.capacity = int(np.sum(self.weights) * self.density)
 
@@ -42,7 +42,7 @@ class MOKPInstance:
 
     @property
     def reference_point(self):
-        return self.values.min(axis=0) - 1.0        
+        return self.values.max(axis=0) + 1.0
 
     def _compute_ideal_point_gurobi(self):
         import gurobipy as gp
@@ -57,9 +57,7 @@ class MOKPInstance:
                     name="x",
                 )
                 model.addConstr(self.weights @ x <= self.capacity, name="capacity")
-
-                coefficients = self.values[:, j]
-                model.setObjective(coefficients @ x, GRB.MAXIMIZE)
+                model.setObjective(self.values[:, j] @ x, GRB.MINIMIZE)
 
                 model.optimize()
 
@@ -90,7 +88,7 @@ class MOKPInstance:
             objective_expr = quicksum(
                 float(self.values[i, j]) * x_vars[i] for i in range(self.n_items)
             )
-            model.setObjective(objective_expr, sense="maximize")
+            model.setObjective(objective_expr, sense="minimize")
 
             model.optimize()
             status = model.getStatus()

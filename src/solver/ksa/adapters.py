@@ -4,7 +4,9 @@ from gurobipy import GRB
 
 
 class KSAProblem:
-    def __init__(self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0):
+    def __init__(
+        self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0
+    ):
         self.instance = instance
         self.env = env
         self.delta = float(delta)
@@ -97,17 +99,19 @@ class KSAProblem:
 
 
 class KSAMOKPProblem(KSAProblem):
-    def __init__(self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0):
+    def __init__(
+        self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0
+    ):
         super().__init__(
-            instance, 
-            env=env, 
-            objective_index=objective_index, 
-            delta=delta, 
-            outputflag=outputflag, 
-            mipgap=mipgap
+            instance,
+            env=env,
+            objective_index=objective_index,
+            delta=delta,
+            outputflag=outputflag,
+            mipgap=mipgap,
         )
         self.n_variables = instance.n_items
-        self.objectives = -instance.values.T
+        self.objectives = instance.values.T
         self.weight = instance.weights
         self.capacity = instance.capacity
 
@@ -118,9 +122,7 @@ class KSAMOKPProblem(KSAProblem):
     def _initialize_base_model(self):
         self.m = gp.Model(env=self.env) if self.env is not None else gp.Model()
         self._configure_model(self.m)
-        self.v_items = self.m.addMVar(
-            self.n_variables, vtype=GRB.BINARY, name="item"
-        )
+        self.v_items = self.m.addMVar(self.n_variables, vtype=GRB.BINARY, name="item")
         self.c_capacity = self.m.addConstr(
             self.weight @ self.v_items <= self.capacity, name="capacity"
         )
@@ -152,18 +154,20 @@ class KSAMOKPProblem(KSAProblem):
     def _bounds_from_instance(self):
         ideal = np.asarray(self.instance.ideal_point, dtype=np.float64)
         reference = np.asarray(self.instance.reference_point, dtype=np.float64)
-        return -ideal, -reference
+        return ideal, reference
 
 
 class KSAMOAPProblem(KSAProblem):
-    def __init__(self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0):
+    def __init__(
+        self, instance, env=None, objective_index=0, delta=1, outputflag=0, mipgap=0
+    ):
         super().__init__(
-            instance, 
-            env=env, 
-            objective_index=objective_index, 
-            delta=delta, 
-            outputflag=outputflag, 
-            mipgap=mipgap
+            instance,
+            env=env,
+            objective_index=objective_index,
+            delta=delta,
+            outputflag=outputflag,
+            mipgap=mipgap,
         )
         self.n_agents = instance.n_agents
         self.n_tasks = instance.n_tasks
@@ -172,11 +176,9 @@ class KSAMOAPProblem(KSAProblem):
         self.v_assign = None
         self.c_assign_agents = None
         self.c_assign_tasks = None
-                
+
         self.objectives_bar_expr = [
-            self.objectives_expr[i]
-            for i in range(self.n_objectives)
-            if i != self.K
+            self.objectives_expr[i] for i in range(self.n_objectives) if i != self.K
         ]
 
     def _initialize_base_model(self):

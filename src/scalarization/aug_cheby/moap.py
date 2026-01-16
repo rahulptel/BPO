@@ -3,11 +3,10 @@ import torch
 
 
 class BaseAugChebyMOAPScalarizer:
-    def __init__(self, instance, rho=1e-4, name="Base", maximization=False):
+    def __init__(self, instance, rho=1e-4, name="Base"):
         self.name = name
         self.instance = instance
         self.rho = float(rho)
-        self.maximize = maximization
         self.n_evaluations = 0
 
         self._ideal_point_min = self.instance.ideal_point
@@ -46,14 +45,13 @@ class BaseAugChebyMOAPScalarizer:
     def _solve_scalarized(self, pref):
         """
         Solves the problem in minimization form
-        If maximize is True, we return the negative of objective value.
         """
         raise NotImplementedError
 
 
 class GurobiAugChebyMOAPScalarizer(BaseAugChebyMOAPScalarizer):
-    def __init__(self, instance, env, rho=1e-4, maximization=False):
-        super().__init__(instance, rho=rho, name="Gurobi", maximization=maximization)
+    def __init__(self, instance, env, rho=1e-4):
+        super().__init__(instance, rho=rho, name="Gurobi")
         self.env = env
         try:
             import gurobipy as gp
@@ -120,14 +118,12 @@ class GurobiAugChebyMOAPScalarizer(BaseAugChebyMOAPScalarizer):
         true_objective = np.sum(
             self.instance.costs * solution[:, :, None], axis=(0, 1)
         )
-        return -true_objective if self.maximize else true_objective
+        return true_objective
 
 
 class SCIPAugChebyMOAPScalarizer(BaseAugChebyMOAPScalarizer):
-    def __init__(
-        self, instance, rho=1e-4, threads=1, time_limit=100, maximization=False
-    ):
-        super().__init__(instance, rho=rho, name="SCIP", maximization=maximization)
+    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
+        super().__init__(instance, rho=rho, name="SCIP")
         self.threads = int(threads)
         self.time_limit = float(time_limit)
         try:
@@ -224,4 +220,4 @@ class SCIPAugChebyMOAPScalarizer(BaseAugChebyMOAPScalarizer):
         true_objective = np.sum(
             self.instance.costs * solution_x[:, :, None], axis=(0, 1)
         )
-        return -true_objective if self.maximize else true_objective
+        return true_objective

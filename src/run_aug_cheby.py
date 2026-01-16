@@ -28,7 +28,7 @@ def main(cfg):
     for pid in range(cfg.from_pid, cfg.to_pid):
         cfg.problem.iseed = pid
         instance = build_instance(cfg.problem, env, cfg.optimizer)
-        scalarizer = build_scalarizer(cfg, instance, env=env, maximization=False)
+        scalarizer = build_scalarizer(cfg, instance, env=env)
         solver = AugChebySolver(cfg, instance, scalarizer)
         solver.run()
 
