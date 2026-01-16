@@ -2,3 +2,7 @@ name: gp
 kernel: default
 matern:
   nu: 2.5
+ibnn:
+  depth: 3
+  weight_var: null
+  bias_var: null

@@ -17,7 +17,7 @@ from .surrogate import build_surrogate
 
 
 def get_default_acquisition_name(surrogate_name):
-    if surrogate_name in ("gp", "ibnn"):
+    if surrogate_name == "gp":
         return "qlogehvi"
     elif surrogate_name == "none":
         return "random"
@@ -35,8 +35,9 @@ class BPOSolver:
     @staticmethod
     def _surrogate_directory_chain(config):
         dir_chain = [("surr", config.name)]
-        if config.kernel is not None:
-            dir_chain.append(("kernel", config.kernel))
+        kernel = getattr(config, "kernel", None)
+        if kernel is not None:
+            dir_chain.append(("kernel", kernel))
         return dir_chain
 
     @staticmethod
@@ -69,7 +70,7 @@ class BPOSolver:
         return dir_chain
 
     def _get_default_acquisition_name(self, surrogate_name):
-        if surrogate_name in ("gp", "ibnn"):
+        if surrogate_name == "gp":
             return "qlogehvi"
         else:
             raise ValueError(

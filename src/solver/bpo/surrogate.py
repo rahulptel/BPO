@@ -3,7 +3,6 @@ import time
 from botorch import fit_gpytorch_mll
 from botorch.models import ModelListGP, SingleTaskGP
 from botorch.models.transforms.outcome import Standardize
-from gpytorch.kernels import MaternKernel, ScaleKernel
 from gpytorch.mlls.sum_marginal_log_likelihood import SumMarginalLogLikelihood
 
 
@@ -19,6 +18,27 @@ class GPSurrogate(Surrogate):
     def __init__(self, config=None):
         super().__init__(config)
 
+    def _build_kernel(self):
+        if self.config.kernel == "matern":
+            from gpytorch.kernels import MaternKernel, ScaleKernel
+
+            matern_nu = (
+                self.config.matern.nu
+                if self.config.matern and self.config.matern.nu
+                else 2.5
+            )
+            return ScaleKernel(MaternKernel(nu=matern_nu))
+        elif self.config.kernel == "ibnn":
+            from botorch.models.kernels import InfiniteWidthBNNKernel
+
+            kernel = InfiniteWidthBNNKernel(depth=self.config.ibnn.depth)
+            if self.config.ibnn.weight_var is not None:
+                kernel.weight_var = self.config.ibnn.weight_var
+            if self.config.ibnn.bias_var is not None:
+                kernel.bias_var = self.config.ibnn.bias_var
+            return kernel
+        return None
+
     def _build_gp_components(self, x, y):
         x_flat = x.reshape(-1, x.shape[-1])
         y_flat = y.reshape(-1, y.shape[-1])
@@ -26,14 +46,7 @@ class GPSurrogate(Surrogate):
         models = []
         for i in range(y_flat.shape[-1]):
             y_flat_obj = y_flat[:, i].unsqueeze(-1)
-            kernel = None
-            if self.config.kernel == "matern":
-                matern_nu = (
-                    self.config.matern.nu
-                    if self.config.matern and self.config.matern.nu
-                    else 2.5
-                )
-                kernel = ScaleKernel(MaternKernel(nu=matern_nu))
+            kernel = self._build_kernel()
 
             models.append(
                 SingleTaskGP(
@@ -62,17 +75,8 @@ class GPSurrogate(Surrogate):
         return model
 
 
-class IBNNSurrogate(Surrogate):
-    def __init__(self, config=None):
-        super().__init__(config)
-
-    def fit(self, x, y, time_dict):
-        raise NotImplementedError("IBNN surrogate is not implemented yet.")
-
-
 SURROGATE_REGISTRY = {
     "gp": GPSurrogate,
-    "ibnn": IBNNSurrogate,
 }
 
 
