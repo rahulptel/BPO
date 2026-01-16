@@ -31,7 +31,7 @@ class KSASolver:
     def save_result(
         self,
         x_sol,
-        y_sol,
+        objs,
         iter_records,
         final_record,
         time_dict,
@@ -41,7 +41,7 @@ class KSASolver:
         result = {
             "cfg": OmegaConf.to_container(self.cfg, resolve=True),
             "x_sol": x_sol,
-            "y_sol": y_sol,
+            "objs": objs,
             "n_evaluations": n_evaluations,
             "iter_records": iter_records,
             "final_record": final_record,
@@ -62,6 +62,8 @@ class KSASolver:
         return output_path
 
     def run(self):
+        time_dict = {"search": 0.0, "stats": 0.0}
+
         t0 = time.time()
         if self.instance.name == "mokp":
             problem = KSAMOKPProblem(
@@ -85,8 +87,7 @@ class KSASolver:
             raise ValueError(f"Unsupported instance: {self.instance.name}")
         search = EpsilonSearch(problem)
         search.run(time_limit=self.cfg.time_limit)
-        total_time = time.time() - t0
-        time_dict = {"search": total_time}
+        time_dict["search"] = time.time() - t0
 
         if search.Z_n:
             objs = np.array(list(search.Z_n))
@@ -98,6 +99,7 @@ class KSASolver:
 
         iter_records, final_record = [], []
         if objs.size > 0:
+            t0 = time.time()
             iter_records = compute_iteration_stats(
                 objs,
                 problem.ub,
@@ -122,12 +124,13 @@ class KSASolver:
                 from_iteration=len(objs),
                 to_iteration=len(objs),
             )
+            time_dict["stats"] = time.time() - t0
 
         x_sol = xs.tolist() if xs is not None else None
-        y_sol = objs.tolist() if objs.size > 0 else []
+        objs = objs.tolist() if objs.size > 0 else []
         self.save_result(
             x_sol,
-            y_sol,
+            objs,
             iter_records,
             final_record,
             time_dict,

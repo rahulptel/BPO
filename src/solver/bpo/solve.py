@@ -93,7 +93,7 @@ class BPOSolver:
         if "partitioning" in time_dict:
             print(f"\t\t\tPartitioning: {time_dict['partitioning']:.2f} seconds.")
 
-    def save_result(self, iter_records, final_record, time_dict):
+    def save_result(self, prefs, objs, iter_records, final_record, time_dict):
         cfg = self.cfg
         surrogate_dir_chain = self._surrogate_directory_chain(cfg.surrogate)
         acquisition_dir_chain = self._acquisition_directory_chain(self.cfg.acquisition)
@@ -106,11 +106,11 @@ class BPOSolver:
 
         results = {
             "cfg": OmegaConf.to_container(cfg, resolve=True),
-            "iterations": iter_records,
-            "final_record": final_record,
-            "nondominated_solutions": final_stats["n_nd"] if final_stats else 0,
-            "hv": final_stats["hv"] if final_stats else 0.0,
+            "prefs": prefs.tolist(),
+            "objs": objs.tolist(),
             "n_evaluations": self.scalarizer.n_evaluations,
+            "iter_records": iter_records,
+            "final_record": final_record,                                    
             "time_dict": time_dict,
         }
 
@@ -185,7 +185,7 @@ class BPOSolver:
         prefs, objs = self.prepare_initial_training_data(time_dict)
         print(f"Starting BO loop for {self.cfg.n_iterations} iterations...")
         time_dict["iterations"] = 0.0
-        for _ in range(self.cfg.n_iterations):
+        for _ in range(self.cfg.n_initial_samples, self.cfg.n_iterations):
             # Check time limit (seconds) after updating iteration timing
             if time_dict["data_collection"] + time_dict["iterations"] >= float(
                 self.cfg.time_limit
@@ -245,6 +245,6 @@ class BPOSolver:
             to_iteration=len(objs_np),
         )
         time_dict["stats"] = time.time() - t0
-        self.save_result(iter_records, final_record, time_dict)
+        self.save_result(prefs_np, objs_np, iter_records, final_record, time_dict)
         self.print_time_dict(time_dict)
         print("N evaluations:", self.scalarizer.n_evaluations)

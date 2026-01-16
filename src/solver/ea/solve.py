@@ -136,14 +136,16 @@ class EASolver:
             ("time", time_str),
         ]
 
-    def save_result(self, y_sol_nd, x_sol_nd, hv, n_nd, n_generations, time_dict):
+    def save_result(self, objs, x_sol_nd, hv, n_nd, n_generations, time_dict):
         results = {
             "cfg": OmegaConf.to_container(self.cfg, resolve=True),
             "x_sol_nd": x_sol_nd,
-            "y_sol_nd": y_sol_nd,
-            "hypervolume": hv,
-            "n_nd": n_nd,
-            "n_generations": n_generations,
+            "objs": objs,
+            "final_record": {
+                "hv": hv,
+                "n_nd": n_nd,
+                "n_evaluation": n_generations,
+            },
             "time_dict": time_dict,
         }
 
@@ -165,6 +167,7 @@ class EASolver:
 
     def run(self):
         self._set_global_seed(self.cfg.algorithm.seed)
+        time_dict = {"search": 0.0, "stats": 0.0}
 
         ref_point = self.base_instance.reference_point
         ref_point_t = torch.tensor(ref_point, dtype=torch.get_default_dtype())
@@ -199,10 +202,10 @@ class EASolver:
             termination,
             **minimize_kwargs,
         )
-        total_time = time.time() - t0
-        time_dict = {"optimization": total_time}
-        print("Optimization finished in {:.2f} seconds.".format(total_time))
+        time_dict["search"] = time.time() - t0
+        print("Optimization finished in {:.2f} seconds.".format(time_dict["search"]))
 
+        t0 = time.time()
         is_minimization = getattr(self.pymoo_instance, "is_minimization", False)
         objectives_for_nd = -result.F
         objectives_for_hv = result.F if is_minimization else -result.F
@@ -213,21 +216,22 @@ class EASolver:
         n_nd = int(mask.sum())
 
         hv = 0.0
-        Y_nd = []
+        objs = []
         X_nd = []
         if n_nd > 0:
             Y_nd_t = torch.tensor(
                 objectives_for_hv[mask], dtype=torch.get_default_dtype()
             )
             hv = compute_hypervolume(Y_nd_t, ref_point_t, ideal_point=ideal_point)
-            Y_nd = Y_nd_t.cpu().numpy().tolist()
+            objs = Y_nd_t.cpu().numpy().tolist()
             X_nd = result.X[mask].tolist() if result.X is not None else None
         n_generations = -1 if callback is None else callback.n_generation
+        time_dict["stats"] = time.time() - t0
 
         print("Hypervolume (normalized): {:.6f}".format(hv))
         print("Number of non-dominated solutions: {}".format(n_nd))
         self.save_result(
-            Y_nd,
+            objs,
             X_nd,
             hv,
             n_nd,
