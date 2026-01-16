@@ -108,7 +108,7 @@ class BPOSolver:
             "cfg": OmegaConf.to_container(cfg, resolve=True),
             "prefs": prefs.tolist(),
             "objs": objs.tolist(),
-            "n_evaluations": self.scalarizer.n_evaluations,
+            "n_evaluations": len(prefs),
             "iter_records": iter_records,
             "final_record": final_record,                                    
             "time_dict": time_dict,
@@ -134,9 +134,6 @@ class BPOSolver:
     def prepare_initial_training_data(self, time_dict):
         print(f"Generating {self.cfg.n_initial_samples} initial data points...")
         time_dict["data_collection"] = 0
-        # prefs = dirichlet_initial_design(
-        #     self.cfg.n_initial_samples, self.instance.n_objs
-        # )
         prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
         objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
 
@@ -146,12 +143,11 @@ class BPOSolver:
             pref = self.dirichlet.sample((1,)).reshape(1, self.instance.n_objs)
             obj = self.scalarizer.evaluate(pref)
             time_dict["data_collection"] += time.time() - t0
-
-            prefs = torch.cat([prefs, pref])
-            objs = torch.cat([objs, obj])
             if time_dict["data_collection"] > self.cfg.time_limit:
                 data_collection_complete = False
                 break
+            prefs = torch.cat([prefs, pref])
+            objs = torch.cat([objs, obj])
 
         if data_collection_complete:
             print("Initial data generation complete.")
@@ -185,14 +181,8 @@ class BPOSolver:
         prefs, objs = self.prepare_initial_training_data(time_dict)
         print(f"Starting BO loop for {self.cfg.n_iterations} iterations...")
         time_dict["iterations"] = 0.0
-        for _ in range(self.cfg.n_initial_samples, self.cfg.n_iterations):
+        for _ in range(prefs.shape[0], self.cfg.n_iterations):
             # Check time limit (seconds) after updating iteration timing
-            if time_dict["data_collection"] + time_dict["iterations"] >= float(
-                self.cfg.time_limit
-            ):
-                print("Time limit reached. Stopping early.")
-                break
-
             t0 = time.time()
 
             model = surrogate.fit(prefs, objs, time_dict)
@@ -200,6 +190,11 @@ class BPOSolver:
             new_objs = self.scalarizer.evaluate(new_prefs)
 
             time_dict["iterations"] += time.time() - t0
+            if time_dict["data_collection"] + time_dict["iterations"] > float(
+                self.cfg.time_limit
+            ):
+                print("Time limit reached.")
+                break
 
             prefs = torch.cat([prefs, new_prefs])
             objs = torch.cat([objs, new_objs])
@@ -247,4 +242,4 @@ class BPOSolver:
         time_dict["stats"] = time.time() - t0
         self.save_result(prefs_np, objs_np, iter_records, final_record, time_dict)
         self.print_time_dict(time_dict)
-        print("N evaluations:", self.scalarizer.n_evaluations)
+        print("N evaluations:", len(prefs_np))

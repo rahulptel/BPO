@@ -79,19 +79,18 @@ class AugChebySolver:
         print(f"Starting random loop for {max_iterations} iterations...")
 
         for _ in range(max_iterations):
-            if time_dict["iterations"] >= time_limit:
-                print("Time limit reached; stopping early.")
-                break
-
             t0 = time.time()
 
             new_pref = self._sample_dirichlet(1, self.instance.n_objs)
             new_obj = self.scalarizer.evaluate(new_pref)
 
+            time_dict["iterations"] += time.time() - t0
+            if time_dict["iterations"] > time_limit:
+                print("Time limit reached.")
+                break
+
             prefs = np.concatenate((prefs, new_pref), axis=0)
             objs = np.concatenate((objs, new_obj), axis=0)
-
-            time_dict["iterations"] += time.time() - t0
 
         # Convert the objs to minimization form
         if self.scalarizer.maximize is True:
@@ -133,6 +132,6 @@ class AugChebySolver:
             to_iteration=len(objs),
         )
         time_dict["stats"] = time.time() - t0
-        print("N evaluations:", self.scalarizer.n_evaluations)
+        print("N evaluations:", len(prefs))
         pprint(time_dict)
         self.save_result(prefs, objs, iter_records, final_record, time_dict)

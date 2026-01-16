@@ -110,7 +110,6 @@ class EpsilonSearch:
         b = Box(l=z_ideal_bar, u=z_upper_bar)
         self.L[b.id] = b
 
-        time_limit = None if time_limit is None else float(time_limit)
         start_time = time.time()
         while len(self.L.keys()):
             if time_limit is not None and time.time() - start_time >= time_limit:
@@ -120,6 +119,10 @@ class EpsilonSearch:
             self.n_evaluations += 1
 
             x, z = self.moop.get_solution(epsilon=sel_box.u)
+            if time.time() - start_time >= time_limit:
+                print("Time limit reached; stopping early.")
+                break
+
             if x is not None:
                 z_bar = z[self.moop.mask]
                 if self._is_new_nondominated_solution(z):
