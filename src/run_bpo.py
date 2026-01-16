@@ -1,6 +1,13 @@
+import os
+
+os.environ["OMP_NUM_THREADS"] = "1"
+
+
 import time
 
 import torch
+
+torch.set_num_threads(1)
 from hydra import main as hydra_main
 
 from problem import build_instance
