@@ -28,8 +28,6 @@ class KSAProblem:
         self.c_obj_K_ub = None
         self.objectives_expr = []
 
-        self._initialize_base_model()
-
     def _configure_model(self, model):
         model.setParam("OutputFlag", self.outputflag)
         model.setParam("MIPGap", self.mipgap)
@@ -86,6 +84,11 @@ class KSAProblem:
         return self.lb, self.ub
 
     def get_solution(self, epsilon=None):
+        if self.m is None or not self.objectives_expr:
+            raise RuntimeError(
+                f"{self.__class__.__name__} model is not initialized. "
+                "Call _initialize_base_model() before solving."
+            )
         x, z = None, None
 
         _, z_p = self._solve_p(epsilon)
@@ -118,6 +121,7 @@ class KSAMOKPProblem(KSAProblem):
         self.v_items = None
         self.c_capacity = None
         self.objectives_bar = self.objectives[self.mask, :]
+        self._initialize_base_model()
 
     def _initialize_base_model(self):
         self.m = gp.Model(env=self.env) if self.env is not None else gp.Model()
@@ -176,6 +180,7 @@ class KSAMOAPProblem(KSAProblem):
         self.v_assign = None
         self.c_assign_agents = None
         self.c_assign_tasks = None
+        self._initialize_base_model()
 
         self.objectives_bar_expr = [
             self.objectives_expr[i] for i in range(self.n_objectives) if i != self.K
