@@ -221,7 +221,9 @@ class KSAMOAPProblem(KSAProblem):
         return self.v_assign.X
 
     def _objective_values(self, x):
-        return (self.costs * x).sum(axis=(0, 1))
+        # costs: (n_agents, n_tasks, n_objectives), x: (n_agents, n_tasks)
+        x = np.asarray(x, dtype=np.float64)
+        return np.einsum("ij,ijk->k", x, self.costs)
 
     def _bounds_from_instance(self):
         ideal = np.asarray(self.instance.ideal_point, dtype=np.float64)
