@@ -44,7 +44,9 @@ class AugChebySolver:
             chain.append(("time", self._time_suffix(self.cfg.time_limit)))
         return chain
 
-    def save_result(self, prefs, objs, iter_records, final_record, time_dict):
+    def save_result(
+        self, prefs, objs, iter_records, final_record, ideal_point, ref_point, time_dict
+    ):
         result = {
             "cfg": OmegaConf.to_container(self.cfg, resolve=True),
             "prefs": prefs.tolist(),
@@ -52,6 +54,8 @@ class AugChebySolver:
             "n_evaluations": len(objs),
             "iter_records": iter_records,
             "final_record": final_record,
+            "ideal_point": ideal_point.tolist(),
+            "ref_point": ref_point.tolist(),
             "time_dict": time_dict,
         }
 
@@ -126,4 +130,6 @@ class AugChebySolver:
         time_dict["stats"] = time.time() - t0
         print("N evaluations:", len(prefs))
         pprint(time_dict)
-        self.save_result(prefs, objs, iter_records, final_record, time_dict)
+        self.save_result(
+            prefs, objs, iter_records, final_record, ideal_point, ref_point, time_dict
+        )
