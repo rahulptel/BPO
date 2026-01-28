@@ -80,8 +80,10 @@ class BPOSolver:
     @staticmethod
     def print_time_dict(time_dict):
         print(f"\nBO loop timing: ")
-        print(f"\tData collection: {time_dict['data_collection']:.2f} seconds.")
-        print(f"\tIterations: {time_dict['iterations']:.2f} seconds.")
+        if len(time_dict["data_collection"]) > 0:
+            print(f"\tData collection: {time_dict['data_collection'][-1]:.2f} seconds.")
+            if len(time_dict["iterations"]) > 0:
+                print(f"\tIterations: {time_dict['iterations'][-1]:.2f} seconds.")
         if "surrogate_training" in time_dict:
             print(
                 f"\t\tSurrogate training: {time_dict['surrogate_training']:.2f} seconds."
@@ -133,7 +135,8 @@ class BPOSolver:
 
     def prepare_initial_training_data(self, time_dict):
         print(f"Generating {self.cfg.n_initial_samples} initial data points...")
-        time_dict["data_collection"] = 0
+        time_dict["data_collection"] = []
+        data_collection = 0
         prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
         objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
 
@@ -142,10 +145,11 @@ class BPOSolver:
             t0 = time.time()
             pref = self.dirichlet.sample((1,)).reshape(1, self.instance.n_objs)
             obj = self.scalarizer.evaluate(pref)
-            time_dict["data_collection"] += time.time() - t0
-            if time_dict["data_collection"] > self.cfg.time_limit:
+            data_collection += time.time() - t0
+            if data_collection > self.cfg.time_limit:
                 data_collection_complete = False
                 break
+            time_dict["data_collection"].append(data_collection)
             prefs = torch.cat([prefs, pref])
             objs = torch.cat([objs, obj])
 
@@ -180,22 +184,23 @@ class BPOSolver:
 
         prefs, objs = self.prepare_initial_training_data(time_dict)
         print(f"Starting BO loop for {self.cfg.n_iterations} iterations...")
-        time_dict["iterations"] = 0.0
+        time_dict["iterations"] = []
+        time_iterations = 0.0
         for _ in range(prefs.shape[0], self.cfg.n_iterations):
-            # Check time limit (seconds) after updating iteration timing
             t0 = time.time()
 
             model = surrogate.fit(prefs, objs, time_dict)
             new_prefs = acquisition.generate_candidates(model, prefs, time_dict)
             new_objs = self.scalarizer.evaluate(new_prefs)
+            time_iterations += time.time() - t0
 
-            time_dict["iterations"] += time.time() - t0
-            if time_dict["data_collection"] + time_dict["iterations"] > float(
+            if time_dict["data_collection"][-1] + time_iterations > float(
                 self.cfg.time_limit
             ):
                 print("Time limit reached.")
                 break
 
+            time_dict["iterations"].append(time_iterations)
             prefs = torch.cat([prefs, new_prefs])
             objs = torch.cat([objs, new_objs])
 

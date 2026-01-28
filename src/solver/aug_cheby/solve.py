@@ -71,7 +71,8 @@ class AugChebySolver:
         self._set_global_seed(self.cfg.rseed)
         print(f"Using reference point: {self.instance.reference_point}")
 
-        time_dict = {"iterations": 0.0}
+        time_dict = {"iterations": []}
+        total_iterations_time = 0.0
         prefs = np.empty((0, self.instance.n_objs))
         objs = np.empty((0, self.instance.n_objs))
         max_iterations = int(self.cfg.n_iterations)
@@ -84,10 +85,11 @@ class AugChebySolver:
             new_pref = self._sample_dirichlet(1, self.instance.n_objs)
             new_obj = self.scalarizer.evaluate(new_pref)
 
-            time_dict["iterations"] += time.time() - t0
-            if time_dict["iterations"] > time_limit:
+            total_iterations_time += time.time() - t0
+            if total_iterations_time > time_limit:
                 print("Time limit reached.")
                 break
+            time_dict["iterations"].append(total_iterations_time)
 
             prefs = np.concatenate((prefs, new_pref), axis=0)
             objs = np.concatenate((objs, new_obj), axis=0)
