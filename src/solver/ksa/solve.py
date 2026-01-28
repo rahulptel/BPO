@@ -37,7 +37,11 @@ class KSASolver:
         time_dict,
         timer,
         n_evaluations,
+        save_x=False,
     ):
+        if not save_x:
+            x_sol = None
+
         result = {
             "cfg": OmegaConf.to_container(self.cfg, resolve=True),
             "x_sol": x_sol,
@@ -136,4 +140,5 @@ class KSASolver:
             time_dict,
             timer,
             n_evaluations,
+            save_x=self.cfg.save_solutions,
         )

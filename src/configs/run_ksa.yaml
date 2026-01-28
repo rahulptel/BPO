@@ -11,7 +11,7 @@ time_limit: 100
 outputflag: 0
 mipgap: 0.0
 optimizer: gurobi
-
+save_solutions: false
 compute_stats_upto: 100
 hypervolume:
   approx: false
