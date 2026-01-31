@@ -51,7 +51,7 @@ class AugChebySolver:
             "cfg": OmegaConf.to_container(self.cfg, resolve=True),
             "prefs": prefs.tolist(),
             "objs": objs.tolist(),
-            "n_evaluations": len(objs),
+            "n_evaluations": self.scalarizer.n_evaluations,
             "iter_records": iter_records,
             "final_record": final_record,
             "ideal_point": ideal_point.tolist(),

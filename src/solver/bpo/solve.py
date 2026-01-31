@@ -110,7 +110,7 @@ class BPOSolver:
             "cfg": OmegaConf.to_container(cfg, resolve=True),
             "prefs": prefs.tolist(),
             "objs": objs.tolist(),
-            "n_evaluations": len(prefs),
+            "n_evaluations": self.scalarizer.n_evaluations,
             "iter_records": iter_records,
             "final_record": final_record,
             "time_dict": time_dict,
