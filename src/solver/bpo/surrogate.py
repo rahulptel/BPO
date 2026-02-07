@@ -1,5 +1,6 @@
 import time
 
+import torch
 from botorch import fit_gpytorch_mll
 from botorch.models import ModelListGP, SingleTaskGP
 from botorch.models.transforms.outcome import Standardize
@@ -7,16 +8,18 @@ from gpytorch.mlls.sum_marginal_log_likelihood import SumMarginalLogLikelihood
 
 
 class Surrogate:
-    def __init__(self, config=None):
+    def __init__(self, config=None, device=None, dtype=None):
         self.config = config
+        self.device = torch.device(device) if device is not None else torch.device("cpu")
+        self.dtype = dtype if dtype is not None else torch.get_default_dtype()
 
     def fit(self, x=None, y=None, time_dict=None):
         raise NotImplementedError
 
 
 class GPSurrogate(Surrogate):
-    def __init__(self, config=None):
-        super().__init__(config)
+    def __init__(self, config=None, device=None, dtype=None):
+        super().__init__(config, device=device, dtype=dtype)
 
     def _build_kernel(self):
         if self.config.kernel == "matern":
@@ -63,6 +66,8 @@ class GPSurrogate(Surrogate):
 
     def fit(self, x, y, time_dict):
         t0 = time.time()
+        x = x.to(device=self.device, dtype=self.dtype)
+        y = y.to(device=self.device, dtype=self.dtype)
 
         model, mll = self._build_gp_components(x, y)
         fit_gpytorch_mll(mll)
@@ -80,12 +85,12 @@ SURROGATE_REGISTRY = {
 }
 
 
-def build_surrogate(config):
+def build_surrogate(config, device=None, dtype=None):
     key = config.name.lower()
     if key not in SURROGATE_REGISTRY:
         available = ", ".join(sorted(SURROGATE_REGISTRY))
         raise ValueError(f"Unknown surrogate '{key}'. Available: {available}")
-    return SURROGATE_REGISTRY[key](config)
+    return SURROGATE_REGISTRY[key](config, device=device, dtype=dtype)
 
 
 def available_surrogates():

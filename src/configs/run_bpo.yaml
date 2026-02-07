@@ -11,6 +11,7 @@ acquisition:
   num_restarts: 10
   raw_samples: 512
   mc_samples: 128
+  maxiter: 100
   sequential: true
 
 n_initial_samples: 10
@@ -23,6 +24,12 @@ compute_stats_upto: 100
 from_pid: 1
 to_pid: 3
 optimizer: gurobi
+runtime:
+  bo_device: cpu
+  bo_dtype: float64
+  torch_num_threads: 1
+  gurobi_threads: 1
+  cuda_fallback_to_cpu: true
 
 hypervolume:
   approx: false

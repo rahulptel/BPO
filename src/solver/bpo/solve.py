@@ -8,7 +8,6 @@ from omegaconf import OmegaConf
 from utils import (
     OUTPUTS_DIR,
     compute_iteration_stats,
-    get_dirichlet_distribution,
     set_global_seed,
 )
 
@@ -30,7 +29,55 @@ class BPOSolver:
         self.cfg = cfg
         self.instance = instance
         self.scalarizer = scalarizer
-        self.dirichlet = get_dirichlet_distribution(self.cfg.problem.n_objs)
+        self.dtype = self._resolve_runtime_dtype()
+        self.device = self._resolve_runtime_device()
+        self.dirichlet = torch.distributions.dirichlet.Dirichlet(
+            torch.ones(
+                self.cfg.problem.n_objs,
+                dtype=self.dtype,
+                device=self.device,
+            )
+        )
+
+    def _resolve_runtime_dtype(self):
+        runtime_cfg = getattr(self.cfg, "runtime", None)
+        dtype_name = (
+            str(getattr(runtime_cfg, "bo_dtype", "float64")).lower()
+            if runtime_cfg is not None
+            else "float64"
+        )
+        if dtype_name == "float32":
+            return torch.float32
+        if dtype_name == "float64":
+            return torch.float64
+        raise ValueError(
+            f"Unsupported runtime.bo_dtype='{dtype_name}'. Use float32 or float64."
+        )
+
+    def _resolve_runtime_device(self):
+        runtime_cfg = getattr(self.cfg, "runtime", None)
+        if runtime_cfg is None:
+            return torch.device("cpu")
+
+        requested = str(getattr(runtime_cfg, "bo_device", "cpu")).lower()
+        fallback = bool(getattr(runtime_cfg, "cuda_fallback_to_cpu", True))
+
+        if requested == "auto":
+            return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        if requested == "cuda":
+            if torch.cuda.is_available():
+                return torch.device("cuda")
+            if fallback:
+                print("CUDA requested but unavailable; falling back to CPU.")
+                return torch.device("cpu")
+            raise RuntimeError("CUDA requested but not available.")
+
+        if requested != "cpu":
+            raise ValueError(
+                f"Unsupported runtime.bo_device='{requested}'. Use cpu, cuda, or auto."
+            )
+        return torch.device("cpu")
 
     @staticmethod
     def _surrogate_directory_chain(config):
@@ -53,6 +100,8 @@ class BPOSolver:
             dir_chain.append(("sequential", config.sequential))
         if config.mc_samples is not None:
             dir_chain.append(("mc_samples", config.mc_samples))
+        if getattr(config, "maxiter", None) is not None:
+            dir_chain.append(("maxiter", config.maxiter))
         return dir_chain
 
     @staticmethod
@@ -111,6 +160,8 @@ class BPOSolver:
             "prefs": prefs.tolist(),
             "objs": objs.tolist(),
             "n_evaluations": self.scalarizer.n_evaluations,
+            "n_evaluations_saved": len(objs),
+            "n_evaluations_solver": self.scalarizer.n_evaluations,
             "iter_records": iter_records,
             "final_record": final_record,
             "time_dict": time_dict,
@@ -137,14 +188,22 @@ class BPOSolver:
         print(f"Generating {self.cfg.n_initial_samples} initial data points...")
         time_dict["data_collection"] = []
         data_collection = 0
-        prefs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
-        objs = torch.empty((0, self.instance.n_objs), dtype=torch.get_default_dtype())
+        prefs = torch.empty(
+            (0, self.instance.n_objs),
+            dtype=self.dtype,
+            device=self.device,
+        )
+        objs = torch.empty(
+            (0, self.instance.n_objs),
+            dtype=self.dtype,
+            device=self.device,
+        )
 
         data_collection_complete = True
         for _ in range(self.cfg.n_initial_samples):
             t0 = time.time()
             pref = self.dirichlet.sample((1,)).reshape(1, self.instance.n_objs)
-            obj = self.scalarizer.evaluate(pref)
+            obj = self.scalarizer.evaluate(pref).to(device=self.device, dtype=self.dtype)
             data_collection += time.time() - t0
             if data_collection > self.cfg.time_limit:
                 data_collection_complete = False
@@ -162,9 +221,13 @@ class BPOSolver:
         set_global_seed(self.cfg.rseed)
         time_dict = {}
 
+        print(f"Using BO device: {self.device}")
+        print(f"Using BO dtype: {self.dtype}")
         print(f"Using reference point: {self.instance.reference_point.tolist()}")
 
-        surrogate = build_surrogate(self.cfg.surrogate)
+        surrogate = build_surrogate(
+            self.cfg.surrogate, device=self.device, dtype=self.dtype
+        )
         print(f"Using surrogate: {self.cfg.surrogate.name}")
 
         if self.cfg.acquisition.name is None:
@@ -176,6 +239,8 @@ class BPOSolver:
             n_objs=self.instance.n_objs,
             ref_point=self.instance.reference_point,
             rseed=self.cfg.rseed,
+            device=self.device,
+            dtype=self.dtype,
         )
         print(
             f"Using acquisition: {self.cfg.acquisition.name} "
@@ -186,17 +251,29 @@ class BPOSolver:
         print(f"Starting BO loop for {self.cfg.n_iterations} iterations...")
         time_dict["iterations"] = []
         time_iterations = 0.0
+        data_collection_time = (
+            time_dict["data_collection"][-1] if time_dict["data_collection"] else 0.0
+        )
         for _ in range(prefs.shape[0], self.cfg.n_iterations):
             t0 = time.time()
 
             model = surrogate.fit(prefs, objs, time_dict)
-            new_prefs = acquisition.generate_candidates(model, prefs, time_dict)
-            new_objs = self.scalarizer.evaluate(new_prefs)
+            new_prefs = acquisition.generate_candidates(model, prefs, time_dict).to(
+                device=self.device, dtype=self.dtype
+            )
+            elapsed_without_eval = data_collection_time + time_iterations + (
+                time.time() - t0
+            )
+            if elapsed_without_eval > float(self.cfg.time_limit):
+                print("Time limit reached.")
+                break
+
+            new_objs = self.scalarizer.evaluate(new_prefs).to(
+                device=self.device, dtype=self.dtype
+            )
             time_iterations += time.time() - t0
 
-            if time_dict["data_collection"][-1] + time_iterations > float(
-                self.cfg.time_limit
-            ):
+            if data_collection_time + time_iterations > float(self.cfg.time_limit):
                 print("Time limit reached.")
                 break
 
@@ -239,4 +316,5 @@ class BPOSolver:
         time_dict["stats"] = time.time() - t0
         self.save_result(prefs_np, objs_np, iter_records, final_record, time_dict)
         self.print_time_dict(time_dict)
-        print("N evaluations:", len(prefs_np))
+        print("N evaluations (saved):", len(prefs_np))
+        print("N evaluations (solver calls):", self.scalarizer.n_evaluations)
