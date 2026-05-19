@@ -18,7 +18,7 @@ src/
 ```
 
 - **problem** – creates random multiobjective knapsack (`mokp`) and assignment (`moap`) instances. Each instance exposes metadata, an ideal point, and a reference point for hypervolume computation.
-- **scalarization** – houses augmented Chebyshev scalarizers for MOKP and MOAP. Gurobi and SCIP backends are available for scalarized subproblem solves.
+- **scalarization** – houses Gurobi-backed augmented Chebyshev scalarizers for MOKP and MOAP.
 - **solver** – contains solver-specific orchestration:
   - `solver/bpo` runs Bayesian preference optimization with a BoTorch GP surrogate and qLogEHVI acquisition over the preference simplex.
   - `solver/aug_cheby` samples Dirichlet preference vectors and evaluates each vector with the augmented Chebyshev scalarizer.
@@ -115,8 +115,7 @@ Files contain the resolved Hydra config, objective vectors, run timing, and solv
 ## Requirements & Setup
 
 - Python 3.11
-- Gurobi 12.0.0 with a valid license for the default optimizer and KSA
-- SCIP/PySCIPOpt is available as an alternative scalarizer backend for BPO and random augmented Chebyshev runs via `optimizer=scip`
+- Gurobi 12.0.0 with a valid license for all mathematical programming solves
 - Key Python dependencies are pinned in `requirements.txt`: BoTorch 0.11.1, pymoo 0.6.0.1, pygmo 2.19.5, matplotlib 3.7.2, Hydra 1.3.2, and gurobipy 12.0.0
 
 Install dependencies:

@@ -29,12 +29,12 @@ class MOAPInstance:
             size=(self.n_agents, self.n_tasks, self.n_objs),
         )
 
+        if optimizer != "gurobi":
+            raise ValueError(
+                "MOAPInstance currently supports only the Gurobi optimizer."
+            )
         self._ideal_point = None
-        self._compute_ideal_point_fn = (
-            self._compute_ideal_point_gurobi
-            if optimizer == "gurobi"
-            else self._compute_ideal_point_scip
-        )
+        self._compute_ideal_point_fn = self._compute_ideal_point_gurobi
 
         print(f"MOAP Instance (iseed: {self.iseed}):")
         print(f"  Agents: {self.n_agents}, Tasks: {self.n_tasks}")
@@ -84,61 +84,6 @@ class MOAPInstance:
                 if model.Status != GRB.OPTIMAL:
                     raise RuntimeError(f"Could not solve ideal point objective {j}")
                 ideal_point[j] = model.ObjVal
-
-        return ideal_point
-
-    def _compute_ideal_point_scip(self):
-        from pyscipopt import Model, quicksum
-
-        ideal_point = np.zeros(self.n_objs, dtype=np.float64)
-        for j in range(self.n_objs):
-            model = Model("moap_ideal_point")
-            model.setIntParam("display/verblevel", 0)
-
-            x_vars = [
-                [
-                    model.addVar(name=f"x_{r}_{l}", vtype="BINARY")
-                    for l in range(self.n_tasks)
-                ]
-                for r in range(self.n_agents)
-            ]
-
-            for r in range(self.n_agents):
-                model.addCons(
-                    quicksum(x_vars[r][l] for l in range(self.n_tasks)) == 1,
-                    name=f"assign_agent_{r}",
-                )
-            for l in range(self.n_tasks):
-                model.addCons(
-                    quicksum(x_vars[r][l] for r in range(self.n_agents)) == 1,
-                    name=f"assign_task_{l}",
-                )
-
-            objective_expr = quicksum(
-                float(self.costs[r, l, j]) * x_vars[r][l]
-                for r in range(self.n_agents)
-                for l in range(self.n_tasks)
-            )
-            model.setObjective(objective_expr, sense="minimize")
-
-            model.optimize()
-            status = model.getStatus()
-            if status != "optimal":
-                raise RuntimeError(
-                    f"Could not solve ideal point objective {j} with status {status}"
-                )
-
-            sol = model.getBestSol()
-            if sol is None:
-                raise RuntimeError(
-                    f"SCIP did not return a solution for ideal point objective {j}"
-                )
-
-            ideal_point[j] = sum(
-                float(self.costs[r, l, j]) * model.getSolVal(sol, x_vars[r][l])
-                for r in range(self.n_agents)
-                for l in range(self.n_tasks)
-            )
 
         return ideal_point
 

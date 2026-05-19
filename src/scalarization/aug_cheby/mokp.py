@@ -85,11 +85,9 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
             name="capacity",
         )
 
-        achievements = []
         achievements_delta = []
         for j in range(self.instance.n_objs):
             value = self.instance.values[:, j] @ x
-            achievements.append(value)
             achievements_delta.append(value - self._ideal_point_min[j])
 
         for j in range(self.instance.n_objs):
@@ -121,88 +119,4 @@ class GurobiAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
             raise RuntimeError(f"Gurobi solver failed for pref={pref.tolist()}")
 
         true_objective = self.instance.values.T @ solution
-        return true_objective
-
-
-class SCIPAugChebyMOKPScalarizer(BaseAugChebyMOKPScalarizer):
-    def __init__(self, instance, rho=1e-4, threads=1, time_limit=100):
-        super().__init__(instance, rho=rho, name="SCIP")
-        self.threads = int(threads)
-        self.time_limit = float(time_limit)
-        try:
-            from pyscipopt import Model, quicksum
-        except ImportError as exc:  # pragma: no cover - import guard
-            raise RuntimeError(
-                "SCIPAugChebyMOKPScalarizer requires the pyscipopt package"
-            ) from exc
-
-        self._Model = Model
-        self._quicksum = quicksum
-
-    def _build_model(self, pref):
-        Model = self._Model
-        quicksum = self._quicksum
-        model = Model("aug_cheby_mokp_scip")
-        model.setIntParam("display/verblevel", 0)
-        if self.threads > 0:
-            model.setIntParam("parallel/maxnthreads", self.threads)
-        if self.time_limit > 0:
-            model.setRealParam("limits/time", self.time_limit)
-
-        x_vars = []
-        for i in range(self.instance.n_items):
-            var = model.addVar(name=f"x_{i}", vtype="BINARY")
-            x_vars.append(var)
-        alpha = model.addVar(
-            name="alpha", vtype="CONTINUOUS", lb=-model.infinity(), ub=model.infinity()
-        )
-
-        capacity_expr = quicksum(
-            self.instance.weights[i] * x_vars[i] for i in range(self.instance.n_items)
-        )
-        model.addCons(capacity_expr <= self.instance.capacity, name="capacity")
-
-        achievements_delta = []
-        for j in range(self.instance.n_objs):
-            value_expr = quicksum(
-                self.instance.values[i, j] * x_vars[i]
-                for i in range(self.instance.n_items)
-            )
-            achievement_delta = value_expr - self._ideal_point_min[j]
-            achievements_delta.append(achievement_delta)
-            model.addCons(alpha >= float(pref[j]) * achievement_delta)
-
-        augmentation = self.rho * quicksum(
-            pref[j] * achievements_delta[j] for j in range(self.instance.n_objs)
-        )
-        model.setObjective(alpha + augmentation, "minimize")
-
-        model._x_vars = x_vars
-        return model
-
-    def _get_solution(self, model, pref):
-        status = model.getStatus()
-        if status not in {"optimal", "timelimit"}:
-            raise RuntimeError(
-                f"SCIP solver failed for pref={pref.tolist()} with status {status}"
-            )
-
-        sol = model.getBestSol()
-        if sol is None:
-            raise RuntimeError(
-                f"SCIP did not return a solution for pref={pref.tolist()}"
-            )
-
-        return np.array([model.getSolVal(sol, var) for var in model._x_vars])
-
-    def _solve_scalarized(self, pref):
-        self.n_evaluations += 1
-        if not isinstance(pref, np.ndarray):
-            pref = pref.detach().cpu().numpy()
-
-        model = self._build_model(pref)
-        model.optimize()
-        solution_x = self._get_solution(model, pref)
-
-        true_objective = self.instance.values.T @ solution_x
         return true_objective
