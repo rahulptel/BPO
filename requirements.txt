@@ -1,7 +1,7 @@
-pymoo
-pygmo
-botorch
-gurobipy
+pymoo==0.6.0.1
+pygmo==2.19.5
+botorch==0.11.1
+gurobipy==12.0.0
 pyscipopt
-matplotlib
-hydra-core
+matplotlib==3.7.2
+hydra-core==1.3.2

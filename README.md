@@ -1,17 +1,20 @@
-# Bayesian Preference Optimization
+# BPO: Bayesian Preference Optimization for Multiobjective Discrete Optimization
 
-This repository is the official implementation of the manuscript: Bayesian Preference Optimization for Multiobjective Discrete Optimization. It provides a unified workflow for generating multiobjective discrete optimization instances, scalarizing them with preference vectors, and comparing Bayesian preference optimization against exact and heuristic baselines.
+To approximate the Pareto frontier of a multiobjective discrete optimization problem, it is commonplace to solve a sequence of scalarized problems parameterized by _preference vectors_ that regulate the tradeoff between different objectives. A central challenge lies in selecting preferences that lead to a diverse and high-quality approximation of the frontier within a limited computational budget. We propose __Bayesian Preference Optimization__ (BPO), a structured framework that adaptively selects preferences to improve frontier quality. The method integrates augmented Tchebycheff scalarization (ATS) with a Bayesian optimization procedure that constructs a surrogate model in preference space, mapping preference vectors to objective outcomes. This formulation decouples the learning component from the dimensionality of the decision space, allowing the surrogate to scale with the number of objectives rather than the number of decision variables. Computational experiments on benchmark multiobjective knapsack and assignment problems show that BPO produces higher-quality Pareto frontier approximations than ATS with preferences sampled from a Dirichlet distribution, NSGA-II (a popular evolutionary algorithm), and KSA (an exact method) under comparable time budgets. The code is available at \href{https://github.com/rahulptel/BPO}{https://github.com/rahulptel/BPO}.
+
+
+This repository contains the experimental code for the paper. It includes instance generators, augmented Tchebycheff scalarization models, the BPO solver, and baseline implementations for random preference sampling, evolutionary algorithms, and KSA on multiobjective knapsack and assignment problems.
 
 ## Architecture
 
 ```
 src/
-  problem/        # MOKP and MOAP instance generators and metadata
-  scalarization/  # Scalarized reformulations (e.g., augmented Chebyshev)
-  solver/         # Solver implementations (BPO, random scalarization, EA, KSA)
-  configs/        # Hydra configuration hierarchy
-  utils/          # Shared helpers for seeding, Gurobi, hypervolume, and paths
-  run_*.py        # Entry points for each solver
+|-- problem/        # MOKP and MOAP instance generators and metadata
+|-- scalarization/  # Scalarized reformulations (e.g., augmented Chebyshev)
+|-- solver/         # Solver implementations (BPO, random scalarization, EA, KSA)
+|-- configs/        # Hydra configuration hierarchy
+|-- utils/          # Shared helpers for seeding, Gurobi, hypervolume, and paths
+`-- run_*.py        # Entry points for each solver
 ```
 
 - **problem** – creates random multiobjective knapsack (`mokp`) and assignment (`moap`) instances. Each instance exposes metadata, an ideal point, and a reference point for hypervolume computation.
@@ -111,10 +114,10 @@ Files contain the resolved Hydra config, objective vectors, run timing, and solv
 
 ## Requirements & Setup
 
-- Python 3.8+
-- Gurobi with a valid license for the default optimizer and KSA
+- Python 3.11
+- Gurobi 12.0.0 with a valid license for the default optimizer and KSA
 - SCIP/PySCIPOpt is available as an alternative scalarizer backend for BPO and random augmented Chebyshev runs via `optimizer=scip`
-- PyTorch, BoTorch, pymoo, pygmo, Hydra, and related packages from `requirements.txt`
+- Key Python dependencies are pinned in `requirements.txt`: BoTorch 0.11.1, pymoo 0.6.0.1, pygmo 2.19.5, matplotlib 3.7.2, Hydra 1.3.2, and gurobipy 12.0.0
 
 Install dependencies:
 
