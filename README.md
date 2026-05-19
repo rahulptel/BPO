@@ -1,6 +1,6 @@
 # BPO: Bayesian Preference Optimization for Multiobjective Discrete Optimization
 
-To approximate the Pareto frontier of a multiobjective discrete optimization problem, it is commonplace to solve a sequence of scalarized problems parameterized by _preference vectors_ that regulate the tradeoff between different objectives. A central challenge lies in selecting preferences that lead to a diverse and high-quality approximation of the frontier within a limited computational budget. We propose __Bayesian Preference Optimization__ (BPO), a structured framework that adaptively selects preferences to improve frontier quality. The method integrates augmented Tchebycheff scalarization (ATS) with a Bayesian optimization procedure that constructs a surrogate model in preference space, mapping preference vectors to objective outcomes. This formulation decouples the learning component from the dimensionality of the decision space, allowing the surrogate to scale with the number of objectives rather than the number of decision variables. Computational experiments on benchmark multiobjective knapsack and assignment problems show that BPO produces higher-quality Pareto frontier approximations than ATS with preferences sampled from a Dirichlet distribution, NSGA-II (a popular evolutionary algorithm), and KSA (an exact method) under comparable time budgets. The code is available at \href{https://github.com/rahulptel/BPO}{https://github.com/rahulptel/BPO}.
+To approximate the Pareto frontier of a multiobjective discrete optimization problem, it is commonplace to solve a sequence of scalarized problems parameterized by _preference vectors_ that regulate the tradeoff between different objectives. A central challenge lies in selecting preferences that lead to a diverse and high-quality approximation of the frontier within a limited computational budget. We propose __Bayesian Preference Optimization__ (BPO), a structured framework that adaptively selects preferences to improve frontier quality. The method integrates augmented Tchebycheff scalarization (ATS) with a Bayesian optimization procedure that constructs a surrogate model in preference space, mapping preference vectors to objective outcomes. This formulation decouples the learning component from the dimensionality of the decision space, allowing the surrogate to scale with the number of objectives rather than the number of decision variables. Computational experiments on benchmark multiobjective knapsack and assignment problems show that BPO produces higher-quality Pareto frontier approximations than ATS with preferences sampled from a Dirichlet distribution, NSGA-II (a popular evolutionary algorithm), and KSA (an exact method) under comparable time budgets. The code is available at [https://github.com/rahulptel/BPO](https://github.com/rahulptel/BPO).
 
 
 This repository contains the experimental code for the paper. It includes instance generators, augmented Tchebycheff scalarization models, the BPO solver, and baseline implementations for random preference sampling, evolutionary algorithms, and KSA on multiobjective knapsack and assignment problems.
@@ -12,6 +12,7 @@ src/
 |-- problem/        # MOKP and MOAP instance generators and metadata
 |-- scalarization/  # Scalarized reformulations (e.g., augmented Chebyshev)
 |-- solver/         # Solver implementations (BPO, random scalarization, EA, KSA)
+|-- scripts/        # Result summarization, plotting, and LaTeX generation
 |-- configs/        # Hydra configuration hierarchy
 |-- utils/          # Shared helpers for seeding, Gurobi, hypervolume, and paths
 `-- run_*.py        # Entry points for each solver
@@ -104,6 +105,37 @@ Examples:
 - `outputs/ksa/<problem_descriptor>/time-<seconds>/run_ksa_<timestamp>.json`
 
 Files contain the resolved Hydra config, objective vectors, run timing, and solver-specific metrics. BPO, random augmented Chebyshev, and KSA runs also store per-iteration hypervolume and nondominated counts. EA runs store the final nondominated set and final hypervolume.
+
+## Result Scripts
+
+Post-processing scripts live in `src/scripts/`. They read raw solver JSON files from `outputs/` by default and write generated artifacts to `results/` by default. The numeric prefixes encode the intended workflow order.
+
+```
+python src/scripts/01_summarize_moap_runs.py
+python src/scripts/01_summarize_mokp_runs.py
+python src/scripts/02_render_moap_summary_table.py
+python src/scripts/02_render_mokp_summary_table.py
+python src/scripts/03_render_final_summary_table.py
+python src/scripts/04_compute_oracle_hv.py
+python src/scripts/05_simulate_parallel_runs.py
+python src/scripts/06_plot_parallel_results.py
+python src/scripts/07_render_parallel_oracle_table.py
+```
+
+The standard final-result workflow is:
+
+- `01_summarize_moap_runs.py` and `01_summarize_mokp_runs.py` scan raw run JSONs and write `results/moap_result.csv`, `results/mokp_result.csv`, and per-run CSVs.
+- `02_render_*_summary_table.py` convert each summary CSV into standalone LaTeX tables.
+- `03_render_final_summary_table.py` combines the MOAP and MOKP summaries into `results/moap_mokp_side_by_side.tex`.
+
+The oracle and parallel workflow is:
+
+- `04_compute_oracle_hv.py` unions objective sets across methods and writes `results/moap_oracle_result.csv`, `results/mokp_oracle_result.csv`, and per-instance oracle CSVs.
+- `05_simulate_parallel_runs.py` simulates k-way parallel runs by unioning run seeds within each method and writes `results/*_parallel_result.csv` plus per-instance CSVs.
+- `06_plot_parallel_results.py` reads the parallel CSVs and writes per-problem and combined PNG plots.
+- `07_render_parallel_oracle_table.py` reads the parallel and oracle CSVs and writes `results/parallel_result_latex.tex`.
+
+Use `--outputs-dir` to point the summarization, oracle, or parallel simulation scripts at a different raw output directory. Use each script's `--help` for artifact path overrides.
 
 ## Extending the Playground
 
